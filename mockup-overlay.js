@@ -60,7 +60,7 @@
   document.head.appendChild(style);
   document.body.classList.add('cf-code-app');
   const app=document.createElement('div'); app.id='cf-app';
-  app.innerHTML='<div class="shell"><div class="top"><div><div class="brand">✦ COSMIC FORTUNE</div><div class="sub">ТВОЯ УДАЧА В КОСМОСЕ</div></div><div class="balance"><span class="coin">✪</span><span id="cf-balance">12 450</span><button class="iconbtn" data-go="profile" aria-label="Пополнить">＋</button></div><button class="iconbtn" data-go="bonuses" aria-label="Бонусы">🎁</button></div><div id="cf-content"></div></div><nav class="bottom" aria-label="Навигация"><button data-go="home"><span class="navicon">⌂</span>Главная</button><button data-go="games"><span class="navicon">🎮</span>Игры</button><button data-go="bonuses"><span class="navicon">🎁</span>Бонусы</button><button data-go="tournaments"><span class="navicon">🏆</span>Турниры</button><button data-go="profile"><span class="navicon">♙</span>Профиль</button></nav><div class="toast" id="cf-toast"></div>';
+  app.innerHTML='<div class="shell"><div class="top"><div><div class="brand">✦ COSMIC FORTUNE</div><div class="sub">ТВОЯ УДАЧА В КОСМОСЕ</div></div><div class="balance"><span class="coin">✪</span><span id="cf-balance">—</span><button class="iconbtn" data-go="profile" aria-label="Пополнить">＋</button></div><button class="iconbtn" data-go="bonuses" aria-label="Бонусы">🎁</button></div><div id="cf-content"></div></div><nav class="bottom" aria-label="Навигация"><button data-go="home"><span class="navicon">⌂</span>Главная</button><button data-go="games"><span class="navicon">🎮</span>Игры</button><button data-go="bonuses"><span class="navicon">🎁</span>Бонусы</button><button data-go="tournaments"><span class="navicon">🏆</span>Турниры</button><button data-go="profile"><span class="navicon">♙</span>Профиль</button></nav><div class="toast" id="cf-toast"></div>';
   document.body.appendChild(app);
   const content=app.querySelector('#cf-content'), toast=app.querySelector('#cf-toast');
   const games=[
@@ -71,7 +71,35 @@
     ['tournaments','🏆','Турниры','Соревнуйся и побеждай'],
     ['bonuses','🎁','Бонусы','Забирай награды каждый день']
   ];
-  const say=t=>{toast.textContent=t;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2200)};
+  const API_BASE='https://cosmic-fortune-api.onrender.com';
+  const telegram=window.Telegram&&window.Telegram.WebApp;
+  if(telegram){try{telegram.ready();telegram.expand()}catch{}}
+  const initData=()=>telegram&&typeof telegram.initData==='string'?telegram.initData:'';
+  async function api(path,options={}){
+    const signed=initData();
+    if(!signed) throw new Error('Открой мини-приложение через Telegram для входа в аккаунт.');
+    const response=await fetch(API_BASE+path,{...options,headers:{'Content-Type':'application/json','X-Telegram-Init-Data':signed,...(options.headers||{})}});
+    const data=await response.json().catch(()=>({error:'Некорректный ответ сервера'}));
+    if(!response.ok) throw new Error(data.error||'Ошибка сервера');
+    return data;
+  }
+  const formatBalance=n=>Number(n).toLocaleString('ru-RU');
+  const say=t=>{toast.textContent=t;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),3200)};
+  async function refreshAccount(){
+    try{
+      const data=await api('/api/me');
+      const balance=app.querySelector('#cf-balance');
+      if(balance) balance.textContent=formatBalance(data.player.balance);
+      const profileBalance=app.querySelector('#cf-profile-balance');
+      if(profileBalance) profileBalance.textContent=formatBalance(data.player.balance);
+      const title=app.querySelector('.profilehead strong');
+      if(title&&data.player.firstName) title.textContent=data.player.firstName;
+    }catch(error){
+      const balance=app.querySelector('#cf-balance');
+      if(balance) balance.textContent='—';
+      if(initData()) say('Не удалось загрузить аккаунт: '+error.message);
+    }
+  }
   const primary=(text,act)=>'<button class="primary" data-action="'+act+'">'+text+'</button>';
   function home(){return '<section class="hero"><div class="eyebrow">ТВОЯ ВСЕЛЕННАЯ ВЫИГРЫШЕЙ</div><h1>COSMIC<br><span>FORTUNE</span></h1><p>Проверь удачу среди звёзд. Выбирай игру и открывай новые галактики.</p>'+primary('✦ Играть  ›','games')+'</section><div class="section-title">✦ Популярные игры</div><div class="cards">'+games.slice(0,4).map(g=>'<button class="card" data-go="'+g[0]+'"><div class="art" data-art="'+g[0]+'"><span>'+g[1]+'</span></div><strong>'+g[2]+'</strong><small>'+g[3]+'</small></button>').join('')+'</div><button class="widecard" data-go="bonuses"><div class="art">🎁</div><div><strong>Ежедневный бонус</strong><small>Забирай награду каждый день</small></div> ›</button>'}
   function gameList(){return '<div class="section-title">ИГРЫ</div><div style="color:#c6b5e2;margin:0 2px 14px">ВЫБЕРИ СВОЮ УДАЧУ</div>'+games.map(g=>'<button class="widecard" data-go="'+g[0]+'"><div class="art" data-art="'+g[0]+'"><span>'+g[1]+'</span></div><div style="flex:1"><strong>'+g[2]+'</strong><small>'+g[3]+'</small></div>›</button>').join('')}
@@ -79,7 +107,7 @@
   function mines(){return panel('💎 Космические мины','<div class="fieldrow"><div class="field">Ставка <b>100</b> ✦</div><div class="field">Мин <b>3</b></div></div><div class="gridmines">'+Array.from({length:25},(_,i)=>'<button class="mine" data-mine="'+i+'">✦</button>').join('')+'</div><p style="color:#c7b8df">Открывай клетки и находи кристаллы.</p>'+primary('Забрать выигрыш','collect'))}
   function crash(){return panel('🚀 Краш','<div class="multiplier" id="cf-mult">1.00x</div><div class="bigart">🚀</div><p style="text-align:center;color:#c5b6df">Успей забрать до остановки ракеты</p><div class="fieldrow"><div class="field">Ставка · 100 ✦</div><div class="field">Автовывод · 2.00x</div></div>'+primary('Начать раунд','crash'))}
   function wheel(){return panel('🎡 Колесо удачи','<div class="wheel" id="cf-wheel">✦</div><p style="text-align:center;color:#c7b8df">Вращай колесо и испытай удачу</p><div class="fieldrow"><div class="field">Ставка · 100 ✦</div></div>'+primary('Крутить за 100 ✦','spin'))}
-  function dice(){return panel('🎲 Дайс','<div class="bigart">🎲</div><div class="cards"><button class="secondary" data-choice="Больше 7">Больше 7</button><button class="secondary" data-choice="Ровно 7">Ровно 7</button><button class="secondary" data-choice="Меньше 7">Меньше 7</button><button class="secondary" data-choice="Чётное">Чётное</button></div><div class="fieldrow"><div class="field">Ставка · 100 ✦</div></div>'+primary('Бросить кубики','roll'))}
+  function dice(){return panel('🎲 Дайс','<div class="bigart">🎲</div><p style="text-align:center;color:#c5b6df">Сервер бросает кубик. На 4–6 выплата 2×, иначе ставка списывается.</p><div class="fieldrow"><label class="field">Ставка <input id="cf-bet" type="number" min="1" max="100000" value="100" style="width:100%;margin-top:8px;background:#0b0918;color:white;border:1px solid #6c3a9e;border-radius:8px;padding:8px;text-align:center"></label></div><div id="cf-game-result" style="text-align:center;color:#e6d8ff;min-height:24px;margin:10px 0"></div>'+primary('Бросить кубик','roll'))}
   function bonuses(){return panel('🎁 Бонусы','<button class="widecard" data-action="daily"><div class="art">🎁</div><div style="flex:1"><strong>Ежедневная награда</strong><small>Получай бонус каждый день</small></div>›</button><button class="widecard" data-action="referral"><div class="art">👥</div><div><strong>Реферальная система</strong><small>Приглашай друзей и получай бонусы</small></div></button>')}
   function profile(){return '<div class="profilehead"><div class="avatar">🧑🏻‍🚀</div><strong>Космический путешественник</strong><p style="color:#bfb0d8">Твой профиль и достижения</p><div class="balance" style="justify-content:center">✪ <span id="cf-profile-balance">12 450</span> кредитов</div></div>'+panel('Мой аккаунт','<button class="widecard" data-action="history">📜　История игр　›</button><button class="widecard" data-go="bonuses">🎁　Бонусы　›</button><button class="widecard" data-action="settings">⚙　Настройки　›</button>')}
   function tournaments(){return panel('🏆 Турниры','<div class="bigart">🏆</div><h3 style="text-align:center">Космический кубок</h3><p style="text-align:center;color:#c4b5dd">Скоро: таблица лидеров и награды за достижения.</p>'+primary('К списку игр','games'))}
@@ -93,7 +121,24 @@
     const action=e.target.closest('[data-action]');if(!action)return;
     if(action.dataset.action==='games'){render('games');return}
     if(action.dataset.action==='spin'){const w=app.querySelector('#cf-wheel');if(w)w.style.transform='rotate('+(720+Math.floor(Math.random()*720))+'deg)';say('Демо-вращение. Для реальной игры нужен серверный расчёт.');return}
-    if(action.dataset.action==='roll'){say('Выбрано: '+selected+'. Демо-бросок — без реального баланса.');return}
+    if(action.dataset.action==='roll'){
+      const button=action;
+      const bet=Number(app.querySelector('#cf-bet')?.value);
+      const result=app.querySelector('#cf-game-result');
+      if(!Number.isSafeInteger(bet)||bet<1||bet>100000){say('Ставка должна быть от 1 до 100 000.');return}
+      button.disabled=true;button.textContent='Раунд…';
+      try{
+        const data=await api('/api/game',{method:'POST',body:JSON.stringify({game:'dice',bet,requestId:crypto.randomUUID()})});
+        const balance=app.querySelector('#cf-balance');
+        if(balance) balance.textContent=formatBalance(data.balance);
+        const profileBalance=app.querySelector('#cf-profile-balance');
+        if(profileBalance) profileBalance.textContent=formatBalance(data.balance);
+        if(result) result.textContent=(data.outcome?.message||'Раунд завершён')+' Выплата: '+formatBalance(data.payout)+' ✦';
+        say((data.outcome?.message||'Раунд завершён')+' Баланс: '+formatBalance(data.balance)+' ✦');
+      }catch(error){if(result) result.textContent=error.message;say(error.message)}
+      finally{button.disabled=false;button.textContent='Бросить кубик'}
+      return
+    }
     if(action.dataset.action==='crash'){let m=1;const el=app.querySelector('#cf-mult');const timer=setInterval(()=>{m+=Math.random()*.25;if(el)el.textContent=m.toFixed(2)+'x';if(m>2.6){clearInterval(timer);say('Раунд завершён (демо).')}},180);return}
     if(action.dataset.action==='collect'){say('Выигрыш будет начисляться после подключения серверной игровой логики.');return}
     if(action.dataset.action==='daily'){say('Ежедневный бонус будет начисляться сервером после подключения API.');return}
@@ -102,4 +147,5 @@
     if(action.dataset.action==='settings'){say('Настройки будут добавлены в следующем обновлении.');return}
   });
   render('home');
+  refreshAccount();
 })();
