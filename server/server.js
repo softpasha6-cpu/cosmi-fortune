@@ -84,6 +84,13 @@ async function requireUser(req, res, next) {
       [user.id, user.username, user.firstName]
     );
     req.player = result.rows[0];
+    // This endpoint is the only authenticated route allowed before membership is confirmed.
+    if (req.path !== '/api/access/check') {
+      const access = await checkRequiredMembership(user.id);
+      if (!access.ready) {
+        throw Object.assign(new Error('Сначала подпишись на канал Cosmic Fortune и вступи в чат.'), { status: 403, code: 'SUBSCRIPTION_REQUIRED' });
+      }
+    }
     next();
   } catch (error) {
     next(error);
@@ -97,9 +104,33 @@ app.get('/health', async (_req, res) => {
 
 
 const OWNER_TELEGRAM_ID='8522347927';
+const REQUIRED_CHANNEL = process.env.REQUIRED_CHANNEL || '@Cosmic_Fortune';
+const REQUIRED_CHAT = process.env.REQUIRED_CHAT || '@CosmisFortunechat';
+const BIG_WIN_THRESHOLD = Math.max(1, Number(process.env.BIG_WIN_THRESHOLD || 100000));
 const CREDIT_PACKAGES={15:50000,25:100000,50:200000,100:400000};
 const REWARD_PACKAGES={100000:15,250000:25,500000:50,1000000:100};
 async function tg(method,body){const r=await fetch('https://api.telegram.org/bot'+botToken+'/'+method,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.description||'Telegram API error');return d.result}
+async function membershipInChat(chatId,userId){
+  try{
+    const member=await tg('getChatMember',{chat_id:chatId,user_id:Number(userId)});
+    return {member:['creator','administrator','member'].includes(member.status)||(member.status==='restricted'&&member.is_member===true),status:member.status||'unknown'};
+  }catch(error){
+    console.error('Membership check failed for '+chatId+':',error.message);
+    return {member:false,status:'unavailable',error:'Бот не может проверить этот чат. Проверь username и права администратора бота.'};
+  }
+}
+async function checkRequiredMembership(userId){
+  const [channel,chat]=await Promise.all([membershipInChat(REQUIRED_CHANNEL,userId),membershipInChat(REQUIRED_CHAT,userId)]);
+  return {ready:channel.member&&chat.member,channel,chat,links:{channel:'https://t.me/Cosmic_Fortune',chat:'https://t.me/CosmisFortunechat'}};
+}
+async function notifyUser(userId,text){
+  try{await tg('sendMessage',{chat_id:String(userId),text});return true}
+  catch(error){console.error('User notification failed for '+userId+':',error.message);return false}
+}
+app.get('/api/access/check', requireUser, async (req, res) => {
+  const access = await checkRequiredMembership(req.player.telegram_id);
+  res.json(access);
+});
 function ownerOnly(req,res){if(String(req.player?.telegram_id)!==OWNER_TELEGRAM_ID){res.status(403).json({error:'Доступ только владельцу.'});return false}return true}
 app.post('/api/stars/invoice',requireUser,async(req,res,next)=>{try{const stars=Number(req.body?.stars),credits=CREDIT_PACKAGES[stars];if(!credits)return res.status(400).json({error:'Неизвестный пакет Stars.'});const payload='cfstars:'+crypto.randomUUID();await pool.query('INSERT INTO star_purchases(telegram_id,package_stars,credits,payload) VALUES($1,$2,$3,$4)',[req.player.telegram_id,stars,credits,payload]);const url=await tg('createInvoiceLink',{title:'Cosmic Fortune',description:credits.toLocaleString('en-US')+' virtual credits',payload,provider_token:'',currency:'XTR',prices:[{label:credits.toLocaleString('en-US')+' credits',amount:stars}]});res.json({url,stars,credits})}catch(e){next(e)}});
 app.get('/api/stars/purchases',requireUser,async(req,res,next)=>{try{const r=await pool.query('SELECT id,package_stars AS stars,credits,status,created_at,paid_at FROM star_purchases WHERE telegram_id=$1 ORDER BY created_at DESC LIMIT 50',[req.player.telegram_id]);res.json({purchases:r.rows})}catch(e){next(e)}});
@@ -578,7 +609,7 @@ app.post('/api/game', requireUser, async (req, res, next) => {
 app.use((err, _req, res, _next) => {
   const status = Number(err.status) || (err.message === 'Origin not allowed' ? 403 : 500);
   if (status >= 500) console.error(err);
-  res.status(status).json({ error: status === 500 ? 'Внутренняя ошибка сервера' : err.message });
+  res.status(status).json({ error: status === 500 ? 'Внутренняя ошибка сервера' : err.message, ...(err.code ? { code: err.code } : {}) });
 });
 
 const port = Number(process.env.PORT || 3000);
