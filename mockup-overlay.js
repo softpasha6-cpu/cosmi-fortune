@@ -108,7 +108,7 @@
     }
   }
   const primary=(text,act)=>'<button class="primary" data-action="'+act+'">'+text+'</button>';
-  function home(){return '<section class="hero"><div class="eyebrow">ТВОЯ ВСЕЛЕННАЯ ВЫИГРЫШЕЙ</div><h1>COSMIC<br><span>FORTUNE</span></h1><p>Играй в космические игры, получай виртуальные кредиты и забирай ежедневные бонусы.</p>'+primary('✦ Играть  ›','games')+'</section><div class="section-title">🎁 Бонусная рулетка дня</div>'+bonusWheelCard()+'<div class="section-title">✦ Ежедневные бонусы</div><button class="widecard" data-go="bonuses"><div class="art">🎁</div><div><strong>Бонусы и награды</strong><small>Ежедневная бесплатная попытка</small></div> ›</button>'}
+  function home(){return '<section class="hero"><div class="eyebrow">ТВОЯ ВСЕЛЕННАЯ ВЫИГРЫШЕЙ</div><h1>COSMIC<br><span>FORTUNE</span></h1><p>Играй в космические игры, получай виртуальные кредиты и забирай ежедневные бонусы.</p><button type="button" class="primary" data-go="games">✦ Играть　›</button></section><div class="section-title">🎁 Бонусная рулетка дня</div>'+bonusWheelCard()+'<div class="section-title">✦ Ежедневные бонусы</div><button class="widecard" data-go="bonuses"><div class="art">🎁</div><div><strong>Бонусы и награды</strong><small>Ежедневная бесплатная попытка</small></div> ›</button>'}
   function gameList(){return '<div class="section-title">ИГРЫ</div><div style="color:#c6b5e2;margin:0 2px 14px">ВЫБЕРИ СВОЮ УДАЧУ</div>'+games.map(g=>'<button class="widecard" data-go="'+g[0]+'"><div class="art" data-art="'+g[0]+'"><span>'+g[1]+'</span></div><div style="flex:1"><strong>'+g[2]+'</strong><small>'+g[3]+'</small></div>›</button>').join('')+'<div class="section-title">🎁 Бесплатная рулетка</div>'+bonusWheelCard()}
   function panel(title,body){return '<div class="section-title">'+title+'</div><section class="gamepanel">'+body+'</section>'}
   function gamePanel(game,title,art,description,extra=''){
@@ -127,7 +127,7 @@
   let current='home',selected='Больше 7',opened=0;
   function render(name){current=renderers[name]?name:'home';content.innerHTML=renderers[current]();app.querySelectorAll('.bottom button').forEach(b=>b.classList.toggle('active',b.dataset.go===current || (current==='mines'||current==='dice'||current==='wheel'||current==='crash')&&b.dataset.go==='games'));app.scrollTo({top:0,behavior:'instant'});}
   app.addEventListener('click',async e=>{
-    const go=e.target.closest('[data-go]'); if(go){render(go.dataset.go);return}
+    const go=e.target.closest('[data-go]'); if(go){e.preventDefault();render(go.dataset.go);return}
     const mine=e.target.closest('[data-mine]'); if(mine){say('Эта игра ещё не подключена к серверу.');return}
     const choice=e.target.closest('[data-choice]');if(choice){selected=choice.dataset.choice;app.querySelectorAll('[data-choice]').forEach(b=>b.style.borderColor=b===choice?'#e05cff':'#7445a7');return}
     const action=e.target.closest('[data-action]');if(!action)return;
