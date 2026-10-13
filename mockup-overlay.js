@@ -20,7 +20,7 @@
       body.cf-mockup-active>*:not(#cf-mockup-app){visibility:hidden!important;}
       body.cf-mockup-active{overflow:hidden!important;height:100%;}
       #cf-mockup-app .cf-frame{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;overflow:hidden;background:#05040b;}
-      #cf-mockup-app .cf-art{display:block;width:100%;height:100%;object-fit:cover;object-position:center center;user-select:none;-webkit-user-drag:none;image-rendering:auto;transform:scale(1.035);}
+      #cf-mockup-app .cf-art{display:block;width:100%;height:100%;object-fit:fill;object-position:center center;user-select:none;-webkit-user-drag:none;image-rendering:auto;transform:none;}
       #cf-mockup-app .cf-hotspots{position:absolute;inset:0}
       #cf-mockup-app .cf-hit{position:absolute;border:0;background:transparent;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
       #cf-mockup-app .cf-hit:focus-visible{outline:2px solid #e3a3ff;outline-offset:-3px;border-radius:10px}
@@ -29,7 +29,6 @@
     `;
     document.head.appendChild(style);
     document.body.appendChild(root);
-    document.body.classList.add('cf-mockup-active');
     document.body.classList.add('cf-mockup-active');
     const art = root.querySelector('.cf-art');
     const layer = root.querySelector('.cf-hotspots');
@@ -64,14 +63,22 @@
         hit('Монетка',4,80,92,9,()=>say('Игра «Монетка» будет подключена следующим этапом.'));
         nav();
       } else if(current==='mines'){
-        hit('Поле мин',5,29,90,47,()=>say('Поле готово к подключению игровой логики.'));
-        hit('Забрать выигрыш',4,80,92,10,()=>say('Механика мин подключается следующим этапом.'));
+        hit('Ставка',4,8,44,9,()=>say('Настройка ставки будет подключена к игровой логике.'));
+        hit('Количество мин',51,8,44,9,()=>say('Настройка количества мин будет подключена.'));
+        hit('Поле мин',5,20,90,49,()=>say('Поле готово к подключению игровой логики.'));
+        hit('Забрать выигрыш',4,77,92,10,()=>say('Механика мин подключается следующим этапом.'));
+        nav();
       } else if(current==='crash'){
-        hit('История краша',70,10,27,8,()=>say('История раундов будет подключена к API.'));
-        hit('Забрать выигрыш',4,80,92,10,()=>say('Раунды Crash подключаются следующим этапом.'));
+        hit('История краша',70,3,27,8,()=>say('История раундов будет подключена к API.'));
+        hit('Коэффициенты',4,50,92,10,()=>say('Коэффициенты выбраны. Серверная логика будет подключена отдельно.'));
+        hit('Сумма ставки',4,62,43,9,()=>say('Настройка ставки будет подключена.'));
+        hit('Автовывод',51,62,45,9,()=>say('Настройка автовывода будет подключена.'));
+        hit('Забрать выигрыш',4,75,92,10,()=>say('Раунды Crash подключаются следующим этапом.'));
+        nav();
       } else if(current==='wheel'){
-        hit('Колесо',10,18,80,52,()=>say('Колесо готово к подключению игровой логики.'));
-        hit('Крутить',4,80,92,10,()=>say('Результат колеса должен рассчитываться сервером.'));
+        hit('Колесо',10,13,80,53,()=>say('Колесо готово к подключению игровой логики.'));
+        hit('Крутить',4,67,92,10,()=>say('Результат колеса должен рассчитываться сервером.'));
+        nav();
       } else if(current==='dice'){
         hit('Больше 7',4,48,29,8,()=>say('Выбран прогноз: больше 7.'));
         hit('Ровно 7',35,48,30,8,()=>say('Выбран прогноз: ровно 7.'));
