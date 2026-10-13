@@ -175,8 +175,8 @@ function publicRoom(room, players, viewerId) {
   const state={...(room.state||{})};
   if(room.status==='playing' && Array.isArray(state.dealerHand) && state.dealerHand.length>1) state.dealerHand=[state.dealerHand[0],{hidden:true}];
   return {id:room.id,inviteCode:room.invite_code,status:room.status,bet:Number(room.bet),hostTelegramId:String(room.host_telegram_id),
-    players:players.map(p=>({telegramId:String(p.telegram_id),username:p.username,firstName:p.first_name,seat:Number(p.seat),hand:p.hand,status:p.status,bet:Number(p.bet),payout:Number(p.payout),doubled:p.doubled,score:p.hand?.length?scoreHand(p.hand):null,isMe:String(p.telegram_id)===String(viewerId)})),
-    state,createdAt:room.created_at};
+    players:players.map(p=>({telegramId:String(p.telegram_id),username:p.username,firstName:p.first_name,seat:Number(p.seat),hand:p.hand,status:p.status,bet:Number(p.bet),payout:Number(p.payout),doubled:p.doubled,ready:Boolean(p.ready),score:p.hand?.length?scoreHand(p.hand):null,isMe:String(p.telegram_id)===String(viewerId)})),
+    roundNumber:Number(room.round_number||1),state,createdAt:room.created_at};
 }
 async function getRoom(roomId, client=pool, lock=false) {
   const q=await client.query('SELECT * FROM blackjack_rooms WHERE id=$1'+(lock?' FOR UPDATE':''),[roomId]);
@@ -251,6 +251,60 @@ app.get('/api/blackjack/rooms/:id',requireUser,async(req,res,next)=>{
     if(!result.players.some(p=>String(p.telegram_id)===String(req.player.telegram_id)))return res.status(403).json({error:'Ты не участник этой комнаты.'});
     res.json({room:publicRoom(result.room,result.players,req.player.telegram_id)});
   }catch(e){next(e)}
+});
+
+app.get('/api/blackjack/rooms',requireUser,async(req,res,next)=>{
+  try{
+    const result=await pool.query(`SELECT r.id,r.invite_code,r.bet,r.created_at,r.updated_at,r.round_number,
+      count(p.telegram_id)::int AS player_count,
+      count(p.telegram_id) FILTER (WHERE p.ready)::int AS ready_count,
+      max(pl.first_name) FILTER (WHERE p.seat=1) AS host_name
+      FROM blackjack_rooms r JOIN blackjack_room_players p ON p.room_id=r.id
+      JOIN players pl ON pl.telegram_id=p.telegram_id
+      WHERE r.status='waiting' GROUP BY r.id ORDER BY r.created_at DESC LIMIT 50`);
+    res.json({rooms:result.rows.map(r=>({id:r.id,inviteCode:r.invite_code,bet:Number(r.bet),playerCount:r.player_count,readyCount:r.ready_count,hostName:r.host_name||'Игрок',createdAt:r.created_at,roundNumber:Number(r.round_number||1)}))});
+  }catch(e){next(e)}
+});
+app.post('/api/blackjack/rooms/:id/ready',requireUser,async(req,res,next)=>{
+  const client=await pool.connect();
+  try{
+    await client.query('BEGIN');
+    const result=await getRoom(req.params.id,client,true);
+    const me=result.players.find(p=>String(p.telegram_id)===String(req.player.telegram_id));
+    if(!me){await client.query('ROLLBACK');return res.status(403).json({error:'Ты не участник этого стола.'})}
+    if(result.room.status==='playing'){await client.query('ROLLBACK');return res.status(409).json({error:'Раунд уже идёт.'})}
+    if(result.players.some(p=>p.status==='finished')&&result.room.status==='finished'){
+      await client.query('UPDATE blackjack_rooms SET status=$2,updated_at=NOW() WHERE id=$1',[req.params.id,'waiting']);
+    }
+    await client.query('UPDATE blackjack_room_players SET ready=$3 WHERE room_id=$1 AND telegram_id=$2',[req.params.id,req.player.telegram_id,Boolean(req.body?.ready)]);
+    let updated=await getRoom(req.params.id,client);
+    if(updated.room.status==='finished'){
+      await client.query("UPDATE blackjack_rooms SET status='waiting',updated_at=NOW() WHERE id=$1",[req.params.id]);
+      updated=await getRoom(req.params.id,client);
+    }
+    const allReady=updated.players.length>=2&&updated.players.every(p=>p.ready);
+    if(allReady){
+      const bet=Number(updated.room.bet);
+      for(const p of updated.players){
+        const bal=await client.query('SELECT balance FROM players WHERE telegram_id=$1 FOR UPDATE',[p.telegram_id]);
+        if(Number(bal.rows[0].balance)<bet){await client.query('ROLLBACK');return res.status(400).json({error:'У одного из игроков недостаточно кредитов для нового раунда.'})}
+      }
+      for(const p of updated.players){
+        await client.query('UPDATE players SET balance=balance-$2,updated_at=NOW() WHERE telegram_id=$1',[p.telegram_id,bet]);
+        await client.query("UPDATE blackjack_room_players SET hand='[]'::jsonb,status='waiting',bet=$3,payout=0,doubled=FALSE,ready=FALSE WHERE room_id=$1 AND telegram_id=$2",[req.params.id,p.telegram_id,bet]);
+      }
+      const state={dealerHand:[drawPlayingCard(),drawPlayingCard()],turn:0,result:'playing'};
+      for(const p of updated.players){
+        const hand=[drawPlayingCard(),drawPlayingCard()];
+        await client.query("UPDATE blackjack_room_players SET hand=$3::jsonb,status=$4 WHERE room_id=$1 AND telegram_id=$2",[req.params.id,p.telegram_id,JSON.stringify(hand),natural(hand)?'blackjack':'playing']);
+      }
+      await client.query("UPDATE blackjack_rooms SET status='playing',round_number=round_number+1,state=$2::jsonb,updated_at=NOW() WHERE id=$1",[req.params.id,JSON.stringify(state)]);
+      updated=await getRoom(req.params.id,client);
+      if(updated.players.every(p=>p.status!=='playing'))updated=await settleBlackjackRoom(client,req.params.id);
+    }
+    await client.query('COMMIT');
+    res.json({room:publicRoom(updated.room,updated.players,req.player.telegram_id),allReady});
+  }catch(e){await client.query('ROLLBACK').catch(()=>{});next(e)}finally{client.release()}
 });
 app.post('/api/blackjack/rooms/:id/start',requireUser,async(req,res,next)=>{
   const client=await pool.connect();
