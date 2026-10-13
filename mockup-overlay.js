@@ -114,6 +114,21 @@
     #cf-app .mine.revealed{background:linear-gradient(145deg,#123f91,#071b43);box-shadow:0 0 12px #168dff}
     #cf-app .bigart{text-align:center;font-size:105px;padding:18px 0;text-shadow:0 0 28px #8c2fff}
     #cf-app .multiplier{text-align:center;font-size:48px;font-weight:950;color:#e59aff;text-shadow:0 0 25px #b22bff;margin:15px}
+    #cf-app .cf-bonus-wheel-wrap{position:relative;width:min(78vw,300px);aspect-ratio:1;margin:12px auto 16px}
+    #cf-app .cf-bonus-prize-wheel{position:absolute;inset:0;width:100%;height:100%;margin:0;border:8px solid #f7d579;box-shadow:0 0 0 4px #75401c,0 0 25px #ffb72e55; background:conic-gradient(#b52b43 0 40deg,#171923 40deg 80deg,#176b48 80deg 120deg,#6524a5 120deg 160deg,#b52b43 160deg 200deg,#171923 200deg 240deg,#176b48 240deg 280deg,#6524a5 280deg 320deg,#b52b43 320deg 360deg);transition:transform 5s cubic-bezier(.08,.72,.12,1);overflow:hidden}
+    #cf-app .cf-bonus-pointer{position:absolute;z-index:3;left:50%;top:-5px;transform:translateX(-50%);color:#ffe8a2;text-shadow:0 2px 3px #000;font-size:24px}
+    #cf-app .cf-bonus-label{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:48px;height:44px;color:white;font-size:20px;font-weight:900;text-shadow:0 2px 3px #000;line-height:1}
+    #cf-app .cf-bonus-label small{font-size:9px;white-space:nowrap}
+    #cf-app .cf-bonus-label.l1{left:calc(50% - 24px);top:8%}
+    #cf-app .cf-bonus-label.l2{right:8%;top:14%}
+    #cf-app .cf-bonus-label.l3{right:3%;top:calc(50% - 22px)}
+    #cf-app .cf-bonus-label.l4{right:9%;bottom:13%}
+    #cf-app .cf-bonus-label.l5{left:calc(50% - 24px);bottom:7%}
+    #cf-app .cf-bonus-label.l6{left:9%;bottom:13%}
+    #cf-app .cf-bonus-label.l7{left:3%;top:calc(50% - 22px)}
+    #cf-app .cf-bonus-label.l8{left:9%;top:14%}
+    #cf-app .cf-bonus-label.l9{left:calc(50% - 24px);top:calc(50% - 22px)}
+    
     #cf-app .wheel{width:min(68vw,260px);aspect-ratio:1;margin:12px auto;border-radius:50%;border:8px solid #ffca42;background:conic-gradient(#f42aff 0 45deg,#145bff 45deg 90deg,#12c99a 90deg 135deg,#ff8b16 135deg 180deg,#a328ff 180deg 225deg,#1376ff 225deg 270deg,#f32b77 270deg 315deg,#ffc22c 315deg);box-shadow:0 0 24px #ff9d22;display:grid;place-items:center;font-size:35px}
     #cf-app .profilehead{text-align:center;padding:18px;background:radial-gradient(circle at 50% 20%,#4d1d83,#0c0918 70%);border-radius:18px;border:1px solid #6538a0}
     #cf-app .avatar{font-size:68px;filter:drop-shadow(0 0 14px #a24cff)}
@@ -329,7 +344,7 @@
       '<button class="secondary" data-action="bj-refresh">Обновить стол</button>';
   }
 
-  function bonusWheelCard(){return '<section class="gamepanel" style="text-align:center"><div class="wheel spinwheel" id="cf-bonus-wheel">🎡</div><p style="color:#c5b6df">Одна попытка каждые 24 часа. Главные призы — 100 и 25 игровых звёзд. Остальные призы начисляются виртуальными кредитами.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0;text-align:left;font-size:11px;color:#d9c8f1"><div>💎 100 игровых звёзд <b style="color:#ffdb73">0,01%</b></div><div>🌟 25 игровых звёзд <b style="color:#ffdb73">0,99%</b></div><div>🏆 25 000 виртуальных кредитов <b>5%</b></div><div>💰 10 000 виртуальных кредитов <b>10%</b></div><div>🚀 5 000 виртуальных кредитов <b>15%</b></div><div>🪐 2 000 виртуальных кредитов <b>25%</b></div><div>⭐ 1 000 виртуальных кредитов <b>44%</b></div></div><div id="cf-bonus-timer" style="font-size:12px;color:#ffdf8b;margin:8px 0">Проверяем доступность…</div>'+primary('🎡 Крутить бесплатно','bonus-wheel')+'<div id="cf-bonus-result" style="min-height:26px;margin-top:12px;color:#ffe09a"></div></section>'}
+  function bonusWheelCard(){return '<section class="gamepanel" style="text-align:center"><div class="cf-bonus-wheel-wrap"><div class="cf-bonus-pointer">▼</div><div class="wheel spinwheel cf-bonus-prize-wheel" id="cf-bonus-wheel"><span class="cf-bonus-label l1">💎<small>100 ⭐</small></span><span class="cf-bonus-label l2">🌟<small>25 ⭐</small></span><span class="cf-bonus-label l3">🏆<small>500 ₽*</small></span><span class="cf-bonus-label l4">💰<small>250 ₽*</small></span><span class="cf-bonus-label l5">🚀<small>25K</small></span><span class="cf-bonus-label l6">🪙<small>10K</small></span><span class="cf-bonus-label l7">🪐<small>5K</small></span><span class="cf-bonus-label l8">⭐<small>2K</small></span><span class="cf-bonus-label l9">✨<small>1K</small></span></div></div><p style="color:#c5b6df;font-size:12px">Одна бесплатная попытка каждые 24 часа. Награды в ₽ — виртуальные игровые бонусы, не денежная выплата.</p><div id="cf-bonus-timer" style="font-size:12px;color:#ffdf8b;margin:8px 0">Проверяем доступность…</div>'+primary('🎡 Крутить бесплатно','bonus-wheel')+'<div id="cf-bonus-result" style="min-height:26px;margin-top:12px;color:#ffe09a"></div></section>'}
   let bonusTimerInterval=null;
   async function refreshBonusStatus(){
     const timer=app.querySelector('#cf-bonus-timer'),button=app.querySelector('[data-action="bonus-wheel"]');
@@ -457,6 +472,7 @@
       if(wheel){wheel.style.transform='rotate(0deg)';void wheel.offsetWidth;wheel.style.transform='rotate('+(1440+Math.floor(Math.random()*1080))+'deg)';}
       try{
         const data=await api('/api/bonus-wheel',{method:'POST',body:JSON.stringify({requestId:crypto.randomUUID()})});
+        if(wheel){wheel.style.transform='rotate('+(1800+Math.floor(Math.random()*360))+'deg)';await new Promise(resolve=>setTimeout(resolve,5100));}
         if(result)result.textContent='🎉 '+(data.outcome?.label||'Результат')+' · баланс '+formatBalance(data.balance)+' ✦';
         const balance=app.querySelector('#cf-balance');if(balance)balance.textContent=formatBalance(data.balance);
         const profileBalance=app.querySelector('#cf-profile-balance');if(profileBalance)profileBalance.textContent=formatBalance(data.balance);
