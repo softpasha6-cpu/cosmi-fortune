@@ -362,7 +362,11 @@
       catch(error){say(error.message)}finally{action.disabled=false}
       return
     }
-    if(action.dataset.action==='bj-leave'){blackjackRoomId=null;render('blackjack');return}
+    if(action.dataset.action==='bj-leave'){
+      const leavingRoomId=blackjackRoomId;
+      if(leavingRoomId){try{await api('/api/blackjack/rooms/'+leavingRoomId+'/leave',{method:'POST',body:JSON.stringify({})})}catch(error){console.warn('Room leave failed',error.message)}}
+      blackjackRoomId=null;if(blackjackPoll){clearInterval(blackjackPoll);blackjackPoll=null}render('blackjack');return
+    }
     if(action.dataset.action==='open-bonus-wheel'){openBonusWheel();return}
     if(action.dataset.action==='bonus-wheel'){
       const button=action, wheel=app.querySelector('#cf-bonus-wheel'), result=app.querySelector('#cf-bonus-result');
