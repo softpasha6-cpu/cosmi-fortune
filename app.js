@@ -108,4 +108,17 @@ async function play(game) {
 function exchangeDemo() {
   notify('Обмен на Telegram Stars не подключён. Здесь только виртуальные кредиты без денежных выплат.');
 }
+(function initTelegram() {
+  const tg = window.Telegram && window.Telegram.WebApp;
+  if (!tg) return;
+  try {
+    tg.ready();
+    tg.expand();
+    const user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+    const profile = document.getElementById('profile');
+    if (user && profile) {
+      profile.textContent = 'Привет, ' + ([user.first_name, user.last_name].filter(Boolean).join(' ') || 'космический путешественник') + '!';
+    }
+  } catch (e) { console.warn('Telegram WebApp init failed', e); }
+})();
 document.addEventListener('DOMContentLoaded', connectApi);
