@@ -294,7 +294,7 @@
         avatar.style.backgroundImage='url("'+String(user.photo_url).replace(/["\\\\]/g,'')+'")';
         avatar.style.backgroundSize='cover';
         avatar.style.backgroundPosition='center';
-      }else avatar.textContent=([user.first_name,user.last_name].filter(Boolean).join(' ').charAt(0)||'🚀').toUpperCase();
+      }else { avatar.textContent=''; avatar.style.backgroundImage='none'; }
     }
   }
   async function refreshAccount(){
@@ -309,7 +309,7 @@
       const uname=app.querySelector('#cf-profile-username');if(uname)uname.textContent=data.player.username?'@'+data.player.username:'Имя пользователя Telegram не задано';
       const tag=app.querySelector('#cf-profile-tag');if(tag)tag.textContent=data.player.username?'@'+data.player.username:'Не задан';
       const telegramId=app.querySelector('#cf-profile-id');if(telegramId)telegramId.textContent=data.player.telegramId||'—';
-      const avatar=app.querySelector('#cf-profile-avatar');if(avatar)avatar.textContent=(data.player.firstName||'🚀').slice(0,1).toUpperCase();
+      const avatar=app.querySelector('#cf-profile-avatar');if(avatar&&!telegram?.initDataUnsafe?.user?.photo_url){avatar.textContent='';avatar.style.backgroundImage='none';}
       if(current==='profile'){renderHistoryInProfile(data.history||[]);loadPaymentHistory();loadOwnerTools();}
     }catch(error){
       const balance=app.querySelector('#cf-balance');
