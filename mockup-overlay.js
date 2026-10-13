@@ -2,7 +2,12 @@
   // Code-rendered Cosmic Fortune Mini App: responsive, no screenshot assets required.
   const old = document.getElementById('cf-mockup-app');
   if (old) old.remove();
+  const previousApp = document.getElementById('cf-app');
+  if (previousApp) previousApp.remove();
+  const previousStyle = document.getElementById('cf-app-style');
+  if (previousStyle) previousStyle.remove();
   const style = document.createElement('style');
+  style.id = 'cf-app-style';
   style.textContent = `
     body.cf-code-app>header,body.cf-code-app>main,body.cf-code-app>footer,body.cf-code-app>.bottom-nav{display:none!important}
     #cf-app{position:fixed;inset:0;z-index:2147483000;overflow:auto;overflow-x:hidden;color:#fff;background:radial-gradient(ellipse at 50% 0%,#37116a 0%,#0a0718 45%,#03040a 100%);font:15px system-ui,-apple-system,sans-serif;padding:env(safe-area-inset-top) 0 calc(82px + env(safe-area-inset-bottom));}
