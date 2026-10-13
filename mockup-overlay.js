@@ -425,7 +425,7 @@
       const result=app.querySelector('#cf-game-result');
       if(!Number.isSafeInteger(bet)||bet<1||bet>100000){say('Ставка должна быть от 1 до 100 000.');return}
       const body={game,bet,requestId:crypto.randomUUID()};
-      const stage=app.querySelector('#cf-game-stage');
+      const diceOne=game==='dice'?app.querySelector('#cf-die-one'):null;const diceTwo=game==='dice'?app.querySelector('#cf-die-two'):null;const diceTotal=game==='dice'?app.querySelector('#cf-dice-total'):null;if(game==='dice'){[diceOne,diceTwo].forEach(d=>{if(d){d.classList.remove('face-1','face-2','face-3','face-4','face-5','face-6');d.classList.add('face-6','is-rolling');}}if(diceTotal)diceTotal.textContent='КОСТИ БРОШЕНЫ…';}const stage=app.querySelector('#cf-game-stage');
       if(stage){stage.classList.add('is-playing');}
       const art=app.querySelector('.bigart');
       if(art){art.classList.remove('anim-dice','anim-slots','anim-cards','anim-wheel');void art.offsetWidth;art.classList.add(game==='dice'?'anim-dice':game==='slots'?'anim-slots':game==='roulette'?'anim-wheel':'anim-cards');}
@@ -442,7 +442,7 @@
         const data=await api('/api/game',{method:'POST',body:JSON.stringify(body)});
         const balance=app.querySelector('#cf-balance');if(balance)balance.textContent=formatBalance(data.balance);
         const profileBalance=app.querySelector('#cf-profile-balance');if(profileBalance)profileBalance.textContent=formatBalance(data.balance);
-        const out=data.outcome||{};
+        const out=data.outcome||{};if(game==='dice'&&diceOne&&diceTwo&&Number.isInteger(Number(out.roll))){const total=Number(out.roll);const first=Math.floor(Math.random()*6)+1;const second=Math.max(1,Math.min(6,total-first));const a=Math.max(1,Math.min(6,first));const b=total-a;[diceOne,diceTwo].forEach((d,i)=>{d.classList.remove('is-rolling','face-1','face-2','face-3','face-4','face-5','face-6');d.classList.add('face-'+(i===0?a:b));});if(diceTotal)diceTotal.textContent='СУММА: '+total;}
         if(game==='roulette'&&Number.isInteger(Number(out.number))){const winningNumber=Number(out.number);const ix=rouletteNumbers.indexOf(winningNumber);if(ix>=0&&rouletteWheel&&rouletteBall){const step=360/37;const pocketCenter=ix*step+step/2;const finalRotation=1440-pocketCenter;rouletteWheel.style.transition='transform 5.2s cubic-bezier(.08,.72,.12,1)';void rouletteWheel.offsetWidth;rouletteWheel.style.transform='rotate('+finalRotation+'deg)';rouletteBall.style.setProperty('--ball-angle','0deg');if(result)result.textContent='Колесо замедляется…';await new Promise(resolve=>setTimeout(resolve,5200));rouletteBall.classList.remove('is-spinning');void rouletteBall.offsetWidth;rouletteBall.classList.add('is-falling');if(result)result.textContent='Выпало '+winningNumber+' · '+(out.color==='green'?'ЗЕЛЁНОЕ':out.color==='red'?'КРАСНОЕ':'ЧЁРНОЕ');await new Promise(resolve=>setTimeout(resolve,900));}}
         let message=out.message||'Раунд завершён';
         if(out.reels)message+=' · '+out.reels.join(' ');
@@ -454,7 +454,7 @@
         const me=await api('/api/me');
         if(current==='profile')renderHistoryInProfile(me.history||[]);
       }catch(error){if(result)result.textContent=error.message;say(error.message)}
-      finally{app.querySelector('#cf-game-stage')?.classList.remove('is-playing');action.disabled=false;action.textContent='Играть'}
+      finally{app.querySelector('#cf-game-stage')?.classList.remove('is-playing');if(game==='dice'){[diceOne,diceTwo].forEach(d=>d?.classList.remove('is-rolling'));}action.disabled=false;action.textContent=game==='dice'?'Бросить':'Играть'}
       return
     }
     if(action.dataset.action==='roll'){say('Открой раздел «Кости» для игры.');return}
