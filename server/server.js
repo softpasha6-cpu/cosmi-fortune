@@ -270,28 +270,27 @@ app.post('/api/blackjack/rooms/:id/ready',requireUser,async(req,res,next)=>{
   try{
     await client.query('BEGIN');
     const result=await getRoom(req.params.id,client,true);
+    const wasRematch=result.room.status==='finished';
     const me=result.players.find(p=>String(p.telegram_id)===String(req.player.telegram_id));
     if(!me){await client.query('ROLLBACK');return res.status(403).json({error:'Ты не участник этого стола.'})}
     if(result.room.status==='playing'){await client.query('ROLLBACK');return res.status(409).json({error:'Раунд уже идёт.'})}
-    if(result.players.some(p=>p.status==='finished')&&result.room.status==='finished'){
-      await client.query('UPDATE blackjack_rooms SET status=$2,updated_at=NOW() WHERE id=$1',[req.params.id,'waiting']);
+    if(wasRematch){
+      await client.query("UPDATE blackjack_rooms SET status='waiting',updated_at=NOW() WHERE id=$1",[req.params.id]);
     }
     await client.query('UPDATE blackjack_room_players SET ready=$3 WHERE room_id=$1 AND telegram_id=$2',[req.params.id,req.player.telegram_id,Boolean(req.body?.ready)]);
     let updated=await getRoom(req.params.id,client);
-    if(updated.room.status==='finished'){
-      await client.query("UPDATE blackjack_rooms SET status='waiting',updated_at=NOW() WHERE id=$1",[req.params.id]);
-      updated=await getRoom(req.params.id,client);
-    }
     const allReady=updated.players.length>=2&&updated.players.every(p=>p.ready);
     if(allReady){
       const bet=Number(updated.room.bet);
-      for(const p of updated.players){
-        const bal=await client.query('SELECT balance FROM players WHERE telegram_id=$1 FOR UPDATE',[p.telegram_id]);
-        if(Number(bal.rows[0].balance)<bet){await client.query('ROLLBACK');return res.status(400).json({error:'У одного из игроков недостаточно кредитов для нового раунда.'})}
-      }
-      for(const p of updated.players){
-        await client.query('UPDATE players SET balance=balance-$2,updated_at=NOW() WHERE telegram_id=$1',[p.telegram_id,bet]);
-        await client.query("UPDATE blackjack_room_players SET hand='[]'::jsonb,status='waiting',bet=$3,payout=0,doubled=FALSE,ready=FALSE WHERE room_id=$1 AND telegram_id=$2",[req.params.id,p.telegram_id,bet]);
+      if(wasRematch){
+        for(const p of updated.players){
+          const bal=await client.query('SELECT balance FROM players WHERE telegram_id=$1 FOR UPDATE',[p.telegram_id]);
+          if(Number(bal.rows[0].balance)<bet){await client.query('ROLLBACK');return res.status(400).json({error:'У одного из игроков недостаточно кредитов для нового раунда.'})}
+        }
+        for(const p of updated.players){
+          await client.query('UPDATE players SET balance=balance-$2,updated_at=NOW() WHERE telegram_id=$1',[p.telegram_id,bet]);
+          await client.query("UPDATE blackjack_room_players SET hand='[]'::jsonb,status='waiting',bet=$3,payout=0,doubled=FALSE,ready=FALSE WHERE room_id=$1 AND telegram_id=$2",[req.params.id,p.telegram_id,bet]);
+        }
       }
       const state={dealerHand:[drawPlayingCard(),drawPlayingCard()],turn:0,result:'playing'};
       for(const p of updated.players){
