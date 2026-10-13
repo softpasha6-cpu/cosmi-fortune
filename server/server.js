@@ -264,6 +264,7 @@ app.get('/api/blackjack/rooms/:id',requireUser,async(req,res,next)=>{
   try{
     const result=await getRoom(req.params.id);
     if(!result.players.some(p=>String(p.telegram_id)===String(req.player.telegram_id)))return res.status(403).json({error:'Ты не участник этой комнаты.'});
+    if(result.room.status==='waiting') await pool.query('UPDATE blackjack_rooms SET updated_at=NOW() WHERE id=$1',[req.params.id]);
     res.json({room:publicRoom(result.room,result.players,req.player.telegram_id)});
   }catch(e){next(e)}
 });
@@ -274,7 +275,7 @@ app.get('/api/blackjack/rooms',requireUser,async(req,res,next)=>{
     // Delete only truly abandoned/empty tables; a solo host must be able to wait for friends.
     await pool.query(`DELETE FROM blackjack_rooms r
       WHERE r.status='waiting'
-      AND (r.updated_at < NOW() - INTERVAL '2 hours'
+      AND (r.updated_at < NOW() - INTERVAL '10 minutes'
         OR NOT EXISTS (SELECT 1 FROM blackjack_room_players p WHERE p.room_id=r.id))`);
     const result=await pool.query(`SELECT r.id,r.invite_code,r.bet,r.created_at,r.updated_at,r.round_number,
       count(p.telegram_id)::int AS player_count,
