@@ -415,25 +415,28 @@ app.post('/api/bonus-wheel', requireUser, async (req, res, next) => {
       await client.query('COMMIT');
       return res.json({transactionId:String(row.id),payout:Number(row.payout),balance:Number(row.balance_after),outcome:row.outcome,createdAt:row.created_at,replayed:true});
     }
-    const claimed = await client.query('SELECT reward FROM bonus_wheel_claims WHERE telegram_id=$1 AND claim_date=CURRENT_DATE', [req.player.telegram_id]);
-    if (claimed.rowCount) {
+    const claimed = await client.query('SELECT claimed_at FROM bonus_wheel_cooldowns WHERE telegram_id=$1 FOR UPDATE', [req.player.telegram_id]);
+    if (claimed.rowCount && Date.now() - new Date(claimed.rows[0].claimed_at).getTime() < 24*60*60*1000) {
+      const nextAt = new Date(new Date(claimed.rows[0].claimed_at).getTime()+24*60*60*1000);
       await client.query('ROLLBACK');
-      return res.status(409).json({error:'Бонусную рулетку можно крутить один раз в день.'});
+      return res.status(409).json({error:'Бонусная рулетка снова будет доступна через 24 часа.',nextAvailableAt:nextAt.toISOString()});
     }
-    const roll=randInt(100);
-    let reward=0, label='Ничего — попробуй завтра';
-    if(roll<55){reward=0;label='Пусто';}
-    else if(roll<80){reward=25;label='+25 кредитов';}
-    else if(roll<95){reward=50;label='+50 кредитов';}
-    else if(roll<99){reward=100;label='+100 кредитов';}
-    else {reward=250;label='+250 кредитов';}
+    const roll=randInt(100000);
+    let reward=1, label='+1 ✦';
+    if(roll<10){reward=100;label='ДЖЕКПОТ +100 ✦';}
+    else if(roll<1000){reward=25;label='+25 ✦';}
+    else if(roll<10000){reward=10;label='+10 ✦';}
+    else if(roll<30000){reward=5;label='+5 ✦';}
+    else if(roll<60000){reward=2;label='+2 ✦';}
+    else {reward=1;label='+1 ✦';}
     const balanceAfter=Number(locked.rows[0].balance)+reward;
     await client.query('UPDATE players SET balance=$2, updated_at=NOW() WHERE telegram_id=$1',[req.player.telegram_id,balanceAfter]);
     const inserted=await client.query(
       "INSERT INTO game_transactions (telegram_id,game,bet,payout,balance_after,outcome,idempotency_key) VALUES ($1,'bonus_wheel',0,$2,$3,$4::jsonb,$5) RETURNING id,created_at",
       [req.player.telegram_id,reward,balanceAfter,JSON.stringify({reward,label,roll:roll+1,message:label}),requestId]
     );
-    await client.query('INSERT INTO bonus_wheel_claims (telegram_id,claim_date,reward) VALUES ($1,CURRENT_DATE,$2)',[req.player.telegram_id,reward]);
+    await client.query('INSERT INTO bonus_wheel_claims (telegram_id,claim_date,reward) VALUES ($1,CURRENT_DATE,$2) ON CONFLICT (telegram_id,claim_date) DO UPDATE SET reward=EXCLUDED.reward',[req.player.telegram_id,reward]);
+    await client.query('INSERT INTO bonus_wheel_cooldowns (telegram_id,claimed_at,reward) VALUES ($1,NOW(),$2) ON CONFLICT (telegram_id) DO UPDATE SET claimed_at=NOW(),reward=EXCLUDED.reward',[req.player.telegram_id,reward]);
     await client.query('COMMIT');
     res.json({transactionId:String(inserted.rows[0].id),payout:reward,balance:balanceAfter,outcome:{reward,label,message:label},createdAt:inserted.rows[0].created_at});
   } catch(error) {
