@@ -309,7 +309,7 @@
       const uname=app.querySelector('#cf-profile-username');if(uname)uname.textContent=data.player.username?'@'+data.player.username:'Имя пользователя Telegram не задано';
       const tag=app.querySelector('#cf-profile-tag');if(tag)tag.textContent=data.player.username?'@'+data.player.username:'Не задан';
       const telegramId=app.querySelector('#cf-profile-id');if(telegramId)telegramId.textContent=data.player.telegramId||'—';
-      const avatar=app.querySelector('#cf-profile-avatar');if(avatar&&!telegram?.initDataUnsafe?.user?.photo_url){avatar.textContent='';avatar.style.backgroundImage='none';}
+      const avatar=app.querySelector('#cf-profile-avatar');if(avatar){avatar.textContent='';const photoUrl=telegram?.initDataUnsafe?.user?.photo_url;if(photoUrl){avatar.style.backgroundImage='url("'+String(photoUrl).replace(/["\\\\]/g,'')+'")';avatar.style.backgroundSize='cover';avatar.style.backgroundPosition='center';}else avatar.style.backgroundImage='none';}
       if(current==='profile'){renderHistoryInProfile(data.history||[]);loadPaymentHistory();loadOwnerTools();}
     }catch(error){
       const balance=app.querySelector('#cf-balance');
