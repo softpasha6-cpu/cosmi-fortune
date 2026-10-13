@@ -186,6 +186,20 @@ app.post('/api/game', requireUser, async (req, res, next) => {
       });
     }
     const locked = await client.query('SELECT balance FROM players WHERE telegram_id=$1 FOR UPDATE', [req.player.telegram_id]);
+    // Re-check after acquiring the player lock: simultaneous retries may have waited here.
+    const retry = await client.query(
+      'SELECT id, game, bet, payout, balance_after, outcome, created_at FROM game_transactions WHERE telegram_id=$1 AND idempotency_key=$2',
+      [req.player.telegram_id, requestId]
+    );
+    if (retry.rowCount) {
+      const row = retry.rows[0];
+      await client.query('COMMIT');
+      return res.json({
+        transactionId: String(row.id), game: row.game, bet: Number(row.bet),
+        payout: Number(row.payout), balance: Number(row.balance_after),
+        outcome: row.outcome, createdAt: row.created_at, replayed: true
+      });
+    }
     const balance = Number(locked.rows[0].balance);
     if (balance < bet) {
       await client.query('ROLLBACK');
