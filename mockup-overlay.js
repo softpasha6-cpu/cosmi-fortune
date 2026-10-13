@@ -110,9 +110,9 @@
   function roulette(){return gamePanel('roulette','🎡 Рулетка','🎡','Выбери цвет до запуска раунда.','<div class="cards"><button class="secondary" data-choice="red">🔴 Красное</button><button class="secondary" data-choice="black">⚫ Чёрное</button></div>')}
   function blackjack(){return gamePanel('blackjack','🃏 Блэкджек','🃏','Сервер раздаёт карты и рассчитывает результат.')}
 
-  function bonuses(){return panel('🎁 Бонусы','<button class="widecard" data-action="daily"><div class="art">🎁</div><div style="flex:1"><strong>Ежедневная награда</strong><small>Получай бонус каждый день</small></div>›</button><button class="widecard" data-action="referral"><div class="art">👥</div><div><strong>Реферальная система</strong><small>Приглашай друзей и получай бонусы</small></div></button>')}
+  function bonuses(){return panel('🎁 Бонусы','<div class="bigart">🎁</div><p style="text-align:center;color:#c5b6df">Бонусы и реферальные награды пока не подключены к серверу. Здесь не будет фиктивного начисления кредитов.</p>')}
   function profile(){return '<div class="profilehead"><div class="avatar">🧑🏻‍🚀</div><strong>Аккаунт Telegram</strong><p style="color:#bfb0d8">Виртуальный баланс и история раундов</p><div class="balance" style="justify-content:center">✪ <span id="cf-profile-balance">—</span> кредитов</div></div>'+panel('Мой аккаунт','<button class="widecard" data-action="history">📜　История игр　›</button><button class="widecard" data-go="games">🎮　Игры　›</button>')}
-  function tournaments(){return panel('🏆 Турниры','<div class="bigart">🏆</div><h3 style="text-align:center">Космический кубок</h3><p style="text-align:center;color:#c4b5dd">Скоро: таблица лидеров и награды за достижения.</p>'+primary('К списку игр','games'))}
+  function tournaments(){return panel('🏆 Турниры','<div class="bigart">🏆</div><p style="text-align:center;color:#c4b5dd">Турнирная таблица ещё не подключена. Игровые раунды в слотах, костях, рулетке и блэкджеке уже отправляются на сервер.</p>'+primary('К списку игр','games'))}
   const renderers={home,games,slots,dice,roulette,blackjack,bonuses,profile,tournaments};
   let current='home',selected='Больше 7',opened=0;
   function render(name){current=renderers[name]?name:'home';content.innerHTML=renderers[current]();app.querySelectorAll('.bottom button').forEach(b=>b.classList.toggle('active',b.dataset.go===current || (current==='mines'||current==='dice'||current==='wheel'||current==='crash')&&b.dataset.go==='games'));app.scrollTo({top:0,behavior:'instant'});}
@@ -152,10 +152,7 @@
       return
     }
     if(action.dataset.action==='roll'){say('Открой раздел «Кости» для игры.');return}
-    if(action.dataset.action==='crash'){let m=1;const el=app.querySelector('#cf-mult');const timer=setInterval(()=>{m+=Math.random()*.25;if(el)el.textContent=m.toFixed(2)+'x';if(m>2.6){clearInterval(timer);say('Раунд завершён (демо).')}},180);return}
-    if(action.dataset.action==='collect'){say('Выигрыш будет начисляться после подключения серверной игровой логики.');return}
-    if(action.dataset.action==='daily'){say('Ежедневный бонус будет начисляться сервером после подключения API.');return}
-    if(action.dataset.action==='referral'){say('Реферальная ссылка появится после подключения Telegram API.');return}
+    if(['crash','collect','daily','referral'].includes(action.dataset.action)){say('Эта функция пока не подключена к серверу.');return}
     if(action.dataset.action==='history'){
       try{
         const data=await api('/api/me');
