@@ -115,21 +115,20 @@
     #cf-app .bigart{text-align:center;font-size:105px;padding:18px 0;text-shadow:0 0 28px #8c2fff}
     #cf-app .multiplier{text-align:center;font-size:48px;font-weight:950;color:#e59aff;text-shadow:0 0 25px #b22bff;margin:15px}
     #cf-app .cf-bonus-wheel-wrap{position:relative;width:min(78vw,300px);aspect-ratio:1;margin:12px auto 16px}
-    #cf-app .cf-bonus-prize-wheel{position:absolute;inset:0;width:100%;height:100%;margin:0;border:8px solid #f7d579;box-shadow:0 0 0 4px #75401c,0 0 25px #ffb72e55;background:conic-gradient(#b52b43 0deg 40deg,#171923 40deg 80deg,#176b48 80deg 120deg,#6524a5 120deg 160deg,#b52b43 160deg 200deg,#171923 200deg 240deg,#176b48 240deg 280deg,#6524a5 280deg 320deg,#b52b43 320deg 360deg);transition:transform 5.2s cubic-bezier(.08,.72,.12,1);overflow:hidden}
+    #cf-app .cf-bonus-prize-wheel{position:absolute;inset:0;width:100%;height:100%;margin:0;border:8px solid #f7d579;box-shadow:0 0 0 4px #75401c,0 0 25px #ffb72e55;background:conic-gradient(#b52b43 0deg 45deg,#171923 45deg 90deg,#176b48 90deg 135deg,#6524a5 135deg 180deg,#b52b43 180deg 225deg,#171923 225deg 270deg,#176b48 270deg 315deg,#6524a5 315deg 360deg);transition:transform 5.2s cubic-bezier(.08,.72,.12,1);overflow:hidden}
     #cf-app .cf-bonus-label{z-index:2;width:42px;height:28px;padding:0 2px;border-radius:0;background:transparent;text-shadow:0 1px 2px #000;color:#fff;font-weight:900}
     #cf-app .cf-bonus-label small{font-size:10px;letter-spacing:-.3px;white-space:nowrap}
     #cf-app .cf-bonus-pointer{position:absolute;z-index:5;left:50%;top:-8px;transform:translateX(-50%);width:5px;height:23px;border-radius:4px;background:linear-gradient(90deg,#9b681d,#fff0a3,#d99b27);box-shadow:0 0 0 2px #39200e,0 2px 5px #000a}
     #cf-app .cf-bonus-label{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:48px;height:44px;color:white;font-size:20px;font-weight:900;text-shadow:0 2px 3px #000;line-height:1;transform:translate(-50%,-50%);pointer-events:none}
     #cf-app .cf-bonus-label small{font-size:9px;white-space:nowrap}
-    #cf-app .cf-bonus-label.l1{left:50%;top:15%}
-    #cf-app .cf-bonus-label.l2{left:75%;top:23%}
-    #cf-app .cf-bonus-label.l3{left:85%;top:50%}
-    #cf-app .cf-bonus-label.l4{left:75%;top:77%}
-    #cf-app .cf-bonus-label.l5{left:50%;top:85%}
-    #cf-app .cf-bonus-label.l6{left:25%;top:77%}
-    #cf-app .cf-bonus-label.l7{left:15%;top:50%}
-    #cf-app .cf-bonus-label.l8{left:25%;top:23%}
-    #cf-app .cf-bonus-label.l9{left:50%;top:50%}
+    #cf-app .cf-bonus-label.l1{left:63.4%;top:17.7%}
+    #cf-app .cf-bonus-label.l2{left:82.3%;top:36.6%}
+    #cf-app .cf-bonus-label.l3{left:82.3%;top:63.4%}
+    #cf-app .cf-bonus-label.l4{left:63.4%;top:82.3%}
+    #cf-app .cf-bonus-label.l5{left:36.6%;top:82.3%}
+    #cf-app .cf-bonus-label.l6{left:17.7%;top:63.4%}
+    #cf-app .cf-bonus-label.l7{left:17.7%;top:36.6%}
+    #cf-app .cf-bonus-label.l8{left:36.6%;top:17.7%}
     
     #cf-app .wheel{width:min(68vw,260px);aspect-ratio:1;margin:12px auto;border-radius:50%;border:8px solid #ffca42;background:conic-gradient(#f42aff 0 45deg,#145bff 45deg 90deg,#12c99a 90deg 135deg,#ff8b16 135deg 180deg,#a328ff 180deg 225deg,#1376ff 225deg 270deg,#f32b77 270deg 315deg,#ffc22c 315deg);box-shadow:0 0 24px #ff9d22;display:grid;place-items:center;font-size:35px}
     #cf-app .profilehead{text-align:center;padding:18px;background:radial-gradient(circle at 50% 20%,#4d1d83,#0c0918 70%);border-radius:18px;border:1px solid #6538a0}
@@ -346,7 +345,7 @@
       '<button class="secondary" data-action="bj-refresh">Обновить стол</button>';
   }
 
-  function bonusWheelCard(){return '<section class="gamepanel" style="text-align:center"><div class="cf-bonus-wheel-wrap"><div class="cf-bonus-pointer"></div><div class="wheel spinwheel cf-bonus-prize-wheel" id="cf-bonus-wheel"><span class="cf-bonus-label l1" data-prize="100stars"><small>100 ⭐</small></span><span class="cf-bonus-label l2" data-prize="25stars"><small>25 ⭐</small></span><span class="cf-bonus-label l3" data-prize="500rub"><small>500₽</small></span><span class="cf-bonus-label l4" data-prize="250rub"><small>250₽</small></span><span class="cf-bonus-label l5" data-prize="25k"><small>25к₽</small></span><span class="cf-bonus-label l6" data-prize="10k"><small>10к₽</small></span><span class="cf-bonus-label l7" data-prize="5k"><small>5к₽</small></span><span class="cf-bonus-label l8" data-prize="2k"><small>2к₽</small></span><span class="cf-bonus-label l9" data-prize="1k"><small>1к₽</small></span></div></div><div id="cf-bonus-timer" style="font-size:12px;color:#ffdf8b;margin:8px 0">Проверяем доступность…</div>'+primary('🎡 Крутить бесплатно','bonus-wheel')+'<div id="cf-bonus-result" style="min-height:26px;margin-top:12px;color:#ffe09a"></div><p style="color:#9e8ab9;font-size:10px;margin:6px 0 0">Рублёвые обозначения — виртуальные игровые бонусы.</p></section>'}
+  function bonusWheelCard(){return '<section class="gamepanel" style="text-align:center"><div class="cf-bonus-wheel-wrap"><div class="cf-bonus-pointer"></div><div class="wheel spinwheel cf-bonus-prize-wheel" id="cf-bonus-wheel"><span class="cf-bonus-label l1" data-prize="100stars"><small>100 ⭐</small></span><span class="cf-bonus-label l2" data-prize="25stars"><small>25 ⭐</small></span><span class="cf-bonus-label l3" data-prize="500rub"><small>500₽</small></span><span class="cf-bonus-label l4" data-prize="25k"><small>25к₽</small></span><span class="cf-bonus-label l5" data-prize="10k"><small>10к₽</small></span><span class="cf-bonus-label l6" data-prize="5k"><small>5к₽</small></span><span class="cf-bonus-label l7" data-prize="2k"><small>2к₽</small></span><span class="cf-bonus-label l8" data-prize="1k"><small>1к₽</small></span></div></div><div id="cf-bonus-timer" style="font-size:12px;color:#ffdf8b;margin:8px 0">Проверяем доступность…</div>'+primary('🎡 Крутить бесплатно','bonus-wheel')+'<div id="cf-bonus-result" style="min-height:26px;margin-top:12px;color:#ffe09a"></div><p style="color:#9e8ab9;font-size:10px;margin:6px 0 0">Рублёвые обозначения — виртуальные игровые бонусы.</p></section>'}
   let bonusTimerInterval=null;
   async function refreshBonusStatus(){
     const timer=app.querySelector('#cf-bonus-timer'),button=app.querySelector('[data-action="bonus-wheel"]');
@@ -475,8 +474,8 @@
         const data=await api('/api/bonus-wheel',{method:'POST',body:JSON.stringify({requestId:crypto.randomUUID()})});
         if(wheel){
           const label=String(data.outcome?.label||'');
-          const prizeIndex=label.includes('100 игровых звёзд')?0:label.includes('25 игровых звёзд')?1:label.includes('500 ₽')?2:label.includes('250 ₽')?3:label.includes('25 000')?4:label.includes('10 000')?5:label.includes('5 000')?6:label.includes('2 000')?7:8;
-          const step=360/9, target=-(prizeIndex*step+step/2);
+          const prizeIndex=label.includes('100 игровых звёзд')?0:label.includes('25 игровых звёзд')?1:label.includes('500 ₽')?2:label.includes('25 000')?3:label.includes('10 000')?4:label.includes('5 000')?5:label.includes('2 000')?6:7;
+          const step=360/8, target=-(prizeIndex*step+step/2);
           wheel.style.transform='rotate(0deg)';void wheel.offsetWidth;
           wheel.style.transform='rotate('+(1800+target)+'deg)';
           await new Promise(resolve=>setTimeout(resolve,5300));
