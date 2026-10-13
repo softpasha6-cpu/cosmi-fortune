@@ -176,9 +176,18 @@
       '<div id="cf-bj-room"></div>');
   }
   function cardText(c){if(!c)return '🂠';if(c.hidden)return '🂠';return ({1:'A',11:'J',12:'Q',13:'K'}[c.rank]||c.rank)+c.suit}
+  let blackjackRefreshBusy=false;
   function renderBlackjackRoom(room){
     blackjackRoomId=room.id;
     const box=app.querySelector('#cf-bj-room');if(!box)return;
+    if(blackjackPoll){clearInterval(blackjackPoll);blackjackPoll=null;}
+    if(room.status!=='finished')blackjackPoll=setInterval(async()=>{
+      if(blackjackRefreshBusy||current!=='blackjack'||!blackjackRoomId)return;
+      blackjackRefreshBusy=true;
+      try{const fresh=await api('/api/blackjack/rooms/'+blackjackRoomId);if(current==='blackjack')renderBlackjackRoom(fresh.room);}
+      catch(error){console.warn('Blackjack refresh:',error.message)}
+      finally{blackjackRefreshBusy=false}
+    },2500);
     const me=room.players.find(p=>p.isMe);
     const dealer=(room.state?.dealerHand||[]).map(cardText).join('　')||'Карты будут после старта';
     box.innerHTML='<div class="section-title">Стол · '+room.inviteCode+'</div><div class="game-stage blackjack"><strong>Дилер</strong><div class="cards-art" style="justify-content:center;margin:14px 0">'+dealer+'</div>'+(room.state?.dealerScore!==undefined?'<p>Очки дилера: '+room.state.dealerScore+'</p>':'')+'</div>'+
