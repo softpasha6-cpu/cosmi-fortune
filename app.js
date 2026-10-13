@@ -1,4 +1,4 @@
-const DEFAULT_API_BASE = '';
+const DEFAULT_API_BASE = 'https://cosmic-fortune-api.onrender.com';
 function apiBase() {
   return (localStorage.getItem('cosmicApiBase') || DEFAULT_API_BASE).replace(/\/$/, '');
 }
