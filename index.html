@@ -93,13 +93,13 @@ h2{font-size:17px;margin:23px 2px 11px;display:flex;align-items:center;gap:8px}h
   <circle cx="270" cy="158" r="3" fill="#ffe8a0"/><circle cx="94" cy="65" r="2.5" fill="#ffe8a0"/><circle cx="282" cy="213" r="2" fill="#c7a1ff"/>
  </svg>
 </section>
-<section class="balance"><div><div class="label">ТВОЙ ДЕМО-БАЛАНС</div><div class="amount">1 000 000 ₽</div></div><div class="pill">✦ VIP</div></section>
-<h2 id="games-title"><span class="spark">✦</span> Популярные игры</h2>
+<section class="balance"><div><div class="label">ТВОЙ ДЕМО-БАЛАНС</div><div class="amount">—</div><div class="label" id="api-status">Сервер не подключён</div></div><button class="pill" onclick="configureApi()">⚙ Сервер</button></section>
+<section style="margin-top:10px;border:1px solid #9e70c855;border-radius:15px;padding:13px;background:#130d20"><label for="bet">Ставка виртуальными кредитами (1–100 000)</label><input id="bet" type="number" min="1" max="100000" value="1000" style="display:block;width:100%;padding:12px;margin-top:8px;background:#090612;color:white;border:1px solid #8d68cf77;border-radius:10px"><div id="game-result" aria-live="polite" style="margin-top:10px;color:#ffe19a">Сервер не подключён</div></section><h2 id="games-title"><span class="spark">✦</span> Популярные игры</h2>
 <section class="games">
-<button class="game" onclick="play('Космические слоты')"><span class="emoji">🎰</span><strong>Космические слоты</strong><small>Испытай удачу</small></button>
-<button class="game" onclick="play('Рулетка')"><span class="emoji">🎡</span><strong>Рулетка</strong><small>Красное или чёрное?</small></button>
-<button class="game" onclick="play('Блэкджек')"><span class="emoji">🃏</span><strong>Блэкджек</strong><small>Стратегия и стиль</small></button>
-<button class="game" onclick="play('Кости')"><span class="emoji">🎲</span><strong>Кости</strong><small>Брось вызов удаче</small></button>
+<button class="game" onclick="play('slots')"><span class="emoji">🎰</span><strong>Космические слоты</strong><small>Испытай удачу</small></button>
+<button class="game" onclick="play('roulette')"><span class="emoji">🎡</span><strong>Рулетка</strong><small>Красное или чёрное?</small></button>
+<button class="game" onclick="play('blackjack')"><span class="emoji">🃏</span><strong>Блэкджек</strong><small>Стратегия и стиль</small></button>
+<button class="game" onclick="play('dice')"><span class="emoji">🎲</span><strong>Кости</strong><small>Брось вызов удаче</small></button>
 </section>
 <h2><span class="spark">✦</span> Обмен на Telegram Stars</h2>
 <section class="exchange"><div><strong>Космический обмен</strong><small>Демо-курсы обмена · реальные выплаты отключены</small></div><div class="starcoin">⭐</div></section>
@@ -113,24 +113,6 @@ h2{font-size:17px;margin:23px 2px 11px;display:flex;align-items:center;gap:8px}h
 <p class="notice">Демо-версия: баланс и игры условные. Профиль Telegram показывается только для приветствия. Для настоящих аккаунтов, баланса и платежей необходима серверная проверка Telegram initData. Обмен на Stars пока не подключён.</p>
 </main>
 <footer>✦ COSMIC FORTUNE · YOUR LUCK IS WRITTEN IN THE STARS ✦</footer>
-<script>
-(function(){
- const tg=window.Telegram&&window.Telegram.WebApp;
- const profile=document.getElementById('profile');
- if(!tg)return;
- try{
-  tg.ready();tg.expand();
-  const user=tg.initDataUnsafe&&tg.initDataUnsafe.user;
-  if(user){
-   profile.replaceChildren();
-   if(user.photo_url){const img=document.createElement('img');img.className='avatar';img.src=user.photo_url;img.alt='';profile.appendChild(img);}
-   const greeting=document.createElement('span');greeting.textContent='Привет, '+([user.first_name,user.last_name].filter(Boolean).join(' ')||'космический путешественник')+'!';profile.appendChild(greeting);
-  }
- }catch(e){console.warn('Telegram WebApp init failed',e);}
-})();
-function notify(message){const tg=window.Telegram&&window.Telegram.WebApp;if(tg&&typeof tg.showAlert==='function')tg.showAlert(message);else alert(message);}
-function play(name){notify(name+' — демо-режим. Реальные ставки и выплаты отключены.');}
-function exchangeDemo(){notify('Обмен на Telegram Stars пока не подключён. Это демонстрационный экран.');}
-</script>
+<script src="app.js"></script>
 </body>
 </html>
