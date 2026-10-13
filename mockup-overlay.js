@@ -329,10 +329,26 @@
       '<button class="secondary" data-action="bj-refresh">Обновить стол</button>';
   }
 
-  function bonusWheelCard(){return '<section class="gamepanel" style="text-align:center"><div class="wheel spinwheel" id="cf-bonus-wheel">🎡</div><p style="color:#c5b6df">Бесплатно раз в день. Может выпасть 25, 50, 100 или 250 кредитов — либо ничего.</p>'+primary('🎡 Крутить бесплатно','bonus-wheel')+'<div id="cf-bonus-result" style="min-height:26px;margin-top:12px;color:#ffe09a"></div></section>'}
+  function bonusWheelCard(){return '<section class="gamepanel" style="text-align:center"><div class="wheel spinwheel" id="cf-bonus-wheel">🎡</div><p style="color:#c5b6df">Одна попытка каждые 24 часа. Главные призы: 100 ✦ и 25 ✦.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0;text-align:left;font-size:11px;color:#d9c8f1"><div>💎 100 ✦ <b style="color:#ffdb73">0,01%</b></div><div>🌟 25 ✦ <b style="color:#ffdb73">0,99%</b></div><div>✨ 10 ✦ <b>9%</b></div><div>🚀 5 ✦ <b>20%</b></div><div>🪐 2 ✦ <b>30%</b></div><div>⭐ 1 ✦ <b>40%</b></div></div><div id="cf-bonus-timer" style="font-size:12px;color:#ffdf8b;margin:8px 0">Проверяем доступность…</div>'+primary('🎡 Крутить бесплатно','bonus-wheel')+'<div id="cf-bonus-result" style="min-height:26px;margin-top:12px;color:#ffe09a"></div></section>'}
+  let bonusTimerInterval=null;
+  async function refreshBonusStatus(){
+    const timer=app.querySelector('#cf-bonus-timer'),button=app.querySelector('[data-action="bonus-wheel"]');
+    if(!timer)return;
+    try{
+      const status=await api('/api/bonus-wheel/status');
+      if(status.available){timer.textContent='🎉 Рулетка доступна!';if(button){button.disabled=false;button.textContent='🎡 Крутить бесплатно';}}
+      else{
+        const left=Math.max(0,new Date(status.nextAvailableAt).getTime()-Date.now());
+        const hours=Math.floor(left/3600000),minutes=Math.floor((left%3600000)/60000),seconds=Math.floor((left%60000)/1000);
+        timer.textContent='Следующая попытка через '+String(hours).padStart(2,'0')+':'+String(minutes).padStart(2,'0')+':'+String(seconds).padStart(2,'0');
+        if(button){button.disabled=true;button.textContent='⏳ Уже использовано';}
+      }
+    }catch(error){timer.textContent='Не удалось проверить таймер';}
+  }
   function openBonusWheel(){
     if(app.querySelector('#cf-wheel-modal'))return;
     app.insertAdjacentHTML('beforeend','<div class="modal-backdrop" id="cf-wheel-modal"><section class="modal-card" role="dialog" aria-modal="true" aria-label="Бонусная рулетка"><button type="button" class="modal-close" data-action="close-bonus-wheel" aria-label="Закрыть">×</button><div class="section-title">🎁 Бонусная рулетка дня</div>'+bonusWheelCard()+'</section></div>');
+    refreshBonusStatus();if(bonusTimerInterval)clearInterval(bonusTimerInterval);bonusTimerInterval=setInterval(refreshBonusStatus,1000);
   }
   function bonuses(){return '<div class="section-title">🎁 Бонусы и награды</div>'+bonusWheelCard()+'<p style="text-align:center;color:#c5b6df;font-size:12px">Одна попытка в день на аккаунт Telegram. Результат и начисление определяет сервер.</p>'}
   function profile(){return '<div class="profilehead"><div class="avatar">🧑🏻‍🚀</div><strong>Аккаунт Telegram</strong><p style="color:#bfb0d8">Виртуальный баланс и история раундов</p><div class="balance" style="justify-content:center">✪ <span id="cf-profile-balance">—</span> кредитов</div></div>'+panel('Мой аккаунт','<button class="widecard" data-action="history">📜　История игр　›</button><button class="widecard" data-go="games">🎮　Игры　›</button>')}
@@ -362,8 +378,8 @@
     if(button){e.preventDefault();e.stopPropagation();window.cfNavigate(button.dataset.go);}
   },true);
   app.addEventListener('click',async e=>{
-    const close=e.target.closest('[data-action="close-bonus-wheel"]');if(close){app.querySelector('#cf-wheel-modal')?.remove();return}
-    if(e.target.id==='cf-wheel-modal'){e.target.remove();return}
+    const close=e.target.closest('[data-action="close-bonus-wheel"]');if(close){app.querySelector('#cf-wheel-modal')?.remove();if(bonusTimerInterval){clearInterval(bonusTimerInterval);bonusTimerInterval=null;}return}
+    if(e.target.id==='cf-wheel-modal'){e.target.remove();if(bonusTimerInterval){clearInterval(bonusTimerInterval);bonusTimerInterval=null;}return}
     const go=e.target.closest('[data-go]'); if(go){e.preventDefault();render(go.dataset.go);return}
     const mine=e.target.closest('[data-mine]'); if(mine){say('Эта игра ещё не подключена к серверу.');return}
     const choice=e.target.closest('[data-choice]');if(choice){selected=choice.dataset.choice;app.querySelectorAll('[data-choice],[data-number]').forEach(b=>{b.classList.toggle('is-selected',b===choice);b.style.borderColor=b===choice?'#ffdb73':''});return}const numberChoice=e.target.closest('[data-number]');if(numberChoice){selected=Number(numberChoice.dataset.number);app.querySelectorAll('[data-choice],[data-number]').forEach(b=>{b.classList.toggle('is-selected',b===numberChoice);b.style.borderColor=b===numberChoice?'#ffdb73':''});return}
