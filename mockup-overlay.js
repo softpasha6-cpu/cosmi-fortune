@@ -38,6 +38,32 @@
     #cf-app .section-title{font-size:18px;font-weight:900;margin:20px 2px 11px}
     #cf-app .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
     #cf-app .card{min-width:0;text-align:left;border:1px solid #633aa0;border-radius:17px;padding:13px;background:linear-gradient(145deg,#17102c,#080914);box-shadow:inset 0 0 18px #9b4dff0a}
+    #cf-app .game-avatar{height:156px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border-radius:17px;border:1px solid #ffffff25;margin-bottom:14px;background:#100a25;box-shadow:inset 0 -25px 40px #03020a99,0 0 25px #9d4cff22}
+    #cf-app .game-avatar:before,#cf-app .game-avatar:after{content:"";position:absolute;border-radius:50%;pointer-events:none}
+    #cf-app .game-avatar:before{width:190px;height:190px;top:-80px;right:-35px;background:radial-gradient(circle,#ffffff33,transparent 68%)}
+    #cf-app .game-avatar:after{width:150px;height:150px;bottom:-110px;left:-30px;border:1px solid #ffffff55;box-shadow:0 0 0 18px #ffffff08,0 0 0 38px #ffffff06}
+    #cf-app .game-avatar .game-emoji{font-size:72px;filter:drop-shadow(0 9px 12px #0009);z-index:1}
+    #cf-app .game-avatar .game-tag{position:absolute;left:10px;top:10px;font-size:10px;font-weight:900;letter-spacing:1px;border:1px solid #ffffff45;background:#05030a66;padding:5px 8px;border-radius:9px;z-index:2}
+    #cf-app .game-avatar.slots{background:radial-gradient(circle at 50% 40%,#ffba49,#a92b3f 36%,#250c43 75%)}
+    #cf-app .game-avatar.dice{background:radial-gradient(circle at 50% 40%,#45e9ff,#1455ac 40%,#080b32 78%)}
+    #cf-app .game-avatar.roulette{background:radial-gradient(circle at 50% 40%,#f6d365,#b96b19 30%,#170a32 78%)}
+    #cf-app .game-avatar.blackjack{background:radial-gradient(circle at 50% 40%,#65e0a1,#176a51 38%,#071e25 78%)}
+    #cf-app .game-avatar .mini-wheel{width:112px;height:112px;border:7px solid #f8d36b;border-radius:50%;background:conic-gradient(#bd172f 0 30deg,#f4d8a0 30deg 60deg,#171923 60deg 90deg,#bd172f 90deg 120deg,#f4d8a0 120deg 150deg,#171923 150deg 180deg,#bd172f 180deg 210deg,#f4d8a0 210deg 240deg,#171923 240deg 270deg,#bd172f 270deg 300deg,#f4d8a0 300deg 330deg,#171923 330deg);display:grid;place-items:center;box-shadow:0 0 22px #ffcc4d66;animation:cfWheelIdle 18s linear infinite}
+    #cf-app .game-avatar .mini-wheel span{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#f6d365;color:#45132b;font-size:18px}
+    #cf-app .game-avatar .cards-art{display:flex;gap:0;transform:rotate(-7deg)}
+    #cf-app .game-avatar .cards-art span{display:grid;place-items:center;width:58px;height:82px;border-radius:8px;background:#fff8e8;color:#a21a38;border:2px solid white;font-size:35px;font-weight:900;box-shadow:0 8px 12px #0008}
+    #cf-app .game-avatar .cards-art span+span{margin-left:-17px;transform:translateY(8px) rotate(13deg);color:#121826}
+    #cf-app .game-stage{position:relative;text-align:center;padding:18px 12px 15px;border:1px solid #ffffff25;border-radius:20px;overflow:hidden;margin-bottom:14px;background:radial-gradient(ellipse at top,#2b1650,#080711 76%)}
+    #cf-app .game-stage .game-avatar{height:190px;margin:0 0 14px}
+    #cf-app .game-stage.is-playing .game-emoji{animation:cfGameBounce .65s ease-in-out infinite alternate}
+    #cf-app .game-stage.is-playing .mini-wheel{animation:cfWheelSpin 2.4s cubic-bezier(.12,.72,.12,1) forwards}
+    #cf-app .game-stage.is-playing .cards-art{animation:cfCardDeal .8s ease-in-out infinite alternate}
+    #cf-app .game-stage.is-playing.slots .game-emoji{animation:cfSlotShake .12s linear infinite}
+    @keyframes cfWheelIdle{to{transform:rotate(360deg)}}
+    @keyframes cfWheelSpin{to{transform:rotate(1440deg)}}
+    @keyframes cfGameBounce{from{transform:translateY(-7px) rotate(-8deg) scale(.96)}to{transform:translateY(6px) rotate(8deg) scale(1.05)}}
+    @keyframes cfSlotShake{0%{transform:translateY(-6px);filter:blur(1px)}50%{transform:translateY(6px);filter:blur(2px)}100%{transform:translateY(0);filter:none}}
+    @keyframes cfCardDeal{from{transform:translateX(-15px) rotate(-12deg);opacity:.65}to{transform:translateX(8px) rotate(7deg);opacity:1}}
     #cf-app .art{height:100px;display:flex;align-items:flex-end;justify-content:flex-start;padding:9px;border-radius:12px;background-size:cover;background-position:center;position:relative;overflow:hidden;font-size:35px;text-shadow:0 2px 8px #000;box-shadow:inset 0 -48px 35px #080612cc,0 0 16px #8b39ff22}
     #cf-app .art:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#10061a10 10%,#090610cc 100%);pointer-events:none}
     #cf-app .art span{position:relative;z-index:1}
@@ -125,8 +151,17 @@
   function home(){return '<section class="hero"><div class="eyebrow">ТВОЯ ВСЕЛЕННАЯ ВЫИГРЫШЕЙ</div><h1>COSMIC<br><span>FORTUNE</span></h1><p>Играй в космические игры, получай виртуальные кредиты и забирай ежедневные бонусы.</p><button type="button" class="primary" data-go="games" onclick="window.cfNavigate(this.dataset.go)">✦ Играть　›</button></section><div class="home-actions"><div><button type="button" class="bonus-icon" data-action="open-bonus-wheel" aria-label="Открыть бонусную рулетку">🎡</button><div class="bonus-icon-label">Рулетка дня</div></div><button type="button" class="widecard" data-go="bonuses" style="margin:0;flex:1;min-height:72px"><div class="art">🎁</div><div><strong>Бонусы и награды</strong><small>Ежедневная награда</small></div> ›</button></div>'}
   function gameList(){return '<div class="section-title">ИГРЫ</div><div style="color:#c6b5e2;margin:0 2px 14px">ВЫБЕРИ СВОЮ УДАЧУ</div>'+games.map(g=>'<button class="widecard" data-go="'+g[0]+'"><div class="art" data-art="'+g[0]+'"><span>'+g[1]+'</span></div><div style="flex:1"><strong>'+g[2]+'</strong><small>'+g[3]+'</small></div>›</button>').join('')+'<div class="section-title">🎁 Бесплатная рулетка</div>'+bonusWheelCard()}
   function panel(title,body){return '<div class="section-title">'+title+'</div><section class="gamepanel">'+body+'</section>'}
+  function gameAvatar(game){
+    const views={
+      slots:'<span class="game-tag">SLOTS</span><span class="game-emoji">🎰</span>',
+      dice:'<span class="game-tag">DICE</span><span class="game-emoji">🎲</span>',
+      roulette:'<span class="game-tag">ROULETTE</span><div class="mini-wheel"><span>✦</span></div>',
+      blackjack:'<span class="game-tag">BLACKJACK</span><div class="cards-art"><span>♥</span><span>♠</span></div>'
+    };
+    return '<div class="game-avatar '+game+'">'+(views[game]||'<span class="game-emoji">🎮</span>')+'</div>';
+  }
   function gamePanel(game,title,art,description,extra=''){
-    return panel(title,'<div class="bigart">'+art+'</div><p style="text-align:center;color:#c5b6df">'+description+'</p>'+extra+'<div class="fieldrow"><label class="field">Ставка <input id="cf-bet" type="number" min="1" max="100000" value="100" style="width:100%;margin-top:8px;background:#0b0918;color:white;border:1px solid #6c3a9e;border-radius:8px;padding:8px;text-align:center"></label></div><div id="cf-game-result" style="text-align:center;color:#e6d8ff;min-height:24px;margin:10px 0"></div><button class="primary" data-action="play-game" data-game="'+game+'">Играть</button>');
+    return panel(title,'<div class="game-stage '+game+'" id="cf-game-stage">'+gameAvatar(game)+'<p style="color:#c5b6df;margin:8px 0 0">'+description+'</p></div>'+extra+'<div class="fieldrow"><label class="field">Ставка <input id="cf-bet" type="number" min="1" max="100000" value="100" style="width:100%;margin-top:8px;background:#0b0918;color:white;border:1px solid #6c3a9e;border-radius:8px;padding:8px;text-align:center"></label></div><div id="cf-game-result" style="text-align:center;color:#e6d8ff;min-height:24px;margin:10px 0"></div><button class="primary" data-action="play-game" data-game="'+game+'">Играть</button>');
   }
   function slots(){return gamePanel('slots','🎰 Космические слоты','🎰','Символы и выплаты рассчитываются на сервере.')}
   function dice(){return gamePanel('dice','🎲 Кости','🎲','Сервер бросает кубик. На 4–6 выплата 2×, иначе ставка проиграна.')}
@@ -194,6 +229,8 @@
       const result=app.querySelector('#cf-game-result');
       if(!Number.isSafeInteger(bet)||bet<1||bet>100000){say('Ставка должна быть от 1 до 100 000.');return}
       const body={game,bet,requestId:crypto.randomUUID()};
+      const stage=app.querySelector('#cf-game-stage');
+      if(stage){stage.classList.add('is-playing');}
       const art=app.querySelector('.bigart');
       if(art){art.classList.remove('anim-dice','anim-slots','anim-cards','anim-wheel');void art.offsetWidth;art.classList.add(game==='dice'?'anim-dice':game==='slots'?'anim-slots':game==='roulette'?'anim-wheel':'anim-cards');}
       if(game==='roulette'){
@@ -216,7 +253,7 @@
         const me=await api('/api/me');
         if(current==='profile')renderHistoryInProfile(me.history||[]);
       }catch(error){if(result)result.textContent=error.message;say(error.message)}
-      finally{action.disabled=false;action.textContent='Играть'}
+      finally{app.querySelector('#cf-game-stage')?.classList.remove('is-playing');action.disabled=false;action.textContent='Играть'}
       return
     }
     if(action.dataset.action==='roll'){say('Открой раздел «Кости» для игры.');return}
