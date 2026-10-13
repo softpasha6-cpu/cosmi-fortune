@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: cosmic-fortune-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: BOT_TOKEN
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cosmic-fortune-db
+          property: connectionString
+      - key: ALLOWED_ORIGINS
+        value: https://softpasha6-cpu.github.io
+databases:
+  - name: cosmic-fortune-db
+    databaseName: cosmic_fortune
+    user: cosmic_fortune
