@@ -85,8 +85,9 @@ async function play(game) {
   }
   const result = document.getElementById('game-result');
   result.textContent = 'Раунд выполняется на сервере…';
+  const requestId = crypto.randomUUID();
   try {
-    const data = await api('/api/game', { method: 'POST', body: JSON.stringify({ game, bet, choice }) });
+    const data = await api('/api/game', { method: 'POST', body: JSON.stringify({ game, bet, choice, requestId }) });
     setBalance(data.balance);
     setStatus('Сервер подключён · баланс сохранён', true);
     const out = data.outcome || {};
