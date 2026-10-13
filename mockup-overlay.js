@@ -144,6 +144,21 @@
   const renderers={home,games,slots,dice,roulette,blackjack,bonuses,profile,tournaments};
   let current='home',selected='Больше 7',opened=0;
   function render(name){current=renderers[name]?name:'home';content.innerHTML=renderers[current]();app.querySelectorAll('.bottom button').forEach(b=>b.classList.toggle('active',b.dataset.go===current || (current==='mines'||current==='dice'||current==='wheel'||current==='crash')&&b.dataset.go==='games'));app.scrollTo({top:0,behavior:'instant'});}
+  // Capture taps before Telegram WebView or underlying page handlers can swallow them.
+  document.addEventListener('click', function cosmicNavigationCapture(e){
+    const target=e.target instanceof Element?e.target:null;
+    if(!target)return;
+    const go=target.closest('#cf-app [data-go]');
+    if(go){
+      e.preventDefault();
+      e.stopPropagation();
+      const destination=go.dataset.go;
+      if(renderers[destination]) render(destination);
+      return;
+    }
+    const openWheel=target.closest('#cf-app [data-action="open-bonus-wheel"]');
+    if(openWheel){e.preventDefault();e.stopPropagation();openBonusWheel();}
+  }, true);
   app.addEventListener('click',async e=>{
     const close=e.target.closest('[data-action="close-bonus-wheel"]');if(close){app.querySelector('#cf-wheel-modal')?.remove();return}
     if(e.target.id==='cf-wheel-modal'){e.target.remove();return}
