@@ -276,7 +276,29 @@
   }
   const formatBalance=n=>Number(n).toLocaleString('ru-RU');
   const say=t=>{toast.textContent=t;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),3200)};
+  function renderTelegramProfileImmediately(){
+    const user=telegram?.initDataUnsafe?.user;
+    if(!user)return;
+    const title=app.querySelector('#cf-profile-name');
+    if(title)title.textContent=[user.first_name,user.last_name].filter(Boolean).join(' ')||user.username||'Игрок Cosmic Fortune';
+    const uname=app.querySelector('#cf-profile-username');
+    if(uname)uname.textContent=user.username?'@'+user.username:'Имя пользователя Telegram не задано';
+    const tag=app.querySelector('#cf-profile-tag');
+    if(tag)tag.textContent=user.username?'@'+user.username:'Не задан';
+    const telegramId=app.querySelector('#cf-profile-id');
+    if(telegramId)telegramId.textContent=user.id?String(user.id):'—';
+    const avatar=app.querySelector('#cf-profile-avatar');
+    if(avatar){
+      if(user.photo_url){
+        avatar.textContent='';
+        avatar.style.backgroundImage='url("'+String(user.photo_url).replace(/["\\\\]/g,'')+'")';
+        avatar.style.backgroundSize='cover';
+        avatar.style.backgroundPosition='center';
+      }else avatar.textContent=([user.first_name,user.last_name].filter(Boolean).join(' ').charAt(0)||'🚀').toUpperCase();
+    }
+  }
   async function refreshAccount(){
+    renderTelegramProfileImmediately();
     try{
       const data=await api('/api/me');
       const balance=app.querySelector('#cf-balance');
