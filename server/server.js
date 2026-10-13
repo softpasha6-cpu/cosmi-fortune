@@ -97,7 +97,7 @@ app.get('/health', async (_req, res) => {
 
 app.get('/api/me', requireUser, async (req, res) => {
   const history = await pool.query(
-    'SELECT id, game, bet, payout, balance_after, outcome, created_at FROM game_transactions WHERE telegram_id=$1 ORDER BY created_at DESC LIMIT 20',
+    'SELECT id, game, bet, payout, balance_after, outcome, created_at FROM game_transactions WHERE telegram_id=$1 ORDER BY created_at DESC',
     [req.player.telegram_id]
   );
   res.json({
