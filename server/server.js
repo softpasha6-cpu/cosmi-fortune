@@ -132,9 +132,10 @@ function playRound(game, bet, choice) {
     return { payout: Math.floor(bet * multiplier), outcome: { reels, multiplier, message: multiplier >= 5 ? 'Джекпот!' : multiplier > 0 ? 'Есть выигрыш!' : 'Попробуй ещё раз' } };
   }
   if (game === 'dice') {
-    const roll = randInt(6) + 1;
-    const won = roll >= 4;
-    return { payout: won ? bet * 2 : 0, outcome: { roll, won, message: won ? 'Выпало 4–6: выигрыш!' : 'Выпало 1–3: ставка проиграна' } };
+    const dice = [randInt(6) + 1, randInt(6) + 1];
+    const roll = dice[0] + dice[1];
+    const won = roll >= 8;
+    return { payout: won ? bet * 2 : 0, outcome: { dice, roll, won, message: won ? 'Сумма 8–12: выигрыш!' : 'Сумма 2–7: ставка проиграна' } };
   }
   if (game === 'roulette') {
     const numberBet = Number.isInteger(choice) && choice >= 0 && choice <= 36;
