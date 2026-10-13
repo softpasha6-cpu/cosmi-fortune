@@ -33,6 +33,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS game_transactions_idempotency_idx
 ALTER TABLE game_transactions DROP CONSTRAINT IF EXISTS game_transactions_game_check;
 ALTER TABLE game_transactions ADD CONSTRAINT game_transactions_game_check CHECK (game IN ('slots','roulette','blackjack','dice','bonus_wheel'));
 
+CREATE TABLE IF NOT EXISTS bonus_wheel_cooldowns (
+  telegram_id BIGINT PRIMARY KEY REFERENCES players(telegram_id) ON DELETE CASCADE,
+  claimed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  reward BIGINT NOT NULL CHECK (reward >= 0)
+);
+
 CREATE TABLE IF NOT EXISTS bonus_wheel_claims (
   telegram_id BIGINT NOT NULL REFERENCES players(telegram_id) ON DELETE CASCADE,
   claim_date DATE NOT NULL DEFAULT CURRENT_DATE,
