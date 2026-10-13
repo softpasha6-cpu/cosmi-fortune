@@ -67,3 +67,6 @@ CREATE TABLE IF NOT EXISTS blackjack_room_players (
   PRIMARY KEY (room_id, telegram_id),
   UNIQUE (room_id, seat)
 );
+
+ALTER TABLE blackjack_room_players ADD COLUMN IF NOT EXISTS ready BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE blackjack_rooms ADD COLUMN IF NOT EXISTS round_number INTEGER NOT NULL DEFAULT 1;
