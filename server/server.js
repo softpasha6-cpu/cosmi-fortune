@@ -269,13 +269,29 @@ app.get('/api/blackjack/rooms/:id',requireUser,async(req,res,next)=>{
   }catch(e){next(e)}
 });
 
+app.post('/api/blackjack/rooms/:id/leave',requireUser,async(req,res,next)=>{
+  const client=await pool.connect();
+  try{
+    await client.query('BEGIN');
+    const room=await client.query('SELECT id,status FROM blackjack_rooms WHERE id=$1 FOR UPDATE',[req.params.id]);
+    if(!room.rowCount){await client.query('COMMIT');return res.json({left:true,deleted:true})}
+    await client.query('DELETE FROM blackjack_room_players WHERE room_id=$1 AND telegram_id=$2',[req.params.id,req.player.telegram_id]);
+    const remaining=await client.query('SELECT count(*)::int AS n FROM blackjack_room_players WHERE room_id=$1',[req.params.id]);
+    if(remaining.rows[0].n===0){
+      await client.query('UPDATE blackjack_rooms SET updated_at=NOW() WHERE id=$1',[req.params.id]);
+    }
+    await client.query('COMMIT');
+    res.json({left:true,deleted:remaining.rows[0].n===0,remainingPlayers:remaining.rows[0].n});
+  }catch(e){await client.query('ROLLBACK').catch(()=>{});next(e)}finally{client.release()}
+});
+
 app.get('/api/blackjack/rooms',requireUser,async(req,res,next)=>{
   try{
     // Waiting tables are visible as long as their creator is still seated.
     // Delete only truly abandoned/empty tables; a solo host must be able to wait for friends.
     await pool.query(`DELETE FROM blackjack_rooms r
       WHERE r.status='waiting'
-      AND (r.updated_at < NOW() - INTERVAL '10 minutes'
+      AND (r.updated_at < NOW() - INTERVAL '3 seconds'
         OR NOT EXISTS (SELECT 1 FROM blackjack_room_players p WHERE p.room_id=r.id))`);
     const result=await pool.query(`SELECT r.id,r.invite_code,r.bet,r.created_at,r.updated_at,r.round_number,
       count(p.telegram_id)::int AS player_count,
