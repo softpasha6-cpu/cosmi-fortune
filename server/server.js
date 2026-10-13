@@ -397,6 +397,15 @@ app.post('/api/blackjack/rooms/:id/action',requireUser,async(req,res,next)=>{
   }catch(e){await client.query('ROLLBACK').catch(()=>{});next(e)}finally{client.release()}
 });
 
+app.get('/api/bonus-wheel/status', requireUser, async (req, res, next) => {
+  try {
+    const result = await pool.query('SELECT claimed_at,reward FROM bonus_wheel_cooldowns WHERE telegram_id=$1',[req.player.telegram_id]);
+    if (!result.rowCount) return res.json({available:true,nextAvailableAt:null});
+    const next = new Date(new Date(result.rows[0].claimed_at).getTime()+24*60*60*1000);
+    return res.json({available:Date.now()>=next.getTime(),nextAvailableAt:next.toISOString(),lastReward:Number(result.rows[0].reward)});
+  } catch(error) { next(error); }
+});
+
 app.post('/api/bonus-wheel', requireUser, async (req, res, next) => {
   const requestId = req.body?.requestId;
   if (typeof requestId !== 'string' || !/^[a-f0-9-]{36}$/i.test(requestId)) {
