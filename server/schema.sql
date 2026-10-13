@@ -84,3 +84,34 @@ CREATE TABLE IF NOT EXISTS daily_reward_claims (
   streak_day SMALLINT NOT NULL DEFAULT 1 CHECK (streak_day BETWEEN 1 AND 8),
   reward BIGINT NOT NULL CHECK (reward >= 0)
 );
+
+CREATE TABLE IF NOT EXISTS star_purchases (
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ telegram_id BIGINT NOT NULL REFERENCES players(telegram_id),
+ package_stars INTEGER NOT NULL CHECK (package_stars IN (15,25,50,100)),
+ credits BIGINT NOT NULL CHECK (credits IN (50000,100000,200000,400000)),
+ payload TEXT NOT NULL UNIQUE,
+ status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','paid','cancelled','refunded')),
+ telegram_payment_charge_id TEXT UNIQUE,
+ provider_payment_charge_id TEXT,
+ created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+ paid_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS star_purchases_player_created_idx ON star_purchases(telegram_id,created_at DESC);
+CREATE TABLE IF NOT EXISTS withdrawal_requests (
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ telegram_id BIGINT NOT NULL REFERENCES players(telegram_id),
+ credits BIGINT NOT NULL CHECK (credits IN (100000,250000,500000,1000000)),
+ reward_stars INTEGER NOT NULL CHECK (reward_stars IN (15,25,50,100)),
+ status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','paid','rejected')),
+ note TEXT NOT NULL DEFAULT '',
+ created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+ reviewed_at TIMESTAMPTZ,
+ reviewed_by BIGINT
+);
+CREATE INDEX IF NOT EXISTS withdrawal_requests_status_created_idx ON withdrawal_requests(status,created_at DESC);
+CREATE TABLE IF NOT EXISTS app_settings (
+ setting_key TEXT PRIMARY KEY,
+ setting_value TEXT NOT NULL,
+ updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
