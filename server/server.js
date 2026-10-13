@@ -211,6 +211,21 @@ app.post('/api/blackjack/rooms', requireUser, async (req,res,next)=>{
   const client=await pool.connect();
   try{
     await client.query('BEGIN');
+    // Clean up this user's previous solo waiting tables before creating another.
+    // Refund their reserved stakes; preserve rooms with other actual participants.
+    const oldSoloRooms=await client.query(`SELECT r.id,r.bet
+      FROM blackjack_rooms r
+      WHERE r.status='waiting' AND r.host_telegram_id=$1
+        AND (SELECT count(*) FROM blackjack_room_players p WHERE p.room_id=r.id)=1
+        AND EXISTS (SELECT 1 FROM blackjack_room_players p WHERE p.room_id=r.id AND p.telegram_id=$1)
+      FOR UPDATE`,[req.player.telegram_id]);
+    if(oldSoloRooms.rowCount){
+      const refund=oldSoloRooms.rows.reduce((sum,r)=>sum+Number(r.bet),0);
+      await client.query('UPDATE players SET balance=balance+$2,updated_at=NOW() WHERE telegram_id=$1',[req.player.telegram_id,refund]);
+      const ids=oldSoloRooms.rows.map(r=>r.id);
+      await client.query('DELETE FROM blackjack_room_players WHERE room_id=ANY($1)',[ids]);
+      await client.query('DELETE FROM blackjack_rooms WHERE id=ANY($1)',[ids]);
+    }
     const player=await client.query('SELECT balance FROM players WHERE telegram_id=$1 FOR UPDATE',[req.player.telegram_id]);
     if(Number(player.rows[0].balance)<bet){await client.query('ROLLBACK');return res.status(400).json({error:'Недостаточно кредитов.'});}
     const code=crypto.randomBytes(4).toString('hex').toUpperCase();
