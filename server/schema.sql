@@ -40,3 +40,7 @@ CREATE TABLE IF NOT EXISTS bonus_wheel_claims (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (telegram_id, claim_date)
 );
+
+-- Existing installations may still have the original positive-bet constraint.
+ALTER TABLE game_transactions DROP CONSTRAINT IF EXISTS game_transactions_bet_check;
+ALTER TABLE game_transactions ADD CONSTRAINT game_transactions_bet_check CHECK (bet >= 0);
