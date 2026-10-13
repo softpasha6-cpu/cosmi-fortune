@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS game_transactions (
   id BIGSERIAL PRIMARY KEY,
   telegram_id BIGINT NOT NULL REFERENCES players(telegram_id) ON DELETE CASCADE,
   game TEXT NOT NULL CHECK (game IN ('slots','roulette','blackjack','dice','bonus_wheel')),
-  bet BIGINT NOT NULL CHECK (bet > 0),
+  bet BIGINT NOT NULL CHECK (bet >= 0),
   payout BIGINT NOT NULL CHECK (payout >= 0),
   balance_after BIGINT NOT NULL CHECK (balance_after >= 0),
   outcome JSONB NOT NULL DEFAULT '{}'::jsonb,
@@ -32,3 +32,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS game_transactions_idempotency_idx
 -- Upgrade existing databases to support the free bonus wheel.
 ALTER TABLE game_transactions DROP CONSTRAINT IF EXISTS game_transactions_game_check;
 ALTER TABLE game_transactions ADD CONSTRAINT game_transactions_game_check CHECK (game IN ('slots','roulette','blackjack','dice','bonus_wheel'));
+
+CREATE TABLE IF NOT EXISTS bonus_wheel_claims (
+  telegram_id BIGINT NOT NULL REFERENCES players(telegram_id) ON DELETE CASCADE,
+  claim_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  reward BIGINT NOT NULL CHECK (reward >= 0),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (telegram_id, claim_date)
+);
