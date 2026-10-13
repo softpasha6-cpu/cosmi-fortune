@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 import express from 'express';
 import cors from 'cors';
 import pg from 'pg';
@@ -200,4 +201,11 @@ app.use((err, _req, res, _next) => {
 });
 
 const port = Number(process.env.PORT || 3000);
-app.listen(port, () => console.log('Cosmic Fortune API listening on port ' + port));
+try {
+  const schema = await readFile(new URL('./schema.sql', import.meta.url), 'utf8');
+  await pool.query(schema);
+  app.listen(port, () => console.log('Cosmic Fortune API listening on port ' + port));
+} catch (error) {
+  console.error('Startup failed: database schema could not be initialized.', error);
+  process.exit(1);
+}
