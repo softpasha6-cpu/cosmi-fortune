@@ -12,6 +12,8 @@
     body.cf-code-app>header,body.cf-code-app>main,body.cf-code-app>footer,body.cf-code-app>.bottom-nav{display:none!important}
     #cf-app{position:fixed;inset:0;z-index:2147483000;overflow:auto;overflow-x:hidden;color:#fff;background:radial-gradient(ellipse at 50% 0%,#37116a 0%,#0a0718 45%,#03040a 100%);font:15px system-ui,-apple-system,sans-serif;padding:env(safe-area-inset-top) 0 calc(82px + env(safe-area-inset-bottom));}
     #cf-app *{box-sizing:border-box} #cf-app .shell{width:min(100%,620px);margin:auto;padding:12px 14px 20px}
+    /* Keep avatar fallback text from rendering as a giant initial over the profile. */
+    #cf-app #cf-profile-avatar{font-size:0!important;line-height:0!important;color:transparent!important;overflow:hidden;flex:0 0 58px;width:58px;height:58px;border-radius:50%;background-color:#160d24;background-position:center;background-size:cover;background-repeat:no-repeat;border:1px solid #e9bc61;filter:none;text-shadow:none;}
     #cf-app button,#cf-app input{touch-action:manipulation}
     #cf-app input{font-size:16px}
     #cf-app .home-actions{display:flex;gap:12px;align-items:center;margin-top:18px}
