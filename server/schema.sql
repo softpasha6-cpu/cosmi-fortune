@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS players (
 CREATE TABLE IF NOT EXISTS game_transactions (
   id BIGSERIAL PRIMARY KEY,
   telegram_id BIGINT NOT NULL REFERENCES players(telegram_id) ON DELETE CASCADE,
-  game TEXT NOT NULL CHECK (game IN ('slots','roulette','blackjack','dice')),
+  game TEXT NOT NULL CHECK (game IN ('slots','roulette','blackjack','dice','bonus_wheel')),
   bet BIGINT NOT NULL CHECK (bet > 0),
   payout BIGINT NOT NULL CHECK (payout >= 0),
   balance_after BIGINT NOT NULL CHECK (balance_after >= 0),
@@ -28,3 +28,7 @@ ALTER TABLE game_transactions ADD COLUMN IF NOT EXISTS idempotency_key TEXT;
 CREATE UNIQUE INDEX IF NOT EXISTS game_transactions_idempotency_idx
   ON game_transactions (telegram_id, idempotency_key)
   WHERE idempotency_key IS NOT NULL;
+
+-- Upgrade existing databases to support the free bonus wheel.
+ALTER TABLE game_transactions DROP CONSTRAINT IF EXISTS game_transactions_game_check;
+ALTER TABLE game_transactions ADD CONSTRAINT game_transactions_game_check CHECK (game IN ('slots','roulette','blackjack','dice','bonus_wheel'));
