@@ -1,6 +1,6 @@
 (() => {
   const screens = ['home','games','mines','crash','wheel','dice','profile','bonuses'];
-  const assetPath = name => 'assets/screens/' + name + '.jpg';
+  const assetPath = name => '/cosmi-fortune/assets/screens/' + name + '.jpg';
   const images = {};
   Promise.all(screens.map(name => new Promise(resolve => {
     const img = new Image();
@@ -8,8 +8,9 @@
     img.onerror = () => resolve(false);
     img.src = assetPath(name);
   }))).then(loaded => {
-    // Keep the current site working until the full approved image pack is installed.
-    if (!loaded.every(Boolean)) return;
+    // Start the image-based UI when the essential home screen is available.
+    if (!loaded[0]) { console.error('Cosmic Fortune mockup: home.jpg failed to load from', assetPath('home')); return; }
+    screens.forEach((name, i) => { if (!loaded[i]) console.error('Cosmic Fortune mockup image failed:', assetPath(name)); });
     const root = document.createElement('div');
     root.id = 'cf-mockup-app';
     root.innerHTML = '<div class="cf-frame"><img class="cf-art" alt="Cosmic Fortune"><div class="cf-hotspots"></div></div><div class="cf-toast" role="status"></div>';
@@ -37,7 +38,7 @@
       Object.assign(b.style,{left:x+'%',top:y+'%',width:w+'%',height:h+'%'});
       b.addEventListener('click',fn); layer.appendChild(b);
     };
-    function go(screen){ current=screen; art.src=images[screen]; layer.replaceChildren(); draw(); }
+    function go(screen){ if (!images[screen]) { say('Экран загружается. Обнови страницу через несколько секунд.'); return; } current=screen; art.src=images[screen]; layer.replaceChildren(); draw(); }
     function nav(){ 
       hit('Главная',0,90,25,10,()=>go('home'));
       hit('Игры',25,90,25,10,()=>go('games'));
