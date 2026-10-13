@@ -195,12 +195,27 @@
   function roulette(){return gamePanel('roulette','🎡 Рулетка','🎡','Выбери цвет до запуска раунда.','<div class="cards"><button class="secondary" data-choice="red">🔴 Красное</button><button class="secondary" data-choice="black">⚫ Чёрное</button></div>')}
   let blackjackRoomId=null,blackjackPoll=null;
   function blackjack(){
-    return panel('🃏 Блэкджек онлайн',
-      '<div class="game-stage blackjack">'+gameAvatar('blackjack')+'<p style="color:#c5b6df">Создай стол и пригласи друзей по коду. Дилер раздаёт карты, каждый игрок ходит отдельно. Доступны взять карту, остановиться и удвоить.</p></div>'+
+    return panel('Блэкджек',
+      '<p style="color:#c5b6df;text-align:center;margin:0 0 16px">Настоящий стол с дилером, картами и игроками в комнате.</p>'+
       '<div class="fieldrow"><label class="field">Ставка на игрока <input id="cf-bj-bet" type="number" min="1" max="100000" value="100" style="width:100%;margin-top:8px;background:#0b0918;color:white;border:1px solid #6c3a9e;border-radius:8px;padding:8px;text-align:center"></label></div>'+
-      '<button class="primary" data-action="bj-create">Создать стол</button>'+
-      '<div class="section-title">Есть приглашение?</div><div class="fieldrow"><label class="field">Код комнаты <input id="cf-bj-code" maxlength="8" placeholder="Например A1B2C3D4" style="width:100%;margin-top:8px;background:#0b0918;color:white;border:1px solid #6c3a9e;border-radius:8px;padding:8px;text-align:center;text-transform:uppercase"></label></div><button class="secondary" data-action="bj-join">Войти по коду</button>'+
+      '<button class="primary" data-action="bj-create">＋ Создать стол</button>'+
+      '<button class="secondary" data-action="bj-open-lobby" style="margin-top:10px">♣ Открыть комнаты игроков</button>'+
+      '<div class="section-title">Войти по приглашению</div><div class="fieldrow"><label class="field">Код комнаты <input id="cf-bj-code" maxlength="8" placeholder="Например A1B2C3D4" style="width:100%;margin-top:8px;background:#0b0918;color:white;border:1px solid #6c3a9e;border-radius:8px;padding:8px;text-align:center;text-transform:uppercase"></label></div><button class="secondary" data-action="bj-join">Войти по коду</button>'+
       '<div id="cf-bj-room"></div>');
+  }
+  async function openBlackjackLobby(){
+    let modal=app.querySelector('#cf-bj-lobby-modal');
+    if(modal)modal.remove();
+    app.insertAdjacentHTML('beforeend','<div class="modal-backdrop" id="cf-bj-lobby-modal"><section class="modal-card" role="dialog" aria-modal="true" style="max-width:520px"><button type="button" class="modal-close" data-action="bj-close-lobby">×</button><div class="section-title">♣ Открытые столы</div><p style="color:#c5b6df;font-size:12px">Здесь показаны реальные комнаты игроков, ожидающих соперников.</p><div id="cf-bj-lobby-list">Загружаем комнаты…</div><button class="secondary" data-action="bj-lobby-refresh">↻ Обновить список</button></section></div>');
+    await refreshBlackjackLobby();
+  }
+  async function refreshBlackjackLobby(){
+    const list=app.querySelector('#cf-bj-lobby-list');if(!list)return;
+    try{
+      const data=await api('/api/blackjack/rooms');
+      if(!data.rooms.length){list.innerHTML='<div class="bj-tip">Пока нет открытых столов. Создай стол и дождись других игроков.</div>';return}
+      list.innerHTML=data.rooms.map(r=>'<div class="bj-invite-panel"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><strong>Стол '+r.inviteCode+'</strong><strong>'+formatBalance(r.bet)+' ✦</strong></div><div style="font-size:12px;color:#c5b6df;margin:8px 0">'+r.playerCount+'/5 игроков · готовы '+r.readyCount+'/'+r.playerCount+'</div><div class="bj-seat-layout">'+(r.players||[]).map(p=>'<div class="bj-player"><div class="bj-seat-number">МЕСТО '+p.seat+'</div><strong>'+p.name+'</strong><div style="font-size:11px;margin-top:4px">'+(p.ready?'🟢 Готов':'🟡 Ожидает')+'</div></div>').join('')+'</div><button class="primary" data-action="bj-join-lobby" data-code="'+r.inviteCode+'">Присоединиться</button></div>').join('');
+    }catch(error){list.innerHTML='<div class="bj-tip">'+error.message+'</div>'}
   }
   function cardText(c){if(!c)return '🂠';if(c.hidden)return '🂠';return ({1:'A',11:'J',12:'Q',13:'K'}[c.rank]||c.rank)+c.suit}
   function blackjackCardHtml(c){
@@ -240,10 +255,10 @@
       '<div class="section-title">ИГРОКИ ('+room.players.length+'/5)</div>'+
       '<div class="bj-seat-layout">'+room.players.map(p=>'<div class="bj-player '+(p.isMe?'me':'')+'"><div class="bj-seat-number">МЕСТО '+p.seat+'</div><strong>'+(p.firstName||p.username||('Игрок '+p.seat))+(p.isMe?' · ТВОЯ РУКА':'')+'</strong><div class="bj-cards">'+(p.hand.length?p.hand.map(blackjackCardHtml).join(''):'<small>Карты выдаются при старте</small>')+'</div>'+
       '<strong>'+ (p.score!==null&&p.score!==undefined?p.score+' очков':'—')+'</strong><div style="font-size:12px;margin-top:5px">'+(statusText[p.status]||p.status)+(p.doubled?' · УДВОЕНО':'')+(p.status==='finished'?' · выплата '+formatBalance(p.payout)+' ✦':'')+'</div></div>').join('')+
-      (room.status==='waiting'?(me&&String(room.hostTelegramId)===String(me.telegramId)?'<div class="bj-tip">Пригласи хотя бы одного игрока. Когда он присоединится, нажми «Начать раздачу».</div><button class="primary" data-action="bj-start">Начать раздачу ('+room.players.length+'/5)</button>':'<div class="bj-tip">Ты за столом. Ждём, пока создатель начнёт раздачу.</div>'):'')+
+      (room.status==='waiting'?'<div class="bj-tip">Раздача начнётся автоматически, когда за столом будет минимум 2 игрока и все нажмут «Готов».</div><div class="bj-seat-layout">'+room.players.map(p=>'<div class="bj-player '+(p.isMe?'me':'')+'"><div class="bj-seat-number">МЕСТО '+p.seat+'</div><strong>'+(p.firstName||p.username||('Игрок '+p.seat))+(p.isMe?' · ТЫ':'')+'</strong><div style="margin-top:5px">'+(p.ready?'🟢 ГОТОВ':'🟡 НЕ ГОТОВ')+'</div></div>').join('')+'</div><button class="primary" data-action="bj-ready" data-ready="'+Boolean(me?.ready)+'">'+(me?.ready?'✓ Ты готов · отменить':'Я готов')+'</button>':'')+
       (room.status==='playing'&&me?.status==='playing'?'<div class="bj-tip"><strong>Твой ход.</strong><br>'+blackjackAdvice(me.hand)+'<br><small>Удвоение доступно только после первых двух карт и требует ещё одну такую же ставку.</small></div><div class="bj-actionrow"><button class="secondary" data-action="bj-hit">➕ Взять карту</button><button class="secondary" data-action="bj-stand">✋ Стоп</button><button class="primary" data-action="bj-double" '+(me.hand.length!==2||me.doubled?'disabled':'')+'>×2 Удвоить</button></div>':'')+
       (room.status==='playing'&&me&&me.status!=='playing'?'<div class="bj-tip">Твой ход завершён. Ждём остальных игроков. Стол обновится автоматически.</div>':'')+
-      (room.status==='finished'?'<div class="bj-tip">Раунд завершён. Дилер открыл карты, сервер рассчитал выплаты.</div><button class="secondary" data-action="bj-leave">К столу заново</button>':'')+
+      (room.status==='finished'?'<div class="bj-tip">Раунд завершён. Выплаты рассчитаны сервером. Чтобы сыграть ещё раз с этой же компанией, каждый игрок должен нажать «Готов к следующему раунду».</div><button class="primary" data-action="bj-ready" data-ready="'+Boolean(me?.ready)+'">'+(me?.ready?'✓ Готов к следующему раунду':'↻ Готов к следующему раунду')+'</button>':'')+
       '<button class="secondary" data-action="bj-refresh">Обновить стол</button>';
   }
 
@@ -287,6 +302,15 @@
     const choice=e.target.closest('[data-choice]');if(choice){selected=choice.dataset.choice;app.querySelectorAll('[data-choice]').forEach(b=>b.style.borderColor=b===choice?'#e05cff':'#7445a7');return}
     const action=e.target.closest('[data-action]');if(!action)return;
     if(action.dataset.action==='games'){render('games');return}
+    if(action.dataset.action==='bj-open-lobby'){await openBlackjackLobby();return}
+    if(action.dataset.action==='bj-close-lobby'){app.querySelector('#cf-bj-lobby-modal')?.remove();return}
+    if(action.dataset.action==='bj-lobby-refresh'){await refreshBlackjackLobby();return}
+    if(action.dataset.action==='bj-join-lobby'){
+      const inviteCode=action.dataset.code||'';
+      try{const data=await api('/api/blackjack/rooms/join',{method:'POST',body:JSON.stringify({inviteCode})});blackjackRoomId=data.room.id;app.querySelector('#cf-bj-lobby-modal')?.remove();renderBlackjackRoom(data.room);const b=app.querySelector('#cf-balance');if(b)b.textContent=formatBalance(data.balance)}
+      catch(error){say(error.message)}
+      return
+    }
     if(action.dataset.action==='bj-create'){
       const bet=Number(app.querySelector('#cf-bj-bet')?.value);
       if(!Number.isSafeInteger(bet)||bet<1||bet>100000){say('Ставка должна быть от 1 до 100 000.');return}
@@ -319,6 +343,13 @@
     if(action.dataset.action==='bj-refresh'){
       if(!blackjackRoomId)return;
       try{const data=await api('/api/blackjack/rooms/'+blackjackRoomId);renderBlackjackRoom(data.room)}catch(error){say(error.message)}
+      return
+    }
+    if(action.dataset.action==='bj-ready'){
+      if(!blackjackRoomId)return;
+      action.disabled=true;
+      try{const data=await api('/api/blackjack/rooms/'+blackjackRoomId+'/ready',{method:'POST',body:JSON.stringify({ready:action.dataset.ready!=='true'})});renderBlackjackRoom(data.room);await refreshAccount()}
+      catch(error){say(error.message)}finally{action.disabled=false}
       return
     }
     if(action.dataset.action==='bj-start'||action.dataset.action==='bj-hit'||action.dataset.action==='bj-stand'||action.dataset.action==='bj-double'){
