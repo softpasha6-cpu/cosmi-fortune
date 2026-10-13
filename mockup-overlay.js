@@ -658,8 +658,8 @@
     content.innerHTML='<section style="margin:22px 0;padding:22px 16px;border:1px solid #8f42ff;border-radius:24px;background:radial-gradient(ellipse at top,#32104f,#0a0718 75%);box-shadow:0 0 35px #8f42ff25;text-align:center">'+
       lockIcon+'<div style="font-size:25px;font-weight:950;letter-spacing:1px">COSMIC FORTUNE</div>'+
       '<p style="color:#d6c4f0;line-height:1.55">Чтобы открыть приложение, подпишись на наш канал и вступи в чат. После этого нажми «Проверить подписку».</p>'+
-      '<a href="https://t.me/Cosmic_Fortune" target="_blank" rel="noopener" style="display:block;margin:14px 0;padding:15px;border:1px solid #9a52ed;border-radius:15px;background:#1b0c2c;color:#fff;text-decoration:none;font-weight:800">📣 '+(channelOk?'✓ Канал — подписка подтверждена':'Подписаться на канал')+'</a>'+
-      '<a href="https://t.me/CosmisFortunechat" target="_blank" rel="noopener" style="display:block;margin:14px 0;padding:15px;border:1px solid #9a52ed;border-radius:15px;background:#1b0c2c;color:#fff;text-decoration:none;font-weight:800">💬 '+(chatOk?'✓ Чат — вступление подтверждено':'Вступить в чат')+'</a>'+
+      '<a href="https://t.me/Cosmic_Fortune" target="_blank" rel="noopener" style="display:block;margin:14px 0;padding:15px;border:1px solid #9a52ed;border-radius:15px;background:#1b0c2c;color:#fff;text-decoration:none;font-weight:800">📣 '+(channelOk?'✓ Канал — подписка подтверждена':access?.channel?.status==='unavailable'?'⚠ Проверка канала недоступна':'Подписаться на канал')+'</a>'+
+      '<a href="https://t.me/CosmisFortunechat" target="_blank" rel="noopener" style="display:block;margin:14px 0;padding:15px;border:1px solid #9a52ed;border-radius:15px;background:#1b0c2c;color:#fff;text-decoration:none;font-weight:800">💬 '+(chatOk?'✓ Чат — вступление подтверждено':access?.chat?.status==='unavailable'?'⚠ Проверка чата недоступна':'Вступить в чат')+'</a>'+
       '<div style="margin:12px 0;color:'+(channelOk&&chatOk?'#b4ffcb':'#c4b1dc')+';font-size:13px">'+(checking?'Проверяем членство в Telegram…':message?message:((channelOk?'✓ Канал подтверждён':'○ Нет подписки на канал')+'<br>'+(chatOk?'✓ Чат подтверждён':'○ Нет вступления в чат'))+'</div>'+
       '<button id="cf-check-membership" type="button" style="width:100%;padding:15px;border:1px solid #e6a6ff;border-radius:15px;background:linear-gradient(100deg,#b622f5,#7010dc);font-weight:900;color:#fff" '+(checking?'disabled':'')+'>'+(checking?'Проверяем…':'Проверить подписку')+'</button>'+
       '<p style="font-size:11px;color:#9c88b8;margin-top:15px">Доступ откроется только после подтверждения обоих условий.</p></section>';
@@ -672,7 +672,7 @@
         app.querySelector('.bottom')?.style.removeProperty('display');
         render('home');
         refreshAccount();
-      }else renderAccessGate(access,false,'Выполни оба условия и проверь ещё раз.');
+      }else {const unavailable=access.channel?.error||access.chat?.error;renderAccessGate(access,false,unavailable?'Не удалось проверить членство. Добавь бота администратором в канал и чат, затем проверь настройки username.':'Выполни оба условия и проверь ещё раз.');}
     }catch(error){
       renderAccessGate(null,false,error.message||'Не удалось проверить подписку. Попробуй ещё раз.');
     }
