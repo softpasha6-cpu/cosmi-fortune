@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS players (
   telegram_id BIGINT PRIMARY KEY,
   username TEXT,
   first_name TEXT NOT NULL DEFAULT '',
-  balance BIGINT NOT NULL DEFAULT 1000000 CHECK (balance >= 0),
+  balance BIGINT NOT NULL DEFAULT 10000 CHECK (balance >= 0),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -18,3 +18,13 @@ CREATE TABLE IF NOT EXISTS game_transactions (
 );
 CREATE INDEX IF NOT EXISTS game_transactions_player_created_idx
   ON game_transactions (telegram_id, created_at DESC);
+
+
+-- Safe upgrade for existing installations: new accounts start with 10,000 virtual credits.
+ALTER TABLE players ALTER COLUMN balance SET DEFAULT 10000;
+
+-- Request idempotency prevents the same round from being credited twice on retries.
+ALTER TABLE game_transactions ADD COLUMN IF NOT EXISTS idempotency_key TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS game_transactions_idempotency_idx
+  ON game_transactions (telegram_id, idempotency_key)
+  WHERE idempotency_key IS NOT NULL;
