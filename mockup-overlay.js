@@ -59,9 +59,11 @@
     #cf-app .anim-dice{animation:cfDice .75s ease-in-out}
     #cf-app .anim-slots{animation:cfSlots .8s ease-in-out}
     #cf-app .anim-cards{animation:cfCards .7s ease-out}
+    #cf-app .anim-wheel{animation:cfWheelSpin 1.2s ease-in-out}
     @keyframes cfDice{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-18deg) scale(1.12)}50%{transform:rotate(18deg) scale(.9)}75%{transform:rotate(-8deg) scale(1.05)}}
     @keyframes cfSlots{0%{filter:blur(0);transform:translateY(0)}35%{filter:blur(4px);transform:translateY(-8px)}70%{filter:blur(2px);transform:translateY(5px)}100%{filter:none;transform:translateY(0)}}
     @keyframes cfCards{0%{opacity:.3;transform:translateY(-18px) rotate(-5deg)}100%{opacity:1;transform:translateY(0) rotate(0)}}
+    @keyframes cfWheelSpin{0%{transform:rotate(0) scale(.95)}50%{transform:rotate(540deg) scale(1.08)}100%{transform:rotate(1080deg) scale(1)}}
     @media(max-width:360px){#cf-app .shell{padding:10px}#cf-app .hero{padding:20px 14px;min-height:250px}#cf-app .hero p{max-width:70%}#cf-app .card{padding:10px}#cf-app .art{height:62px;font-size:42px}}
   `;
   document.head.appendChild(style);
@@ -151,7 +153,7 @@
       if(!Number.isSafeInteger(bet)||bet<1||bet>100000){say('Ставка должна быть от 1 до 100 000.');return}
       const body={game,bet,requestId:crypto.randomUUID()};
       const art=app.querySelector('.bigart');
-      if(art){art.classList.remove('anim-dice','anim-slots','anim-cards');void art.offsetWidth;art.classList.add(game==='dice'?'anim-dice':game==='slots'?'anim-slots':'anim-cards');}
+      if(art){art.classList.remove('anim-dice','anim-slots','anim-cards','anim-wheel');void art.offsetWidth;art.classList.add(game==='dice'?'anim-dice':game==='slots'?'anim-slots':game==='roulette'?'anim-wheel':'anim-cards');}
       if(game==='roulette'){
         if(!['red','black'].includes(selected)){say('Сначала выбери красное или чёрное.');return}
         body.choice=selected;
