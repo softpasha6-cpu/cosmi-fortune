@@ -59,7 +59,22 @@
     #cf-app .game-stage.is-playing .mini-wheel{animation:cfWheelSpin 2.4s cubic-bezier(.12,.72,.12,1) forwards}
     #cf-app .game-stage.is-playing .cards-art{animation:cfCardDeal .8s ease-in-out infinite alternate}
     #cf-app .game-stage.is-playing.slots .game-emoji{animation:cfSlotShake .12s linear infinite}
-    #cf-app .bj-felt{background:radial-gradient(ellipse at center,#17684e,#073626 72%);border:5px solid #9b6b32;border-radius:24px;padding:16px 10px;color:#fff;box-shadow:inset 0 0 0 2px #e7c06b,0 10px 28px #0008}
+    #cf-app .bj-felt{position:relative;background:radial-gradient(ellipse at 50% 38%,#1a7853 0%,#0b543b 46%,#063625 100%);border:9px solid #50301c;border-radius:48% / 22%;padding:24px 12px 20px;color:#fff;box-shadow:inset 0 0 0 2px #d8ad56,inset 0 0 0 7px #7c4d29,inset 0 0 38px #001b12,0 12px 25px #0009;min-height:190px;overflow:hidden}
+    #cf-app .bj-felt:before{content:"COSMIC FORTUNE  •  BLACKJACK";display:block;text-align:center;color:#d9b967;font-size:10px;letter-spacing:2px;margin-bottom:16px;text-shadow:0 1px #000}
+    #cf-app .bj-felt:after{content:"";position:absolute;inset:13px;border:1px solid #d8b65b66;border-radius:48% / 24%;pointer-events:none}
+    #cf-app .bj-dealer-label{font-size:11px;letter-spacing:2px;color:#f4d992;text-align:center}
+    #cf-app .bj-seat-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+    #cf-app .bj-player{position:relative;background:linear-gradient(155deg,#143f32,#09241e);border:1px solid #b38b4c;border-radius:14px;padding:12px 8px;margin:0;text-align:center;box-shadow:0 5px 10px #0004}
+    #cf-app .bj-player.me{border:2px solid #f0c866;background:linear-gradient(155deg,#315b39,#102b22);box-shadow:0 0 18px #e5bd4a35}
+    #cf-app .bj-player .bj-seat-number{font-size:9px;letter-spacing:1px;color:#e4c87d;margin-bottom:5px}
+    #cf-app .bj-cards{gap:3px;margin:10px 0}
+    #cf-app .bj-card{transition:transform .25s ease;animation:cfBjDeal .35s ease both}
+    #cf-app .bj-card:nth-child(2){animation-delay:.12s}
+    #cf-app .bj-card:nth-child(3){animation-delay:.24s}
+    #cf-app .bj-chip{display:inline-grid;place-items:center;width:30px;height:30px;border:3px dashed #f7e3a0;border-radius:50%;background:radial-gradient(circle,#d9b65c,#966421);color:#3d2510;font-size:9px;font-weight:900;box-shadow:0 2px 5px #0007}
+    #cf-app .bj-invite-panel{border:1px solid #99733d;border-radius:16px;padding:12px;background:linear-gradient(145deg,#171a1a,#0c1210);margin:12px 0}
+    #cf-app .bj-share-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+    @keyframes cfBjDeal{from{opacity:0;transform:translateY(-22px) rotate(-7deg)}to{opacity:1;transform:translateY(0) rotate(0)}}
     #cf-app .bj-cards{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin:12px 0}
     #cf-app .bj-card{width:clamp(43px,13vw,62px);height:clamp(64px,19vw,90px);border-radius:8px;background:linear-gradient(145deg,#fffef8,#e8e1d0);color:#171923;border:1px solid #d3c9b6;box-shadow:0 4px 8px #0006;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;padding:5px;font-weight:900;font-size:16px}
     #cf-app .bj-card.red{color:#c5243d}
@@ -219,11 +234,11 @@
     const dealer=dealerHand.map(blackjackCardHtml).join('');
     const statusText={waiting:'Ожидает начала',playing:'Твой ход',stood:'Остановился',busted:'Перебор — проигрыш',blackjack:'Натуральный блэкджек',finished:'Раунд завершён'};
     box.innerHTML='<div class="section-title">СТОЛ · '+room.inviteCode+'</div>'+
-      '<div class="bj-felt"><div style="font-size:11px;letter-spacing:2px;opacity:.8">ДИЛЕР</div><div class="bj-cards">'+(dealer||'<span>Карты появятся после начала раздачи</span>')+'</div>'+
+      '<div class="bj-felt"><div class="bj-dealer-label">ДИЛЕР</div><div class="bj-cards">'+(dealer||'<span>Карты появятся после начала раздачи</span>')+'</div>'+
       (room.state?.dealerScore!==undefined?'<strong>Очки дилера: '+room.state.dealerScore+'</strong>':'<small>Одна карта дилера скрыта до завершения раунда</small>')+'</div>'+
-      '<div class="fieldrow"><div class="field">Ставка: '+formatBalance(room.bet)+' ✦ на игрока</div><button class="secondary" data-action="bj-copy">Пригласить · '+room.inviteCode+'</button></div>'+
+      '<div class="bj-invite-panel"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><div><small style="color:#d8bd80">СТАВКА НА ИГРОКА</small><div style="font-weight:900;font-size:20px">'+formatBalance(room.bet)+' <span style="color:#e4c36b">✦</span></div></div><div class="bj-chip">CF</div></div><div style="margin-top:10px;color:#e7d6b3;font-size:12px">Код приглашения: <strong>'+room.inviteCode+'</strong></div><div class="bj-share-row"><button class="secondary" data-action="bj-copy">📋 Скопировать код</button><button class="primary" data-action="bj-share">✉️ Пригласить в Telegram</button></div></div>'+
       '<div class="section-title">ИГРОКИ ('+room.players.length+'/5)</div>'+
-      room.players.map(p=>'<div class="bj-player '+(p.isMe?'me':'')+'"><strong>'+(p.firstName||p.username||('Игрок '+p.seat))+(p.isMe?' · ТВОЯ РУКА':'')+'</strong><div class="bj-cards">'+(p.hand.length?p.hand.map(blackjackCardHtml).join(''):'<small>Карты выдаются при старте</small>')+'</div>'+
+      '<div class="bj-seat-layout">'+room.players.map(p=>'<div class="bj-player '+(p.isMe?'me':'')+'"><div class="bj-seat-number">МЕСТО '+p.seat+'</div><strong>'+(p.firstName||p.username||('Игрок '+p.seat))+(p.isMe?' · ТВОЯ РУКА':'')+'</strong><div class="bj-cards">'+(p.hand.length?p.hand.map(blackjackCardHtml).join(''):'<small>Карты выдаются при старте</small>')+'</div>'+
       '<strong>'+ (p.score!==null&&p.score!==undefined?p.score+' очков':'—')+'</strong><div style="font-size:12px;margin-top:5px">'+(statusText[p.status]||p.status)+(p.doubled?' · УДВОЕНО':'')+(p.status==='finished'?' · выплата '+formatBalance(p.payout)+' ✦':'')+'</div></div>').join('')+
       (room.status==='waiting'?(me&&String(room.hostTelegramId)===String(me.telegramId)?'<div class="bj-tip">Пригласи хотя бы одного игрока. Когда он присоединится, нажми «Начать раздачу».</div><button class="primary" data-action="bj-start">Начать раздачу ('+room.players.length+'/5)</button>':'<div class="bj-tip">Ты за столом. Ждём, пока создатель начнёт раздачу.</div>'):'')+
       (room.status==='playing'&&me?.status==='playing'?'<div class="bj-tip"><strong>Твой ход.</strong><br>'+blackjackAdvice(me.hand)+'<br><small>Удвоение доступно только после первых двух карт и требует ещё одну такую же ставку.</small></div><div class="bj-actionrow"><button class="secondary" data-action="bj-hit">➕ Взять карту</button><button class="secondary" data-action="bj-stand">✋ Стоп</button><button class="primary" data-action="bj-double" '+(me.hand.length!==2||me.doubled?'disabled':'')+'>×2 Удвоить</button></div>':'')+
@@ -284,6 +299,16 @@
       const inviteCode=app.querySelector('#cf-bj-code')?.value||'';
       try{const data=await api('/api/blackjack/rooms/join',{method:'POST',body:JSON.stringify({inviteCode})});blackjackRoomId=data.room.id;const b=app.querySelector('#cf-balance');if(b)b.textContent=formatBalance(data.balance);renderBlackjackRoom(data.room);}
       catch(error){say(error.message)}
+      return
+    }
+    if(action.dataset.action==='bj-share'){
+      const code=app.querySelector('#cf-bj-room')?.querySelector('.bj-invite-panel strong')?.textContent?.trim();
+      if(!code){say('Не удалось получить код приглашения.');return}
+      const link='https://t.me/CosmicFortune_bot?startapp=bj_'+encodeURIComponent(code);
+      const textMsg='Приглашаю тебя за стол блэкджека в Cosmic Fortune! Код стола: '+code;
+      const share='https://t.me/share/url?url='+encodeURIComponent(link)+'&text='+encodeURIComponent(textMsg);
+      if(window.Telegram?.WebApp?.openTelegramLink)window.Telegram.WebApp.openTelegramLink(share);
+      else window.open(share,'_blank','noopener');
       return
     }
     if(action.dataset.action==='bj-copy'){
