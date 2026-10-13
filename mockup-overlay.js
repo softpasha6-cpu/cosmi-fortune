@@ -30,6 +30,7 @@
     document.head.appendChild(style);
     document.body.appendChild(root);
     document.body.classList.add('cf-mockup-active');
+    document.body.classList.add('cf-mockup-active');
     const art = root.querySelector('.cf-art');
     const layer = root.querySelector('.cf-hotspots');
     const toast = root.querySelector('.cf-toast');
@@ -43,10 +44,10 @@
     };
     function go(screen){ if (!images[screen]) { say('Экран загружается. Обнови страницу через несколько секунд.'); return; } current=screen; art.src=images[screen]; layer.replaceChildren(); draw(); }
     function nav(){ 
-      hit('Главная',0,90,25,10,()=>go('home'));
-      hit('Игры',25,90,25,10,()=>go('games'));
-      hit('Бонусы',50,90,25,10,()=>go('bonuses'));
-      hit('Профиль',75,90,25,10,()=>go('profile'));
+      hit('Главная',0,89,25,11,()=>go('home'));
+      hit('Игры',25,89,25,11,()=>go('games'));
+      hit('Бонусы',50,89,25,11,()=>go('bonuses'));
+      hit('Профиль',75,89,25,11,()=>go('profile'));
     }
     function draw(){
       layer.replaceChildren();
