@@ -255,7 +255,8 @@ app.get('/api/blackjack/rooms/:id',requireUser,async(req,res,next)=>{
 
 app.get('/api/blackjack/rooms',requireUser,async(req,res,next)=>{
   try{
-    // Remove stale empty lobbies from earlier versions and keep the public lobby clean.
+    // Waiting tables are visible as long as their creator is still seated.
+    // Delete only truly abandoned/empty tables; a solo host must be able to wait for friends.
     await pool.query(`DELETE FROM blackjack_rooms r
       WHERE r.status='waiting'
       AND (r.updated_at < NOW() - INTERVAL '2 hours'
@@ -269,7 +270,7 @@ app.get('/api/blackjack/rooms',requireUser,async(req,res,next)=>{
       JOIN players pl ON pl.telegram_id=p.telegram_id
       WHERE r.status='waiting'
       GROUP BY r.id
-      HAVING count(p.telegram_id) >= 2
+      HAVING count(p.telegram_id) >= 1
       ORDER BY r.created_at DESC LIMIT 50`);
     res.json({rooms:result.rows.map(r=>({id:r.id,inviteCode:r.invite_code,bet:Number(r.bet),playerCount:r.player_count,readyCount:r.ready_count,hostName:r.host_name||'Игрок',players:r.players,createdAt:r.created_at,roundNumber:Number(r.round_number||1)}))});
   }catch(e){next(e)}
