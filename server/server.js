@@ -403,9 +403,10 @@ app.get('/api/daily-reward/status', requireUser, async (req, res, next) => {
     const result = await pool.query('SELECT claimed_at,streak_day,reward FROM daily_reward_claims WHERE telegram_id=$1',[req.player.telegram_id]);
     if (!result.rowCount) return res.json({available:true,streakDay:1,nextAvailableAt:null,lastReward:null});
     const row=result.rows[0], claimedAt=new Date(row.claimed_at), elapsed=Date.now()-claimedAt.getTime();
-    const streakDay=elapsed>48*60*60*1000?1:Math.min(8,Number(row.streak_day)%8+1);
+    const available=elapsed>=24*60*60*1000;
+    const streakDay=elapsed>48*60*60*1000?1:(available?Math.min(8,Number(row.streak_day)%8+1):Number(row.streak_day));
     const nextAvailableAt=new Date(claimedAt.getTime()+24*60*60*1000);
-    return res.json({available:elapsed>=24*60*60*1000,streakDay,nextAvailableAt:nextAvailableAt.toISOString(),lastReward:Number(row.reward),lastClaimedAt:claimedAt.toISOString()});
+    return res.json({available,streakDay,nextAvailableAt:nextAvailableAt.toISOString(),lastReward:Number(row.reward),lastClaimedAt:claimedAt.toISOString(),claimedDay:Number(row.streak_day)});
   } catch(error) { next(error); }
 });
 app.post('/api/daily-reward/claim', requireUser, async (req, res, next) => {
