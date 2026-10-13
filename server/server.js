@@ -162,12 +162,29 @@ function playRound(game, bet, choice) {
 app.post('/api/game', requireUser, async (req, res, next) => {
   const { game, choice } = req.body || {};
   const bet = Number(req.body?.bet);
+  const requestId = req.body?.requestId;
+  if (typeof requestId !== 'string' || !/^[a-f0-9-]{36}$/i.test(requestId)) {
+    return res.status(400).json({ error: 'Нужен корректный идентификатор раунда. Обнови приложение и попробуй снова.' });
+  }
   if (!Number.isSafeInteger(bet) || bet < 1 || bet > MAX_BET) {
     return res.status(400).json({ error: 'Ставка должна быть целым числом от 1 до 100 000 виртуальных кредитов.' });
   }
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
+    const prior = await client.query(
+      'SELECT id, game, bet, payout, balance_after, outcome, created_at FROM game_transactions WHERE telegram_id=$1 AND idempotency_key=$2',
+      [req.player.telegram_id, requestId]
+    );
+    if (prior.rowCount) {
+      const row = prior.rows[0];
+      await client.query('COMMIT');
+      return res.json({
+        transactionId: String(row.id), game: row.game, bet: Number(row.bet),
+        payout: Number(row.payout), balance: Number(row.balance_after),
+        outcome: row.outcome, createdAt: row.created_at, replayed: true
+      });
+    }
     const locked = await client.query('SELECT balance FROM players WHERE telegram_id=$1 FOR UPDATE', [req.player.telegram_id]);
     const balance = Number(locked.rows[0].balance);
     if (balance < bet) {
@@ -178,8 +195,8 @@ app.post('/api/game', requireUser, async (req, res, next) => {
     const balanceAfter = balance - bet + round.payout;
     await client.query('UPDATE players SET balance=$2, updated_at=NOW() WHERE telegram_id=$1', [req.player.telegram_id, balanceAfter]);
     const inserted = await client.query(
-      'INSERT INTO game_transactions (telegram_id, game, bet, payout, balance_after, outcome) VALUES ($1,$2,$3,$4,$5,$6::jsonb) RETURNING id, created_at',
-      [req.player.telegram_id, game, bet, round.payout, balanceAfter, JSON.stringify(round.outcome)]
+      'INSERT INTO game_transactions (telegram_id, game, bet, payout, balance_after, outcome, idempotency_key) VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7) RETURNING id, created_at',
+      [req.player.telegram_id, game, bet, round.payout, balanceAfter, JSON.stringify(round.outcome), requestId]
     );
     await client.query('COMMIT');
     res.json({
