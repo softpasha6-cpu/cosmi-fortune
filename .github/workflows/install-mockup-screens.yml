@@ -2,8 +2,6 @@ name: Install mockup screens
 on:
   push:
     branches: [main]
-    paths:
-      - 'cosmic_fortune_mockup_assets.zip'
 permissions:
   contents: write
 jobs:
