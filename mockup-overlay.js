@@ -618,7 +618,32 @@
     if(action.dataset.action==='referral'){say('Реферальная система пока не реализована.');return}
     if(action.dataset.action==='settings'){say('Настройки пока не реализованы.');return}
   });
-  async function loadPaymentHistory(){const t=app.querySelector('#cf-payment-history');if(!t)return;try{const d=await api('/api/stars/purchases');t.innerHTML='<div style="font-size:11px;color:#bbaad6">История покупок</div>'+(d.purchases.length?d.purchases.map(p=>'<div class="cf-history-row"><div><strong>'+p.stars+' ⭐ → '+formatBalance(p.credits)+' кредитов</strong><small>'+({pending:'Ожидает оплаты',paid:'Оплачено',cancelled:'Отменено',refunded:'Возврат'}[p.status]||p.status)+'</small></div></div>').join(''):'<p class="cf-profile-muted">Покупок пока нет.</p>')}catch(e){t.textContent='История покупок недоступна.'}}
+  async function loadPaymentHistory(){
+    const t=app.querySelector('#cf-payment-history');if(!t)return;
+    const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    const dateTime=value=>{
+      if(!value)return '';
+      const date=new Date(value);
+      if(Number.isNaN(date.getTime()))return '';
+      return new Intl.DateTimeFormat('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(date);
+    };
+    const statusNames={pending:'Ожидает оплаты',paid:'Оплачено',cancelled:'Отменено',refunded:'Возврат'};
+    try{
+      const d=await api('/api/stars/purchases');
+      const purchases=Array.isArray(d.purchases)?d.purchases:[];
+      t.innerHTML='<div style="font-size:13px;font-weight:800;color:#e8d7ff;margin-bottom:10px">История покупок</div>'+
+      (purchases.length?purchases.map(p=>{
+        const paid=p.status==='paid';
+        const eventTime=paid?(p.paid_at||p.paidAt||p.created_at||p.createdAt):(p.created_at||p.createdAt);
+        const timeLabel=paid?'Оплачено: ':'Создано: ';
+        const dateLabel=dateTime(eventTime);
+        const status=escapeHtml(statusNames[p.status]||p.status||'Статус неизвестен');
+        const stars=escapeHtml(p.stars);
+        const credits=escapeHtml(formatBalance(p.credits));
+        return '<div class="cf-history-row" style="align-items:flex-start;padding:13px 0"><span class="cf-history-icon">⭐</span><div style="flex:1;min-width:0"><strong>Пополнение баланса</strong><small>'+stars+' Telegram Stars → '+credits+' виртуальных кредитов</small><small>'+timeLabel+escapeHtml(dateLabel||'Дата не указана')+'</small><small>'+status+'</small></div></div>';
+      }).join(''):'<p class="cf-profile-muted">Покупок пока нет.</p>');
+    }catch(e){t.textContent='История покупок недоступна.'}
+  }
   async function loadOwnerTools(){const t=app.querySelector('#cf-owner-tools');if(!t)return;if(String(telegram?.initDataUnsafe?.user?.id||'')!=='8522347927'){t.innerHTML='';return}t.innerHTML='<section class="gamepanel"><div class="section-title">🛡 Админ-панель владельца</div><p class="cf-profile-muted">Настрой обработчик платежей и вручную обрабатывай заявки на подарки.</p><button class="primary" data-action="owner-webhook-setup">🔗 Подключить обработчик платежей Stars</button><button class="widecard" data-action="owner-refresh">↻ Обновить заявки</button><div id="cf-owner-summary"></div><div id="cf-owner-requests">Загрузка…</div><p><a href="https://fragment.com/" target="_blank" rel="noopener">Открыть Fragment для вывода доступного дохода →</a></p></section>';try{const [d,s]=await Promise.all([api('/api/owner/withdrawals'),api('/api/owner/stars-status')]);const summary=app.querySelector('#cf-owner-summary');if(summary)summary.innerHTML='<div class="cf-profile-data"><div><small>ОПЛАЧЕНО STARS</small><strong>'+formatBalance(s.sales.stars)+' ⭐</strong></div><div><small>ПРОДАНО КРЕДИТОВ</small><strong>'+formatBalance(s.sales.credits)+'</strong></div><div><small>ЗАЯВОК ОЖИДАЮТ</small><strong>'+s.pendingWithdrawals+'</strong></div></div>';const box=app.querySelector('#cf-owner-requests');if(!box)return;box.innerHTML=d.requests.length?d.requests.map(r=>'<div class="cf-history-row" style="display:block"><strong>'+String(r.first_name||'Игрок').replace(/[<>]/g,'')+' '+(r.username?'@'+String(r.username).replace(/[<>]/g,''):'')+'</strong><small>Telegram ID: '+r.telegram_id+'</small><small>'+formatBalance(r.credits)+' кредитов · эквивалент '+r.stars+' ⭐ · '+({pending:'Ожидает',paid:'Подарок отправлен',rejected:'Отклонена'}[r.status]||r.status)+'</small><small>Заявка: '+r.id+'</small>'+(r.status==='pending'?'<div style="display:flex;gap:8px;margin-top:8px"><button class="primary" data-action="owner-review" data-review="paid" data-id="'+r.id+'">Подарок отправлен</button><button class="widecard" data-action="owner-review" data-review="rejected" data-id="'+r.id+'">Отклонить / вернуть</button></div>':'')+'</div>').join(''):'<p class="cf-profile-muted">Заявок пока нет.</p>'}catch(e){const box=app.querySelector('#cf-owner-requests');if(box)box.textContent=e.message}}
   function renderHistoryInProfile(rows){
     const box=app.querySelector('#cf-profile-history');if(!box)return;
