@@ -114,6 +114,14 @@
     #cf-app .mine.revealed{background:linear-gradient(145deg,#123f91,#071b43);box-shadow:0 0 12px #168dff}
     #cf-app .bigart{text-align:center;font-size:105px;padding:18px 0;text-shadow:0 0 28px #8c2fff}
     #cf-app .multiplier{text-align:center;font-size:48px;font-weight:950;color:#e59aff;text-shadow:0 0 25px #b22bff;margin:15px}
+    #cf-app .cf-daily-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:10px 0}
+    #cf-app .cf-daily-day{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;min-height:78px;padding:8px 3px;border:1px solid #48315f;border-radius:12px;background:linear-gradient(145deg,#191128,#0a0913);text-align:center}
+    #cf-app .cf-daily-day small{font-size:9px;color:#c5b6df;letter-spacing:.5px}
+    #cf-app .cf-daily-day strong{font-size:14px;color:#ffdf8b;white-space:nowrap}
+    #cf-app .cf-daily-day span{font-size:9px;color:#b5a3d1}
+    #cf-app .cf-daily-day.is-current{border-color:#f5cf6a;box-shadow:0 0 14px #f5cf6a30;background:linear-gradient(145deg,#342342,#151020)}
+    #cf-app .cf-daily-day.is-claimed{border-color:#327b62;background:linear-gradient(145deg,#103729,#0b1715)}
+    #cf-app .cf-daily-day.is-claimed strong{color:#75e0ad}
     #cf-app .cf-bonus-wheel-wrap{position:relative;width:min(78vw,300px);aspect-ratio:1;margin:12px auto 16px}
     #cf-app .cf-bonus-prize-wheel{position:absolute;inset:0;width:100%;height:100%;margin:0;border:8px solid #f7d579;box-shadow:0 0 0 4px #75401c,0 0 25px #ffb72e55;background:conic-gradient(#b52b43 0deg 45deg,#171923 45deg 90deg,#176b48 90deg 135deg,#6524a5 135deg 180deg,#b52b43 180deg 225deg,#171923 225deg 270deg,#176b48 270deg 315deg,#6524a5 315deg 360deg);transition:transform 5.2s cubic-bezier(.08,.72,.12,1);overflow:hidden}
     #cf-app .cf-bonus-label{z-index:2;width:42px;height:28px;padding:0 2px;border-radius:0;background:transparent;text-shadow:0 1px 2px #000;color:#fff;font-weight:900}
@@ -366,12 +374,14 @@
     app.insertAdjacentHTML('beforeend','<div class="modal-backdrop" id="cf-wheel-modal"><section class="modal-card" role="dialog" aria-modal="true" aria-label="Бонусная рулетка"><button type="button" class="modal-close" data-action="close-bonus-wheel" aria-label="Закрыть">×</button><div class="section-title">🎁 Бонусная рулетка дня</div>'+bonusWheelCard()+'</section></div>');
     refreshBonusStatus();if(bonusTimerInterval)clearInterval(bonusTimerInterval);bonusTimerInterval=setInterval(refreshBonusStatus,1000);
   }
-  function bonuses(){return '<div class="section-title">🎁 Бонусы и награды</div>'+bonusWheelCard()+'<p style="text-align:center;color:#c5b6df;font-size:12px">Одна попытка в день на аккаунт Telegram. Результат и начисление определяет сервер.</p>'}
+  function dailyRewardCard(){const rewards=[500,1000,1500,2500,4000,6000,10000,25000];return '<section class="gamepanel" style="margin-bottom:14px"><div class="section-title" style="margin-top:0">📅 Ежедневные награды</div><p style="color:#c5b6df;font-size:12px;margin:0 0 12px">Забирай награду каждые 24 часа. Заходи подряд, чтобы продвигаться по цепочке из 8 дней.</p><div class="cf-daily-grid">'+rewards.map((v,i)=>'<div class="cf-daily-day" data-daily-day="'+(i+1)+'"><small>ДЕНЬ '+(i+1)+'</small><strong>+'+v.toLocaleString('ru-RU')+'</strong><span>✦ кредитов</span></div>').join('')+'</div><div id="cf-daily-status" style="font-size:12px;color:#ffdf8b;margin:12px 0 8px">Проверяем доступность…</div><button class="primary" data-action="daily" id="cf-daily-claim">🎁 Забрать награду</button><div id="cf-daily-result" style="color:#ffe09a;font-size:12px;margin-top:9px"></div></section>'}
+  async function refreshDailyRewardStatus(){const statusEl=app.querySelector('#cf-daily-status'),button=app.querySelector('#cf-daily-claim');if(!statusEl||!button)return;try{const data=await api('/api/daily-reward/status');const rewards=[500,1000,1500,2500,4000,6000,10000,25000];app.querySelectorAll('[data-daily-day]').forEach(el=>{const day=Number(el.dataset.dailyDay);el.classList.toggle('is-claimed',day<data.streakDay||(!data.available&&day===data.streakDay));el.classList.toggle('is-current',day===data.streakDay);const amount=el.querySelector('strong');if(amount)amount.textContent='+'+rewards[day-1].toLocaleString('ru-RU')});if(data.available){statusEl.textContent='🎉 Награда дня '+data.streakDay+' доступна!';button.disabled=false;button.textContent='🎁 Забрать +'+rewards[data.streakDay-1].toLocaleString('ru-RU')+' кредитов'}else{const left=Math.max(0,new Date(data.nextAvailableAt).getTime()-Date.now()),h=Math.floor(left/3600000),m=Math.floor(left%3600000/60000),sec=Math.floor(left%60000/1000);statusEl.textContent='Следующая награда через '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');button.disabled=true;button.textContent='⏳ Уже получено'} }catch(error){statusEl.textContent='Не удалось проверить награду';button.disabled=false;button.textContent='↻ Проверить ещё раз'}}
+  function bonuses(){return '<div class="section-title">🎁 Бонусы и награды</div>'+dailyRewardCard()+bonusWheelCard()+'<p style="text-align:center;color:#c5b6df;font-size:12px">Бонусная рулетка — одна попытка в 24 часа. Результат и начисление определяет сервер.</p>'}
   function profile(){return '<div class="profilehead"><div class="avatar">🧑🏻‍🚀</div><strong>Аккаунт Telegram</strong><p style="color:#bfb0d8">Виртуальный баланс и история раундов</p><div class="balance" style="justify-content:center">✪ <span id="cf-profile-balance">—</span> кредитов</div></div>'+panel('Мой аккаунт','<button class="widecard" data-action="history">📜　История игр　›</button><button class="widecard" data-go="games">🎮　Игры　›</button>')}
   function tournaments(){return panel('🏆 Турниры','<div class="bigart">🏆</div><p style="text-align:center;color:#c4b5dd">Турнирная таблица ещё не подключена. Игровые раунды в слотах, костях, рулетке и блэкджеке уже отправляются на сервер.</p>'+primary('К списку игр','games'))}
   const renderers={home,games:gameList,slots,dice,roulette,blackjack,bonuses,profile,tournaments};
   let current='home',selected='Больше 7',opened=0;
-  function render(name){current=renderers[name]?name:'home';content.innerHTML=renderers[current]();app.querySelectorAll('.bottom button').forEach(b=>b.classList.toggle('active',b.dataset.go===current || (current==='mines'||current==='dice'||current==='wheel'||current==='crash')&&b.dataset.go==='games'));app.scrollTo({top:0,behavior:'instant'});}
+  function render(name){current=renderers[name]?name:'home';content.innerHTML=renderers[current]();if(current==='bonuses')refreshDailyRewardStatus();app.querySelectorAll('.bottom button').forEach(b=>b.classList.toggle('active',b.dataset.go===current || (current==='mines'||current==='dice'||current==='wheel'||current==='crash')&&b.dataset.go==='games'));app.scrollTo({top:0,behavior:'instant'});}
   window.cfNavigate=function(name){try{render(name)}catch(error){console.error('Navigation failed',error);say('Не удалось открыть раздел. Перезапусти приложение.')}};
   // Capture taps before Telegram WebView or underlying page handlers can swallow them.
   document.addEventListener('click', function cosmicNavigationCapture(e){
@@ -527,7 +537,7 @@
       return
     }
     if(action.dataset.action==='roll'){say('Открой раздел «Кости» для игры.');return}
-    if(['crash','collect','daily','referral'].includes(action.dataset.action)){say('Эта функция пока не подключена к серверу.');return}
+    if(['crash','collect','referral'].includes(action.dataset.action)){say('Эта функция пока не подключена к серверу.');return}
     if(action.dataset.action==='history'){
       try{
         const data=await api('/api/me');
@@ -537,7 +547,7 @@
       }catch(error){say(error.message)}
       return
     }
-    if(action.dataset.action==='daily'){say('Ежедневный бонус пока не реализован — кнопка отключена.');return}
+    if(action.dataset.action==='daily'){action.disabled=true;const statusEl=app.querySelector('#cf-daily-status'),resultEl=app.querySelector('#cf-daily-result');try{const data=await api('/api/daily-reward/claim',{method:'POST',body:JSON.stringify({})});const balance=app.querySelector('#cf-balance');if(balance)balance.textContent=formatBalance(data.balance);const profileBalance=app.querySelector('#cf-profile-balance');if(profileBalance)profileBalance.textContent=formatBalance(data.balance);if(resultEl)resultEl.textContent='🎉 День '+data.streakDay+': начислено +'+formatBalance(data.reward)+' виртуальных кредитов!';await refreshDailyRewardStatus();await refreshAccount();say('Ежедневная награда получена: +'+formatBalance(data.reward)+' ✦')}catch(error){if(statusEl)statusEl.textContent=error.message;await refreshDailyRewardStatus()}finally{if(action.isConnected)action.disabled=false}return}
     if(action.dataset.action==='referral'){say('Реферальная система пока не реализована.');return}
     if(action.dataset.action==='settings'){say('Настройки пока не реализованы.');return}
   });
