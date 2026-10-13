@@ -172,9 +172,11 @@ function scoreHand(hand) {
 }
 function natural(hand){return hand.length===2 && scoreHand(hand)===21;}
 function publicRoom(room, players, viewerId) {
+  const state={...(room.state||{})};
+  if(room.status==='playing' && Array.isArray(state.dealerHand) && state.dealerHand.length>1) state.dealerHand=[state.dealerHand[0],{hidden:true}];
   return {id:room.id,inviteCode:room.invite_code,status:room.status,bet:Number(room.bet),hostTelegramId:String(room.host_telegram_id),
     players:players.map(p=>({telegramId:String(p.telegram_id),username:p.username,firstName:p.first_name,seat:Number(p.seat),hand:p.hand,status:p.status,bet:Number(p.bet),payout:Number(p.payout),doubled:p.doubled,score:p.hand?.length?scoreHand(p.hand):null,isMe:String(p.telegram_id)===String(viewerId)})),
-    state:room.state||{},createdAt:room.created_at};
+    state,createdAt:room.created_at};
 }
 async function getRoom(roomId, client=pool, lock=false) {
   const q=await client.query('SELECT * FROM blackjack_rooms WHERE id=$1'+(lock?' FOR UPDATE':''),[roomId]);
