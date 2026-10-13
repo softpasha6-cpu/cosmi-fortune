@@ -55,6 +55,13 @@
     #cf-app .bottom .navicon{font-size:21px} #cf-app .bottom button.active{color:#e49aff;text-shadow:0 0 12px #c32aff}
     #cf-app .toast{position:fixed;z-index:8;bottom:calc(76px + env(safe-area-inset-bottom));left:8%;right:8%;padding:12px;border:1px solid #8b43c6;border-radius:12px;background:#1a102bf5;text-align:center;display:none}
     #cf-app .toast.show{display:block}
+    #cf-app .spinwheel{transition:transform 3.2s cubic-bezier(.12,.72,.12,1)}
+    #cf-app .anim-dice{animation:cfDice .75s ease-in-out}
+    #cf-app .anim-slots{animation:cfSlots .8s ease-in-out}
+    #cf-app .anim-cards{animation:cfCards .7s ease-out}
+    @keyframes cfDice{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-18deg) scale(1.12)}50%{transform:rotate(18deg) scale(.9)}75%{transform:rotate(-8deg) scale(1.05)}}
+    @keyframes cfSlots{0%{filter:blur(0);transform:translateY(0)}35%{filter:blur(4px);transform:translateY(-8px)}70%{filter:blur(2px);transform:translateY(5px)}100%{filter:none;transform:translateY(0)}}
+    @keyframes cfCards{0%{opacity:.3;transform:translateY(-18px) rotate(-5deg)}100%{opacity:1;transform:translateY(0) rotate(0)}}
     @media(max-width:360px){#cf-app .shell{padding:10px}#cf-app .hero{padding:20px 14px;min-height:250px}#cf-app .hero p{max-width:70%}#cf-app .card{padding:10px}#cf-app .art{height:62px;font-size:42px}}
   `;
   document.head.appendChild(style);
@@ -99,8 +106,8 @@
     }
   }
   const primary=(text,act)=>'<button class="primary" data-action="'+act+'">'+text+'</button>';
-  function home(){return '<section class="hero"><div class="eyebrow">ТВОЯ ВСЕЛЕННАЯ ВЫИГРЫШЕЙ</div><h1>COSMIC<br><span>FORTUNE</span></h1><p>Проверь удачу среди звёзд. Выбирай игру и открывай новые галактики.</p>'+primary('✦ Играть  ›','games')+'</section><div class="section-title">✦ Популярные игры</div><div class="cards">'+games.slice(0,4).map(g=>'<button class="card" data-go="'+g[0]+'"><div class="art" data-art="'+g[0]+'"><span>'+g[1]+'</span></div><strong>'+g[2]+'</strong><small>'+g[3]+'</small></button>').join('')+'</div><button class="widecard" data-go="bonuses"><div class="art">🎁</div><div><strong>Ежедневный бонус</strong><small>Забирай награду каждый день</small></div> ›</button>'}
-  function gameList(){return '<div class="section-title">ИГРЫ</div><div style="color:#c6b5e2;margin:0 2px 14px">ВЫБЕРИ СВОЮ УДАЧУ</div>'+games.map(g=>'<button class="widecard" data-go="'+g[0]+'"><div class="art" data-art="'+g[0]+'"><span>'+g[1]+'</span></div><div style="flex:1"><strong>'+g[2]+'</strong><small>'+g[3]+'</small></div>›</button>').join('')}
+  function home(){return '<section class="hero"><div class="eyebrow">ТВОЯ ВСЕЛЕННАЯ ВЫИГРЫШЕЙ</div><h1>COSMIC<br><span>FORTUNE</span></h1><p>Играй в космические игры, получай виртуальные кредиты и забирай ежедневные бонусы.</p>'+primary('✦ Играть  ›','games')+'</section><div class="section-title">🎁 Бонусная рулетка дня</div>'+bonusWheelCard()+'<div class="section-title">✦ Ежедневные бонусы</div><button class="widecard" data-go="bonuses"><div class="art">🎁</div><div><strong>Бонусы и награды</strong><small>Ежедневная бесплатная попытка</small></div> ›</button>'}
+  function gameList(){return '<div class="section-title">ИГРЫ</div><div style="color:#c6b5e2;margin:0 2px 14px">ВЫБЕРИ СВОЮ УДАЧУ</div>'+games.map(g=>'<button class="widecard" data-go="'+g[0]+'"><div class="art" data-art="'+g[0]+'"><span>'+g[1]+'</span></div><div style="flex:1"><strong>'+g[2]+'</strong><small>'+g[3]+'</small></div>›</button>').join('')+'<div class="section-title">🎁 Бесплатная рулетка</div>'+bonusWheelCard()}
   function panel(title,body){return '<div class="section-title">'+title+'</div><section class="gamepanel">'+body+'</section>'}
   function gamePanel(game,title,art,description,extra=''){
     return panel(title,'<div class="bigart">'+art+'</div><p style="text-align:center;color:#c5b6df">'+description+'</p>'+extra+'<div class="fieldrow"><label class="field">Ставка <input id="cf-bet" type="number" min="1" max="100000" value="100" style="width:100%;margin-top:8px;background:#0b0918;color:white;border:1px solid #6c3a9e;border-radius:8px;padding:8px;text-align:center"></label></div><div id="cf-game-result" style="text-align:center;color:#e6d8ff;min-height:24px;margin:10px 0"></div><button class="primary" data-action="play-game" data-game="'+game+'">Играть</button>');
@@ -110,7 +117,8 @@
   function roulette(){return gamePanel('roulette','🎡 Рулетка','🎡','Выбери цвет до запуска раунда.','<div class="cards"><button class="secondary" data-choice="red">🔴 Красное</button><button class="secondary" data-choice="black">⚫ Чёрное</button></div>')}
   function blackjack(){return gamePanel('blackjack','🃏 Блэкджек','🃏','Сервер раздаёт карты и рассчитывает результат.')}
 
-  function bonuses(){return panel('🎁 Бонусы','<div class="bigart">🎁</div><p style="text-align:center;color:#c5b6df">Бонусы и реферальные награды пока не подключены к серверу. Здесь не будет фиктивного начисления кредитов.</p>')}
+  function bonusWheelCard(){return '<section class="gamepanel" style="text-align:center"><div class="wheel spinwheel" id="cf-bonus-wheel">🎁</div><p style="color:#c5b6df">Бесплатно раз в день. Может выпасть 25, 50, 100 или 250 кредитов — либо ничего.</p>'+primary('🎡 Крутить бесплатно','bonus-wheel')+'<div id="cf-bonus-result" style="min-height:26px;margin-top:12px;color:#ffe09a"></div></section>'}
+  function bonuses(){return '<div class="section-title">🎁 Бонусы и награды</div>'+bonusWheelCard()+'<p style="text-align:center;color:#c5b6df;font-size:12px">Одна попытка в день на аккаунт Telegram. Результат и начисление определяет сервер.</p>'}
   function profile(){return '<div class="profilehead"><div class="avatar">🧑🏻‍🚀</div><strong>Аккаунт Telegram</strong><p style="color:#bfb0d8">Виртуальный баланс и история раундов</p><div class="balance" style="justify-content:center">✪ <span id="cf-profile-balance">—</span> кредитов</div></div>'+panel('Мой аккаунт','<button class="widecard" data-action="history">📜　История игр　›</button><button class="widecard" data-go="games">🎮　Игры　›</button>')}
   function tournaments(){return panel('🏆 Турниры','<div class="bigart">🏆</div><p style="text-align:center;color:#c4b5dd">Турнирная таблица ещё не подключена. Игровые раунды в слотах, костях, рулетке и блэкджеке уже отправляются на сервер.</p>'+primary('К списку игр','games'))}
   const renderers={home,games,slots,dice,roulette,blackjack,bonuses,profile,tournaments};
@@ -122,12 +130,28 @@
     const choice=e.target.closest('[data-choice]');if(choice){selected=choice.dataset.choice;app.querySelectorAll('[data-choice]').forEach(b=>b.style.borderColor=b===choice?'#e05cff':'#7445a7');return}
     const action=e.target.closest('[data-action]');if(!action)return;
     if(action.dataset.action==='games'){render('games');return}
+    if(action.dataset.action==='bonus-wheel'){
+      const button=action, wheel=app.querySelector('#cf-bonus-wheel'), result=app.querySelector('#cf-bonus-result');
+      button.disabled=true;button.textContent='Колесо вращается…';
+      if(wheel){wheel.style.transform='rotate(0deg)';void wheel.offsetWidth;wheel.style.transform='rotate('+(1440+Math.floor(Math.random()*1080))+'deg)';}
+      try{
+        const data=await api('/api/bonus-wheel',{method:'POST',body:JSON.stringify({requestId:crypto.randomUUID()})});
+        if(result)result.textContent='🎉 '+(data.outcome?.label||'Результат')+' · баланс '+formatBalance(data.balance)+' ✦';
+        const balance=app.querySelector('#cf-balance');if(balance)balance.textContent=formatBalance(data.balance);
+        const profileBalance=app.querySelector('#cf-profile-balance');if(profileBalance)profileBalance.textContent=formatBalance(data.balance);
+        say(data.outcome?.label||'Бонус получен');
+      }catch(error){if(result)result.textContent=error.message;say(error.message)}
+      finally{button.disabled=false;button.textContent='🎡 Крутить бесплатно'}
+      return
+    }
     if(action.dataset.action==='play-game'){
       const game=action.dataset.game;
       const bet=Number(app.querySelector('#cf-bet')?.value);
       const result=app.querySelector('#cf-game-result');
       if(!Number.isSafeInteger(bet)||bet<1||bet>100000){say('Ставка должна быть от 1 до 100 000.');return}
       const body={game,bet,requestId:crypto.randomUUID()};
+      const art=app.querySelector('.bigart');
+      if(art){art.classList.remove('anim-dice','anim-slots','anim-cards');void art.offsetWidth;art.classList.add(game==='dice'?'anim-dice':game==='slots'?'anim-slots':'anim-cards');}
       if(game==='roulette'){
         if(!['red','black'].includes(selected)){say('Сначала выбери красное или чёрное.');return}
         body.choice=selected;
