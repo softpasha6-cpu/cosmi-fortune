@@ -397,6 +397,43 @@ app.post('/api/blackjack/rooms/:id/action',requireUser,async(req,res,next)=>{
   }catch(e){await client.query('ROLLBACK').catch(()=>{});next(e)}finally{client.release()}
 });
 
+const DAILY_REWARDS = [500, 1000, 1500, 2500, 4000, 6000, 10000, 25000];
+app.get('/api/daily-reward/status', requireUser, async (req, res, next) => {
+  try {
+    const result = await pool.query('SELECT claimed_at,streak_day,reward FROM daily_reward_claims WHERE telegram_id=$1',[req.player.telegram_id]);
+    if (!result.rowCount) return res.json({available:true,streakDay:1,nextAvailableAt:null,lastReward:null});
+    const row=result.rows[0], claimedAt=new Date(row.claimed_at), elapsed=Date.now()-claimedAt.getTime();
+    const streakDay=elapsed>48*60*60*1000?1:Math.min(8,Number(row.streak_day)%8+1);
+    const nextAvailableAt=new Date(claimedAt.getTime()+24*60*60*1000);
+    return res.json({available:elapsed>=24*60*60*1000,streakDay,nextAvailableAt:nextAvailableAt.toISOString(),lastReward:Number(row.reward),lastClaimedAt:claimedAt.toISOString()});
+  } catch(error) { next(error); }
+});
+app.post('/api/daily-reward/claim', requireUser, async (req, res, next) => {
+  const client=await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const player=await client.query('SELECT balance FROM players WHERE telegram_id=$1 FOR UPDATE',[req.player.telegram_id]);
+    if(!player.rowCount){await client.query('ROLLBACK');return res.status(404).json({error:'Аккаунт не найден.'});}
+    const prior=await client.query('SELECT claimed_at,streak_day FROM daily_reward_claims WHERE telegram_id=$1 FOR UPDATE',[req.player.telegram_id]);
+    let streakDay=1;
+    if(prior.rowCount){
+      const elapsed=Date.now()-new Date(prior.rows[0].claimed_at).getTime();
+      if(elapsed<24*60*60*1000){
+        const nextAt=new Date(new Date(prior.rows[0].claimed_at).getTime()+24*60*60*1000);
+        await client.query('ROLLBACK');
+        return res.status(409).json({error:'Ежедневную награду можно забрать через 24 часа после прошлого получения.',nextAvailableAt:nextAt.toISOString()});
+      }
+      streakDay=elapsed>48*60*60*1000?1:Math.min(8,Number(prior.rows[0].streak_day)%8+1);
+    }
+    const reward=DAILY_REWARDS[streakDay-1], balance=Number(player.rows[0].balance)+reward;
+    await client.query('UPDATE players SET balance=$2,updated_at=NOW() WHERE telegram_id=$1',[req.player.telegram_id,balance]);
+    await client.query('INSERT INTO daily_reward_claims (telegram_id,claimed_at,streak_day,reward) VALUES ($1,NOW(),$2,$3) ON CONFLICT (telegram_id) DO UPDATE SET claimed_at=NOW(),streak_day=EXCLUDED.streak_day,reward=EXCLUDED.reward',[req.player.telegram_id,streakDay,reward]);
+    await client.query('COMMIT');
+    res.json({reward,balance,streakDay,nextAvailableAt:new Date(Date.now()+24*60*60*1000).toISOString()});
+  } catch(error) { await client.query('ROLLBACK').catch(()=>{}); next(error); }
+  finally { client.release(); }
+});
+
 app.get('/api/bonus-wheel/status', requireUser, async (req, res, next) => {
   try {
     const result = await pool.query('SELECT claimed_at,reward FROM bonus_wheel_cooldowns WHERE telegram_id=$1',[req.player.telegram_id]);
