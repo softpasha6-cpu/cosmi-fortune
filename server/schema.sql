@@ -44,3 +44,26 @@ CREATE TABLE IF NOT EXISTS bonus_wheel_claims (
 -- Existing installations may still have the original positive-bet constraint.
 ALTER TABLE game_transactions DROP CONSTRAINT IF EXISTS game_transactions_bet_check;
 ALTER TABLE game_transactions ADD CONSTRAINT game_transactions_bet_check CHECK (bet >= 0);
+
+CREATE TABLE IF NOT EXISTS blackjack_rooms (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  host_telegram_id BIGINT NOT NULL REFERENCES players(telegram_id),
+  invite_code TEXT NOT NULL UNIQUE,
+  status TEXT NOT NULL DEFAULT 'waiting' CHECK (status IN ('waiting','playing','finished')),
+  bet BIGINT NOT NULL CHECK (bet > 0),
+  state JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS blackjack_room_players (
+  room_id UUID NOT NULL REFERENCES blackjack_rooms(id) ON DELETE CASCADE,
+  telegram_id BIGINT NOT NULL REFERENCES players(telegram_id),
+  seat SMALLINT NOT NULL CHECK (seat BETWEEN 1 AND 5),
+  hand JSONB NOT NULL DEFAULT '[]'::jsonb,
+  status TEXT NOT NULL DEFAULT 'waiting' CHECK (status IN ('waiting','playing','stood','busted','blackjack','finished')),
+  bet BIGINT NOT NULL CHECK (bet > 0),
+  payout BIGINT NOT NULL DEFAULT 0 CHECK (payout >= 0),
+  doubled BOOLEAN NOT NULL DEFAULT FALSE,
+  PRIMARY KEY (room_id, telegram_id),
+  UNIQUE (room_id, seat)
+);
