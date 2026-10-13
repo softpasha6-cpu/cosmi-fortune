@@ -425,7 +425,7 @@
       const result=app.querySelector('#cf-game-result');
       if(!Number.isSafeInteger(bet)||bet<1||bet>100000){say('Ставка должна быть от 1 до 100 000.');return}
       const body={game,bet,requestId:crypto.randomUUID()};
-      const diceOne=game==='dice'?app.querySelector('#cf-die-one'):null;const diceTwo=game==='dice'?app.querySelector('#cf-die-two'):null;const diceTotal=game==='dice'?app.querySelector('#cf-dice-total'):null;if(game==='dice'){[diceOne,diceTwo].forEach(d=>{if(d){d.classList.remove('face-1','face-2','face-3','face-4','face-5','face-6');d.classList.add('face-6','is-rolling');}}if(diceTotal)diceTotal.textContent='КОСТИ БРОШЕНЫ…';}const stage=app.querySelector('#cf-game-stage');
+      const diceOne=game==='dice'?app.querySelector('#cf-die-one'):null;const diceTwo=game==='dice'?app.querySelector('#cf-die-two'):null;const diceTotal=game==='dice'?app.querySelector('#cf-dice-total'):null;if(game==='dice'){[diceOne,diceTwo].forEach(d=>{if(d){d.classList.remove('face-1','face-2','face-3','face-4','face-5','face-6');d.classList.add('face-6','is-rolling');}});if(diceTotal)diceTotal.textContent='КОСТИ БРОШЕНЫ…';}const stage=app.querySelector('#cf-game-stage');
       if(stage){stage.classList.add('is-playing');}
       const art=app.querySelector('.bigart');
       if(art){art.classList.remove('anim-dice','anim-slots','anim-cards','anim-wheel');void art.offsetWidth;art.classList.add(game==='dice'?'anim-dice':game==='slots'?'anim-slots':game==='roulette'?'anim-wheel':'anim-cards');}
