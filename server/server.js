@@ -430,14 +430,16 @@ app.post('/api/bonus-wheel', requireUser, async (req, res, next) => {
       await client.query('ROLLBACK');
       return res.status(409).json({error:'Бонусная рулетка снова будет доступна через 24 часа.',nextAvailableAt:nextAt.toISOString()});
     }
-    const roll=randInt(100000);
+    const roll=randInt(1000000);
     let reward=1000, label='+1 000 виртуальных кредитов';
     if(roll<10){reward=100;label='ДЖЕКПОТ: +100 игровых звёзд ✦';}
     else if(roll<1000){reward=25;label='+25 игровых звёзд ✦';}
-    else if(roll<6000){reward=25000;label='+25 000 виртуальных кредитов';}
-    else if(roll<16000){reward=10000;label='+10 000 виртуальных кредитов';}
-    else if(roll<31000){reward=5000;label='+5 000 виртуальных кредитов';}
-    else if(roll<56000){reward=2000;label='+2 000 виртуальных кредитов';}
+    else if(roll<1100){reward=50000;label='500 ₽ в игровом эквиваленте · +50 000 виртуальных кредитов';}
+    else if(roll<2100){reward=25000;label='250 ₽ в игровом эквиваленте · +25 000 виртуальных кредитов';}
+    else if(roll<51000){reward=25000;label='+25 000 виртуальных кредитов';}
+    else if(roll<151000){reward=10000;label='+10 000 виртуальных кредитов';}
+    else if(roll<301000){reward=5000;label='+5 000 виртуальных кредитов';}
+    else if(roll<551000){reward=2000;label='+2 000 виртуальных кредитов';}
     else {reward=1000;label='+1 000 виртуальных кредитов';}
     const balanceAfter=Number(locked.rows[0].balance)+reward;
     await client.query('UPDATE players SET balance=$2, updated_at=NOW() WHERE telegram_id=$1',[req.player.telegram_id,balanceAfter]);
