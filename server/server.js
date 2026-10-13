@@ -138,12 +138,12 @@ function playRound(game, bet, choice) {
   }
   if (game === 'roulette') {
     const numberBet = Number.isInteger(choice) && choice >= 0 && choice <= 36;
-    const colorBet = choice === 'red' || choice === 'black';
-    if (!numberBet && !colorBet) throw Object.assign(new Error('Выбери красное, чёрное или номер от 0 до 36.'), { status: 400 });
+    const colorBet = choice === 'red' || choice === 'black' || choice === 'green';
+    if (!numberBet && !colorBet) throw Object.assign(new Error('Выбери красное, чёрное, зелёное или номер от 0 до 36.'), { status: 400 });
     const number = randInt(37);
     const color = number === 0 ? 'green' : RED_NUMBERS.has(number) ? 'red' : 'black';
     const won = numberBet ? number === choice : color === choice;
-    const multiplier = numberBet ? 36 : 2;
+    const multiplier = numberBet ? 36 : choice === 'green' ? 36 : 2;
     return { payout: won ? bet * multiplier : 0, outcome: { number, color, choice, betType: numberBet ? 'number' : 'color', multiplier, won, message: won ? (numberBet ? 'Точное попадание в номер! Выплата 36×.' : 'Поздравляем! Цвет совпал.') : 'В этот раз не повезло.' } };
   }
   if (game === 'blackjack') {
