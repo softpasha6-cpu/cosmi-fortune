@@ -137,11 +137,14 @@ function playRound(game, bet, choice) {
     return { payout: won ? bet * 2 : 0, outcome: { roll, won, message: won ? 'Выпало 4–6: выигрыш!' : 'Выпало 1–3: ставка проиграна' } };
   }
   if (game === 'roulette') {
-    if (!['red','black'].includes(choice)) throw Object.assign(new Error('Для рулетки выбери red или black'), { status: 400 });
+    const numberBet = Number.isInteger(choice) && choice >= 0 && choice <= 36;
+    const colorBet = choice === 'red' || choice === 'black';
+    if (!numberBet && !colorBet) throw Object.assign(new Error('Выбери красное, чёрное или номер от 0 до 36.'), { status: 400 });
     const number = randInt(37);
     const color = number === 0 ? 'green' : RED_NUMBERS.has(number) ? 'red' : 'black';
-    const won = color === choice;
-    return { payout: won ? bet * 2 : 0, outcome: { number, color, choice, won, message: won ? 'Поздравляем! Ты выиграл.' : 'В этот раз не повезло.' } };
+    const won = numberBet ? number === choice : color === choice;
+    const multiplier = numberBet ? 36 : 2;
+    return { payout: won ? bet * multiplier : 0, outcome: { number, color, choice, betType: numberBet ? 'number' : 'color', multiplier, won, message: won ? (numberBet ? 'Точное попадание в номер! Выплата 36×.' : 'Поздравляем! Цвет совпал.') : 'В этот раз не повезло.' } };
   }
   if (game === 'blackjack') {
     const player = blackjackHand();
