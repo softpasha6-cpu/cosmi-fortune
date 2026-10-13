@@ -431,13 +431,14 @@ app.post('/api/bonus-wheel', requireUser, async (req, res, next) => {
       return res.status(409).json({error:'Бонусная рулетка снова будет доступна через 24 часа.',nextAvailableAt:nextAt.toISOString()});
     }
     const roll=randInt(100000);
-    let reward=1, label='+1 виртуальный кредит';
+    let reward=1000, label='+1 000 виртуальных кредитов';
     if(roll<10){reward=100;label='ДЖЕКПОТ: +100 игровых звёзд ✦';}
     else if(roll<1000){reward=25;label='+25 игровых звёзд ✦';}
-    else if(roll<10000){reward=10;label='+10 виртуальных кредитов';}
-    else if(roll<30000){reward=5;label='+5 виртуальных кредитов';}
-    else if(roll<60000){reward=2;label='+2 виртуальных кредита';}
-    else {reward=1;label='+1 виртуальный кредит';}
+    else if(roll<6000){reward=25000;label='+25 000 виртуальных кредитов';}
+    else if(roll<16000){reward=10000;label='+10 000 виртуальных кредитов';}
+    else if(roll<31000){reward=5000;label='+5 000 виртуальных кредитов';}
+    else if(roll<56000){reward=2000;label='+2 000 виртуальных кредитов';}
+    else {reward=1000;label='+1 000 виртуальных кредитов';}
     const balanceAfter=Number(locked.rows[0].balance)+reward;
     await client.query('UPDATE players SET balance=$2, updated_at=NOW() WHERE telegram_id=$1',[req.player.telegram_id,balanceAfter]);
     const inserted=await client.query(
