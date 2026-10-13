@@ -16,9 +16,11 @@
     root.innerHTML = '<div class="cf-frame"><img class="cf-art" alt="Cosmic Fortune"><div class="cf-hotspots"></div></div><div class="cf-toast" role="status"></div>';
     const style = document.createElement('style');
     style.textContent = `
-      #cf-mockup-app{position:fixed;inset:0;z-index:9999;background:#05040b;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:system-ui,sans-serif}
-      #cf-mockup-app .cf-frame{position:relative;width:min(100vw,calc(100dvh * .56));height:min(100dvh,calc(100vw / .56));aspect-ratio:300/545;overflow:hidden}
-      #cf-mockup-app .cf-art{display:block;width:100%;height:100%;object-fit:fill;user-select:none;-webkit-user-drag:none}
+      #cf-mockup-app{position:fixed;inset:0;z-index:2147483647;width:100vw;height:100dvh;background:#05040b;display:block;overflow:hidden;font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;isolation:isolate;}
+      body.cf-mockup-active>*:not(#cf-mockup-app){visibility:hidden!important;}
+      body.cf-mockup-active{overflow:hidden!important;height:100%;}
+      #cf-mockup-app .cf-frame{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;overflow:hidden;background:#05040b;}
+      #cf-mockup-app .cf-art{display:block;width:100%;height:100%;object-fit:cover;object-position:center center;user-select:none;-webkit-user-drag:none;image-rendering:auto;transform:scale(1.035);}
       #cf-mockup-app .cf-hotspots{position:absolute;inset:0}
       #cf-mockup-app .cf-hit{position:absolute;border:0;background:transparent;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
       #cf-mockup-app .cf-hit:focus-visible{outline:2px solid #e3a3ff;outline-offset:-3px;border-radius:10px}
@@ -27,6 +29,7 @@
     `;
     document.head.appendChild(style);
     document.body.appendChild(root);
+    document.body.classList.add('cf-mockup-active');
     const art = root.querySelector('.cf-art');
     const layer = root.querySelector('.cf-hotspots');
     const toast = root.querySelector('.cf-toast');
@@ -48,16 +51,16 @@
     function draw(){
       layer.replaceChildren();
       if(current==='home'){
-        hit('Играть',4,75,92,11,()=>go('games'));
-        hit('Подарок',79,12,16,8,()=>go('bonuses'));
-        hit('Баланс',5,12,44,8,()=>say('Баланс обновляется через подключённый сервер.'));
+        hit('Играть',4,72,92,12,()=>go('games'));
+        hit('Подарок',79,14,16,8,()=>go('bonuses'));
+        hit('Баланс',5,14,44,8,()=>say('Баланс обновляется через подключённый сервер.'));
         nav();
       } else if(current==='games'){
-        hit('Космические мины',4,17,92,14,()=>go('mines'));
-        hit('Кости',4,32,92,14,()=>go('dice'));
-        hit('Колесо удачи',4,47,92,14,()=>go('wheel'));
-        hit('Краш',4,62,92,14,()=>go('crash'));
-        hit('Монетка',4,77,92,11,()=>say('Игра «Монетка» будет подключена следующим этапом.'));
+        hit('Космические мины',4,20,92,13,()=>go('mines'));
+        hit('Кости',4,35,92,13,()=>go('dice'));
+        hit('Колесо удачи',4,50,92,13,()=>go('wheel'));
+        hit('Краш',4,65,92,13,()=>go('crash'));
+        hit('Монетка',4,80,92,9,()=>say('Игра «Монетка» будет подключена следующим этапом.'));
         nav();
       } else if(current==='mines'){
         hit('Поле мин',5,29,90,47,()=>say('Поле готово к подключению игровой логики.'));
