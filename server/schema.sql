@@ -76,3 +76,11 @@ CREATE TABLE IF NOT EXISTS blackjack_room_players (
 
 ALTER TABLE blackjack_room_players ADD COLUMN IF NOT EXISTS ready BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE blackjack_rooms ADD COLUMN IF NOT EXISTS round_number INTEGER NOT NULL DEFAULT 1;
+
+-- Daily reward streak: one claim every 24 hours, tracked per Telegram account.
+CREATE TABLE IF NOT EXISTS daily_reward_claims (
+  telegram_id BIGINT PRIMARY KEY REFERENCES players(telegram_id) ON DELETE CASCADE,
+  claimed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  streak_day SMALLINT NOT NULL DEFAULT 1 CHECK (streak_day BETWEEN 1 AND 8),
+  reward BIGINT NOT NULL CHECK (reward >= 0)
+);
