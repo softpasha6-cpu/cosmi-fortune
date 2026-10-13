@@ -166,7 +166,29 @@
   function slots(){return gamePanel('slots','🎰 Космические слоты','🎰','Символы и выплаты рассчитываются на сервере.')}
   function dice(){return gamePanel('dice','🎲 Кости','🎲','Сервер бросает кубик. На 4–6 выплата 2×, иначе ставка проиграна.')}
   function roulette(){return gamePanel('roulette','🎡 Рулетка','🎡','Выбери цвет до запуска раунда.','<div class="cards"><button class="secondary" data-choice="red">🔴 Красное</button><button class="secondary" data-choice="black">⚫ Чёрное</button></div>')}
-  function blackjack(){return gamePanel('blackjack','🃏 Блэкджек','🃏','Сервер раздаёт карты и рассчитывает результат.')}
+  let blackjackRoomId=null,blackjackPoll=null;
+  function blackjack(){
+    return panel('🃏 Блэкджек онлайн',
+      '<div class="game-stage blackjack">'+gameAvatar('blackjack')+'<p style="color:#c5b6df">Создай стол и пригласи друзей по коду. Дилер раздаёт карты, каждый игрок ходит отдельно. Доступны взять карту, остановиться и удвоить.</p></div>'+
+      '<div class="fieldrow"><label class="field">Ставка на игрока <input id="cf-bj-bet" type="number" min="1" max="100000" value="100" style="width:100%;margin-top:8px;background:#0b0918;color:white;border:1px solid #6c3a9e;border-radius:8px;padding:8px;text-align:center"></label></div>'+
+      '<button class="primary" data-action="bj-create">Создать стол</button>'+
+      '<div class="section-title">Есть приглашение?</div><div class="fieldrow"><label class="field">Код комнаты <input id="cf-bj-code" maxlength="8" placeholder="Например A1B2C3D4" style="width:100%;margin-top:8px;background:#0b0918;color:white;border:1px solid #6c3a9e;border-radius:8px;padding:8px;text-align:center;text-transform:uppercase"></label></div><button class="secondary" data-action="bj-join">Войти по коду</button>'+
+      '<div id="cf-bj-room"></div>');
+  }
+  function cardText(c){if(!c)return '🂠';if(c.hidden)return '🂠';return ({1:'A',11:'J',12:'Q',13:'K'}[c.rank]||c.rank)+c.suit}
+  function renderBlackjackRoom(room){
+    blackjackRoomId=room.id;
+    const box=app.querySelector('#cf-bj-room');if(!box)return;
+    const me=room.players.find(p=>p.isMe);
+    const dealer=(room.state?.dealerHand||[]).map(cardText).join('　')||'Карты будут после старта';
+    box.innerHTML='<div class="section-title">Стол · '+room.inviteCode+'</div><div class="game-stage blackjack"><strong>Дилер</strong><div class="cards-art" style="justify-content:center;margin:14px 0">'+dealer+'</div>'+(room.state?.dealerScore!==undefined?'<p>Очки дилера: '+room.state.dealerScore+'</p>':'')+'</div>'+
+      '<div class="fieldrow"><div class="field">Ставка: '+formatBalance(room.bet)+' ✦ на игрока</div><button class="secondary" data-action="bj-copy">Пригласить · '+room.inviteCode+'</button></div>'+
+      room.players.map(p=>'<div class="widecard"><div style="flex:1"><strong>'+(p.firstName||p.username||('Игрок '+p.seat))+(p.isMe?' (ты)':'')+'</strong><small>'+p.hand.map(cardText).join('　')+'<br>Очки: '+(p.score??'—')+' · '+({waiting:'ожидает',playing:'ходит',stood:'остановился',busted:'перебор',blackjack:'блэкджек',finished:'завершил'}[p.status]||p.status)+(p.status==='finished'?' · выплата '+formatBalance(p.payout)+' ✦':'')+'</small></div></div>').join('')+
+      (room.status==='waiting'?(me?.isMe&&String(room.hostTelegramId)===String(me.telegramId)?'<button class="primary" data-action="bj-start">Начать раздачу ('+room.players.length+'/5)</button>':'<p style="color:#c5b6df">Ожидаем, пока создатель начнёт игру.</p>'):'')+
+      (room.status==='playing'&&me?.status==='playing'?'<div class="cards"><button class="secondary" data-action="bj-hit">Взять карту</button><button class="secondary" data-action="bj-stand">Остановиться</button><button class="primary" data-action="bj-double">Удвоить</button></div>':'')+
+      (room.status==='finished'?'<p style="text-align:center;color:#ffe09a">Раунд завершён. Выплата уже рассчитана сервером.</p><button class="secondary" data-action="bj-leave">К списку столов</button>':'')+
+      '<button class="secondary" data-action="bj-refresh">Обновить стол</button>';
+  }
 
   function bonusWheelCard(){return '<section class="gamepanel" style="text-align:center"><div class="wheel spinwheel" id="cf-bonus-wheel">🎡</div><p style="color:#c5b6df">Бесплатно раз в день. Может выпасть 25, 50, 100 или 250 кредитов — либо ничего.</p>'+primary('🎡 Крутить бесплатно','bonus-wheel')+'<div id="cf-bonus-result" style="min-height:26px;margin-top:12px;color:#ffe09a"></div></section>'}
   function openBonusWheel(){
@@ -208,6 +230,41 @@
     const choice=e.target.closest('[data-choice]');if(choice){selected=choice.dataset.choice;app.querySelectorAll('[data-choice]').forEach(b=>b.style.borderColor=b===choice?'#e05cff':'#7445a7');return}
     const action=e.target.closest('[data-action]');if(!action)return;
     if(action.dataset.action==='games'){render('games');return}
+    if(action.dataset.action==='bj-create'){
+      const bet=Number(app.querySelector('#cf-bj-bet')?.value);
+      if(!Number.isSafeInteger(bet)||bet<1||bet>100000){say('Ставка должна быть от 1 до 100 000.');return}
+      action.disabled=true;
+      try{const data=await api('/api/blackjack/rooms',{method:'POST',body:JSON.stringify({bet})});blackjackRoomId=data.room.id;const b=app.querySelector('#cf-balance');if(b)b.textContent=formatBalance(data.balance);renderBlackjackRoom(data.room);}
+      catch(error){say(error.message)}finally{action.disabled=false}
+      return
+    }
+    if(action.dataset.action==='bj-join'){
+      const inviteCode=app.querySelector('#cf-bj-code')?.value||'';
+      try{const data=await api('/api/blackjack/rooms/join',{method:'POST',body:JSON.stringify({inviteCode})});blackjackRoomId=data.room.id;const b=app.querySelector('#cf-balance');if(b)b.textContent=formatBalance(data.balance);renderBlackjackRoom(data.room);}
+      catch(error){say(error.message)}
+      return
+    }
+    if(action.dataset.action==='bj-copy'){
+      const code=app.querySelector('#cf-bj-room')?.querySelector('.section-title')?.textContent.split('·').pop()?.trim();
+      if(code){try{await navigator.clipboard.writeText(code);say('Код приглашения скопирован')}catch{say('Код приглашения: '+code)}}
+      return
+    }
+    if(action.dataset.action==='bj-refresh'){
+      if(!blackjackRoomId)return;
+      try{const data=await api('/api/blackjack/rooms/'+blackjackRoomId);renderBlackjackRoom(data.room)}catch(error){say(error.message)}
+      return
+    }
+    if(action.dataset.action==='bj-start'||action.dataset.action==='bj-hit'||action.dataset.action==='bj-stand'||action.dataset.action==='bj-double'){
+      if(!blackjackRoomId)return;
+      const actionMap={'bj-hit':'hit','bj-stand':'stand','bj-double':'double'};
+      const path=action.dataset.action==='bj-start'?'/start':'/action';
+      const body=action.dataset.action==='bj-start'?{}:{action:actionMap[action.dataset.action]};
+      action.disabled=true;
+      try{const data=await api('/api/blackjack/rooms/'+blackjackRoomId+path,{method:'POST',body:JSON.stringify(body)});renderBlackjackRoom(data.room);await refreshAccount()}
+      catch(error){say(error.message)}finally{action.disabled=false}
+      return
+    }
+    if(action.dataset.action==='bj-leave'){blackjackRoomId=null;render('blackjack');return}
     if(action.dataset.action==='open-bonus-wheel'){openBonusWheel();return}
     if(action.dataset.action==='bonus-wheel'){
       const button=action, wheel=app.querySelector('#cf-bonus-wheel'), result=app.querySelector('#cf-bonus-result');
