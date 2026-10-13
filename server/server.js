@@ -275,9 +275,6 @@ app.post('/api/blackjack/rooms/:id/ready',requireUser,async(req,res,next)=>{
     const me=result.players.find(p=>String(p.telegram_id)===String(req.player.telegram_id));
     if(!me){await client.query('ROLLBACK');return res.status(403).json({error:'Ты не участник этого стола.'})}
     if(result.room.status==='playing'){await client.query('ROLLBACK');return res.status(409).json({error:'Раунд уже идёт.'})}
-    if(wasRematch){
-      await client.query("UPDATE blackjack_rooms SET status='waiting',updated_at=NOW() WHERE id=$1",[req.params.id]);
-    }
     await client.query('UPDATE blackjack_room_players SET ready=$3 WHERE room_id=$1 AND telegram_id=$2',[req.params.id,req.player.telegram_id,Boolean(req.body?.ready)]);
     let updated=await getRoom(req.params.id,client);
     const allReady=updated.players.length>=2&&updated.players.every(p=>p.ready);
