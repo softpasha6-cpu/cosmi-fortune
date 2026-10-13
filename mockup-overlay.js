@@ -122,6 +122,26 @@
     #cf-app .cf-bottom-modal{align-items:flex-end;padding:0;z-index:2147483005}
     #cf-app .cf-bottom-modal .modal-card{width:100%;max-width:620px;max-height:84dvh;border-radius:24px 24px 0 0;padding:20px 16px calc(22px + env(safe-area-inset-bottom));overflow:auto;margin:0 auto}
     #cf-app .cf-wheel-modal .modal-card{max-height:88dvh}
+    #cf-app .cf-profile-card{padding:16px;margin-bottom:14px}
+    #cf-app .cf-profile-identity{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+    #cf-app .cf-profile-identity strong{display:block;font-size:19px;overflow-wrap:anywhere}
+    #cf-app .cf-profile-muted{font-size:12px;color:#bbaad6;overflow-wrap:anywhere}
+    #cf-app .cf-profile-data{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}
+    #cf-app .cf-profile-data>div{padding:11px;border:1px solid #45305e;border-radius:12px;background:#100b1b;min-width:0}
+    #cf-app .cf-profile-data small,#cf-app .cf-profile-balance small{display:block;font-size:9px;letter-spacing:1px;color:#a995c8;margin-bottom:6px}
+    #cf-app .cf-profile-data strong{display:block;font-size:13px;color:#f8eaff;overflow-wrap:anywhere}
+    #cf-app .cf-profile-balance{padding:13px;border:1px solid #7045a5;border-radius:14px;margin-top:10px;background:linear-gradient(120deg,#211037,#100b1b)}
+    #cf-app .cf-profile-balance>strong{display:block;font-size:21px;color:#ffdf8b;overflow-wrap:anywhere}
+    #cf-app .cf-profile-balance p{font-size:11px;color:#bbaad6;margin:7px 0 0}
+    #cf-app .cf-stars-balance{border-color:#4a3d66}
+    #cf-app .cf-stars-balance>strong{font-size:15px;color:#eee3ff}
+    #cf-app .cf-history-row{padding:12px 0;border-bottom:1px solid #332344;display:flex;gap:10px;align-items:flex-start}
+    #cf-app .cf-history-row:last-child{border-bottom:0}
+    #cf-app .cf-history-icon{font-size:23px}
+    #cf-app .cf-history-main{min-width:0;flex:1}
+    #cf-app .cf-history-main strong{display:block;font-size:13px}
+    #cf-app .cf-history-main small{display:block;color:#bbaad6;font-size:11px;margin-top:4px;overflow-wrap:anywhere}
+    #cf-app .cf-history-payout{font-size:12px;font-weight:700;color:#ffdf8b;white-space:nowrap}
     #cf-app .cf-daily-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:10px 0}
     #cf-app .cf-daily-day{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;min-height:78px;padding:8px 3px;border:1px solid #48315f;border-radius:12px;background:linear-gradient(145deg,#191128,#0a0913);text-align:center}
     #cf-app .cf-daily-day small{font-size:9px;color:#c5b6df;letter-spacing:.5px}
@@ -263,8 +283,12 @@
       if(balance) balance.textContent=formatBalance(data.player.balance);
       const profileBalance=app.querySelector('#cf-profile-balance');
       if(profileBalance) profileBalance.textContent=formatBalance(data.player.balance);
-      const title=app.querySelector('.profilehead strong');
-      if(title&&data.player.firstName) title.textContent=data.player.firstName;
+      const title=app.querySelector('#cf-profile-name');if(title)title.textContent=data.player.firstName||data.player.username||'Игрок Cosmic Fortune';
+      const uname=app.querySelector('#cf-profile-username');if(uname)uname.textContent=data.player.username?'@'+data.player.username:'Имя пользователя Telegram не задано';
+      const tag=app.querySelector('#cf-profile-tag');if(tag)tag.textContent=data.player.username?'@'+data.player.username:'Не задан';
+      const telegramId=app.querySelector('#cf-profile-id');if(telegramId)telegramId.textContent=data.player.telegramId||'—';
+      const avatar=app.querySelector('#cf-profile-avatar');if(avatar)avatar.textContent=(data.player.firstName||'🚀').slice(0,1).toUpperCase();
+      if(current==='profile')renderHistoryInProfile(data.history||[]);
     }catch(error){
       const balance=app.querySelector('#cf-balance');
       if(balance) balance.textContent='—';
@@ -388,7 +412,7 @@
   let dailyTimerInterval=null;
   function closeDailyReward(){app.querySelector('#cf-daily-modal')?.remove();if(dailyTimerInterval){clearInterval(dailyTimerInterval);dailyTimerInterval=null}}
   function bonuses(){return '<div class="section-title">🎁 Бонусы и награды</div><div class="cf-bonus-menu"><button class="cf-bonus-open" data-action="open-daily-reward"><span class="cf-bonus-open-icon">📅</span><span><strong>Ежедневные награды · 8 дней</strong><small>Забирай кредиты каждые 24 часа</small></span></button><button class="cf-bonus-open" data-action="open-bonus-wheel"><span class="cf-bonus-open-icon">🎡</span><span><strong>Бонусная рулетка</strong><small>Бесплатное вращение каждые 24 часа</small></span></button></div>'}
-  function profile(){return '<div class="profilehead"><div class="avatar">🧑🏻‍🚀</div><strong>Аккаунт Telegram</strong><p style="color:#bfb0d8">Виртуальный баланс и история раундов</p><div class="balance" style="justify-content:center">✪ <span id="cf-profile-balance">—</span> кредитов</div></div>'+panel('Мой аккаунт','<button class="widecard" data-action="history">📜　История игр　›</button><button class="widecard" data-go="games">🎮　Игры　›</button>')}
+  function profile(){return '<div class="section-title">👤 Мой профиль</div><section class="gamepanel cf-profile-card"><div class="cf-profile-identity"><div class="avatar" id="cf-profile-avatar">🚀</div><div style="min-width:0"><strong id="cf-profile-name">Загрузка профиля…</strong><div id="cf-profile-username" class="cf-profile-muted">Загружаем Telegram</div></div></div><div class="cf-profile-data"><div><small>TELEGRAM ID</small><strong id="cf-profile-id">—</strong></div><div><small>USERNAME</small><strong id="cf-profile-tag">—</strong></div></div><div class="cf-profile-balance"><small>ВИРТУАЛЬНЫЕ КРЕДИТЫ</small><strong>✦ <span id="cf-profile-balance">—</span></strong><p>Используются для ставок внутри игры.</p></div><div class="cf-profile-balance cf-stars-balance"><small>TELEGRAM STARS</small><strong>⭐ Баланс Stars не подключён</strong><p>Пополнение через Telegram Stars настроим следующим этапом. Здесь пока не отображается фиктивный баланс.</p></div></section><section class="gamepanel"><div class="section-title">📜 История игр</div><p class="cf-profile-muted">Все игровые раунды этого Telegram-аккаунта.</p><div id="cf-profile-history"><p class="cf-profile-muted">Загружаем историю…</p></div></section>'+panel('Быстрые действия','<button class="widecard" data-go="games">🎮　Играть　›</button><button class="widecard" data-go="bonuses">🎁　Бонусы и награды　›</button>')}
   function tournaments(){return panel('🏆 Турниры','<div class="bigart">🏆</div><p style="text-align:center;color:#c4b5dd">Турнирная таблица ещё не подключена. Игровые раунды в слотах, костях, рулетке и блэкджеке уже отправляются на сервер.</p>'+primary('К списку игр','games'))}
   const renderers={home,games:gameList,slots,dice,roulette,blackjack,bonuses,profile,tournaments};
   let current='home',selected='Больше 7',opened=0;
@@ -566,8 +590,10 @@
     if(action.dataset.action==='settings'){say('Настройки пока не реализованы.');return}
   });
   function renderHistoryInProfile(rows){
-    const box=app.querySelector('#cf-history-list');if(!box)return;
-    box.innerHTML=rows.length?rows.slice(0,10).map(r=>'<div class="fieldrow"><div class="field">'+({slots:'🎰 Слоты',dice:'🎲 Кости',roulette:'🎡 Рулетка',blackjack:'🃏 Блэкджек'}[r.game]||r.game)+' · ставка '+formatBalance(r.bet)+' · выплата '+formatBalance(r.payout)+' ✦</div></div>').join(''):'<p style="color:#c5b6df">Раундов пока нет.</p>';
+    const box=app.querySelector('#cf-profile-history');if(!box)return;
+    const names={slots:'🎰 Слоты',dice:'🎲 Кости',roulette:'🎡 Рулетка',blackjack:'🃏 Блэкджек',bonus_wheel:'🎡 Бонусная рулетка'};
+    const dateFmt=new Intl.DateTimeFormat('ru-RU',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    box.innerHTML=rows.length?rows.map(r=>{const payout=Number(r.payout)||0,bet=Number(r.bet)||0;let outcome='Раунд завершён';if(r.outcome&&typeof r.outcome.message==='string')outcome=r.outcome.message;else if(r.outcome&&typeof r.outcome.label==='string')outcome=r.outcome.label;return '<div class="cf-history-row"><span class="cf-history-icon">'+(names[r.game]||'🎮') .split(' ')[0]+'</span><div class="cf-history-main"><strong>'+(names[r.game]||r.game)+'</strong><small>Ставка: '+formatBalance(bet)+' · '+dateFmt.format(new Date(r.createdAt))+'</small><small>'+outcome.replace(/[<>]/g,'')+'</small></div><span class="cf-history-payout">+'+formatBalance(payout)+' ✦</span></div>'}).join(''):'<p class="cf-profile-muted">Игровых раундов пока нет.</p>';
   }
   render('home');
   refreshAccount();
