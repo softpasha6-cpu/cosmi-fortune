@@ -258,11 +258,12 @@ app.get('/api/blackjack/rooms',requireUser,async(req,res,next)=>{
     const result=await pool.query(`SELECT r.id,r.invite_code,r.bet,r.created_at,r.updated_at,r.round_number,
       count(p.telegram_id)::int AS player_count,
       count(p.telegram_id) FILTER (WHERE p.ready)::int AS ready_count,
-      max(pl.first_name) FILTER (WHERE p.seat=1) AS host_name
+      max(pl.first_name) FILTER (WHERE p.seat=1) AS host_name,
+      json_agg(json_build_object('name',COALESCE(pl.first_name,pl.username,'Игрок'),'ready',p.ready,'seat',p.seat) ORDER BY p.seat) AS players
       FROM blackjack_rooms r JOIN blackjack_room_players p ON p.room_id=r.id
       JOIN players pl ON pl.telegram_id=p.telegram_id
       WHERE r.status='waiting' GROUP BY r.id ORDER BY r.created_at DESC LIMIT 50`);
-    res.json({rooms:result.rows.map(r=>({id:r.id,inviteCode:r.invite_code,bet:Number(r.bet),playerCount:r.player_count,readyCount:r.ready_count,hostName:r.host_name||'Игрок',createdAt:r.created_at,roundNumber:Number(r.round_number||1)}))});
+    res.json({rooms:result.rows.map(r=>({id:r.id,inviteCode:r.invite_code,bet:Number(r.bet),playerCount:r.player_count,readyCount:r.ready_count,hostName:r.host_name||'Игрок',players:r.players,createdAt:r.created_at,roundNumber:Number(r.round_number||1)}))});
   }catch(e){next(e)}
 });
 app.post('/api/blackjack/rooms/:id/ready',requireUser,async(req,res,next)=>{
