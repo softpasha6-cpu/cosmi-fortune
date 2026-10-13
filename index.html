@@ -41,6 +41,40 @@ h2{font-size:17px;margin:23px 2px 11px;display:flex;align-items:center;gap:8px}h
 .rates{border:1px solid #8d68cf55;border-radius:15px;overflow:hidden;background:#130d20}.rate{display:flex;justify-content:space-between;padding:11px 13px;border-bottom:1px solid #ffffff10;font-size:13px}.rate:last-child{border:0}.rate span:last-child{color:var(--gold);font-weight:850}
 .notice{color:#a99abf;font-size:11px;line-height:1.5;margin-top:13px}footer{text-align:center;color:#85769f;font-size:10px;letter-spacing:1.4px;padding:18px}.bottom-nav{position:fixed;z-index:20;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(4,1fr);padding:9px 6px calc(9px + env(safe-area-inset-bottom));background:#090711f5;border-top:1px solid #7132b688;backdrop-filter:blur(18px);max-width:680px;margin:auto}.bottom-nav a{color:#857a9e;text-decoration:none;text-align:center;font-size:10px;display:flex;flex-direction:column;gap:3px;align-items:center}.bottom-nav a span{font-size:19px}.bottom-nav a.active{color:#d27bff;text-shadow:0 0 12px #a32aff}
 @media(max-width:380px){.hero-copy{max-width:69%;padding:20px 13px}.hero h1{font-size:24px}.mascot{right:-25px;width:62%;opacity:.92}.hero p{font-size:11px}.goldbtn,.ghostbtn{padding:10px;font-size:11px}.amount{font-size:22px}}
+
+/* Native casino-app finish */
+body{background:#05050b;background-image:radial-gradient(ellipse at 50% -12%,#27104b 0,transparent 42%)}
+header{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;min-height:66px;padding:calc(8px + env(safe-area-inset-top)) 14px 8px;background:linear-gradient(180deg,#080711 0%,#080711f2 100%);border-bottom:1px solid #29213b}
+.brandrow{gap:9px}.brand{font-size:16px;letter-spacing:1.2px}.sub{font-size:7px;letter-spacing:1.5px}
+.logo{width:32px;height:32px;border-radius:10px;font-size:19px}
+.profile{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:0;min-height:0;gap:0}
+.profile:after{content:"⋯";font-size:20px;color:#d7c9f0;border:1px solid #514565;border-radius:50%;width:27px;height:27px;display:grid;place-items:center}
+main{padding:10px 10px calc(100px + env(safe-area-inset-bottom))}
+.hero{min-height:440px;border-radius:22px;border:1px solid #4e347b;background:radial-gradient(ellipse at 65% 38%,#32125f 0%,#130c28 46%,#080711 82%);box-shadow:0 10px 28px #0009,inset 0 0 32px #5c24a31a}
+.hero:before{background-image:radial-gradient(#f3e5ff 1px,transparent 1.6px),radial-gradient(#8c62ff 1px,transparent 1.8px);background-size:47px 47px,71px 71px;opacity:.34}
+.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,#090612 100%);pointer-events:none}
+.hero-copy{padding:26px 16px 18px;max-width:100%;width:100%;text-align:center}
+.eyebrow{font-size:9px;letter-spacing:1.8px}
+.hero h1{font-size:clamp(34px,9vw,45px);margin:235px 0 8px;line-height:.98;letter-spacing:-1.4px}
+.hero p{font-size:11px;margin:0 auto 13px;max-width:250px}
+.mascot{width:82%;max-width:310px;right:9%;bottom:auto;top:18px;filter:drop-shadow(0 0 24px #8a3dff4d)}
+.goldbtn{border:1px solid #c9a2ff;background:linear-gradient(180deg,#a62bff 0%,#7c16ef 55%,#650ce0 100%);border-radius:15px;min-height:48px;font-size:14px;box-shadow:0 5px 22px #7900ff44,inset 0 1px #ffffff35}
+.balance{border-color:#33284b;background:linear-gradient(120deg,#171324,#0d0b15);border-radius:16px;padding:13px}
+.label{font-size:10px;letter-spacing:.3px}.amount{font-size:23px}
+h2{font-size:18px;margin:22px 2px 10px}
+.games{gap:9px}
+.game{border-color:#302744;border-radius:15px;background:linear-gradient(145deg,#171322,#0b0a12);min-height:120px;padding:13px;box-shadow:inset 0 1px #ffffff06}
+.game:after{content:"›";font-size:21px;top:10px;right:12px;color:#b9a5dc}
+.emoji{font-size:28px}
+.exchange,.rates{border-color:#302744;background:#100d18;border-radius:15px}
+.rate{border-color:#ffffff0b}
+.bottom-nav{max-width:680px;padding:8px 7px calc(8px + env(safe-area-inset-bottom));background:#080710f7;border-top:1px solid #34244f;box-shadow:0 -8px 28px #0008}
+.bottom-nav a{font-size:10px;gap:2px;min-height:42px;justify-content:center}
+.bottom-nav a span{font-size:20px}
+.bottom-nav a.active{color:#d46aff;text-shadow:0 0 12px #a32aff55}
+@media(min-width:560px){.hero{min-height:500px}.mascot{max-width:340px}.hero h1{margin-top:270px}}
+@media(max-width:380px){.hero{min-height:410px}.mascot{width:83%;right:8%;top:12px}.hero-copy{padding:18px 12px}.hero h1{margin-top:218px;font-size:32px}.hero p{font-size:10px}}
+
 </style>
 </head>
 <body>
