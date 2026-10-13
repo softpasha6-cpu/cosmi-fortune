@@ -93,7 +93,7 @@ h2{font-size:17px;margin:23px 2px 11px;display:flex;align-items:center;gap:8px}h
   <circle cx="270" cy="158" r="3" fill="#ffe8a0"/><circle cx="94" cy="65" r="2.5" fill="#ffe8a0"/><circle cx="282" cy="213" r="2" fill="#c7a1ff"/>
  </svg>
 </section>
-<section class="balance"><div><div class="label">ТВОЙ ДЕМО-БАЛАНС</div><div class="amount">—</div><div class="label" id="api-status">Сервер не подключён</div></div><button class="pill" onclick="configureApi()">⚙ Сервер</button></section>
+<section class="balance"><div><div class="label">ТВОЙ ДЕМО-БАЛАНС</div><div class="amount" id="balance">—</div><div class="label" id="api-status">Сервер не подключён</div></div><button class="pill" onclick="configureApi()">⚙ Сервер</button></section>
 <section style="margin-top:10px;border:1px solid #9e70c855;border-radius:15px;padding:13px;background:#130d20"><label for="bet">Ставка виртуальными кредитами (1–100 000)</label><input id="bet" type="number" min="1" max="100000" value="1000" style="display:block;width:100%;padding:12px;margin-top:8px;background:#090612;color:white;border:1px solid #8d68cf77;border-radius:10px"><div id="game-result" aria-live="polite" style="margin-top:10px;color:#ffe19a">Сервер не подключён</div></section><h2 id="games-title"><span class="spark">✦</span> Популярные игры</h2>
 <section class="games">
 <button class="game" onclick="play('slots')"><span class="emoji">🎰</span><strong>Космические слоты</strong><small>Испытай удачу</small></button>
