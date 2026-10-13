@@ -59,6 +59,18 @@
     #cf-app .game-stage.is-playing .mini-wheel{animation:cfWheelSpin 2.4s cubic-bezier(.12,.72,.12,1) forwards}
     #cf-app .game-stage.is-playing .cards-art{animation:cfCardDeal .8s ease-in-out infinite alternate}
     #cf-app .game-stage.is-playing.slots .game-emoji{animation:cfSlotShake .12s linear infinite}
+    #cf-app .bj-felt{background:radial-gradient(ellipse at center,#17684e,#073626 72%);border:5px solid #9b6b32;border-radius:24px;padding:16px 10px;color:#fff;box-shadow:inset 0 0 0 2px #e7c06b,0 10px 28px #0008}
+    #cf-app .bj-cards{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin:12px 0}
+    #cf-app .bj-card{width:clamp(43px,13vw,62px);height:clamp(64px,19vw,90px);border-radius:8px;background:linear-gradient(145deg,#fffef8,#e8e1d0);color:#171923;border:1px solid #d3c9b6;box-shadow:0 4px 8px #0006;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;padding:5px;font-weight:900;font-size:16px}
+    #cf-app .bj-card.red{color:#c5243d}
+    #cf-app .bj-card .bj-suit{align-self:center;font-size:24px;line-height:1}
+    #cf-app .bj-card.hidden{background:repeating-linear-gradient(45deg,#27104c,#27104c 7px,#6f36a0 7px,#6f36a0 14px);color:#f5d77a;border:2px solid #e9c36b;align-items:center;justify-content:center;font-size:30px}
+    #cf-app .bj-player{border:1px solid #39765f;background:#0c2d25;border-radius:15px;padding:12px;margin:10px 0;text-align:center}
+    #cf-app .bj-player.me{border:2px solid #f0c866;box-shadow:0 0 20px #e5bd4a20}
+    #cf-app .bj-tip{border:1px solid #d9b454;background:#33270e;border-radius:12px;padding:10px;color:#ffe4a1;margin:10px 0;font-size:13px}
+    #cf-app .bj-actionrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+    #cf-app .bj-actionrow button{min-height:50px;font-size:13px;padding:9px 5px}
+
     @keyframes cfWheelIdle{to{transform:rotate(360deg)}}
     @keyframes cfWheelSpin{to{transform:rotate(1440deg)}}
     @keyframes cfGameBounce{from{transform:translateY(-7px) rotate(-8deg) scale(.96)}to{transform:translateY(6px) rotate(8deg) scale(1.05)}}
@@ -176,6 +188,20 @@
       '<div id="cf-bj-room"></div>');
   }
   function cardText(c){if(!c)return '🂠';if(c.hidden)return '🂠';return ({1:'A',11:'J',12:'Q',13:'K'}[c.rank]||c.rank)+c.suit}
+  function blackjackCardHtml(c){
+    if(!c||c.hidden)return '<div class="bj-card hidden">✦</div>';
+    const face=({1:'A',11:'J',12:'Q',13:'K'}[c.rank]||c.rank);
+    return '<div class="bj-card '+(['♥','♦'].includes(c.suit)?'red':'')+'"><span>'+face+'</span><span class="bj-suit">'+c.suit+'</span><span>'+face+'</span></div>';
+  }
+  function blackjackAdvice(hand){
+    const total=hand.reduce((n,c)=>n+(c.rank===1?11:Math.min(c.rank,10)),0);
+    const aces=hand.filter(c=>c.rank===1).length;
+    let score=total;while(score>21&&aces>0){score-=10;aces--}
+    if(score>=17)return 'Обычно стоит остановиться: '+score+' очков.';
+    if(score<=11)return 'Обычно стоит взять карту: перебора одной картой не будет.';
+    if(score===12)return '12 очков: решение зависит от открытой карты дилера.';
+    return score+' очков: сравни с открытой картой дилера. Это подсказка, не гарантия выигрыша.';
+  }
   let blackjackRefreshBusy=false;
   function renderBlackjackRoom(room){
     blackjackRoomId=room.id;
@@ -189,13 +215,20 @@
       finally{blackjackRefreshBusy=false}
     },2500);
     const me=room.players.find(p=>p.isMe);
-    const dealer=(room.state?.dealerHand||[]).map(cardText).join('　')||'Карты будут после старта';
-    box.innerHTML='<div class="section-title">Стол · '+room.inviteCode+'</div><div class="game-stage blackjack"><strong>Дилер</strong><div class="cards-art" style="justify-content:center;margin:14px 0">'+dealer+'</div>'+(room.state?.dealerScore!==undefined?'<p>Очки дилера: '+room.state.dealerScore+'</p>':'')+'</div>'+
+    const dealerHand=room.state?.dealerHand||[];
+    const dealer=dealerHand.map(blackjackCardHtml).join('');
+    const statusText={waiting:'Ожидает начала',playing:'Твой ход',stood:'Остановился',busted:'Перебор — проигрыш',blackjack:'Натуральный блэкджек',finished:'Раунд завершён'};
+    box.innerHTML='<div class="section-title">СТОЛ · '+room.inviteCode+'</div>'+
+      '<div class="bj-felt"><div style="font-size:11px;letter-spacing:2px;opacity:.8">ДИЛЕР</div><div class="bj-cards">'+(dealer||'<span>Карты появятся после начала раздачи</span>')+'</div>'+
+      (room.state?.dealerScore!==undefined?'<strong>Очки дилера: '+room.state.dealerScore+'</strong>':'<small>Одна карта дилера скрыта до завершения раунда</small>')+'</div>'+
       '<div class="fieldrow"><div class="field">Ставка: '+formatBalance(room.bet)+' ✦ на игрока</div><button class="secondary" data-action="bj-copy">Пригласить · '+room.inviteCode+'</button></div>'+
-      room.players.map(p=>'<div class="widecard"><div style="flex:1"><strong>'+(p.firstName||p.username||('Игрок '+p.seat))+(p.isMe?' (ты)':'')+'</strong><small>'+p.hand.map(cardText).join('　')+'<br>Очки: '+(p.score??'—')+' · '+({waiting:'ожидает',playing:'ходит',stood:'остановился',busted:'перебор',blackjack:'блэкджек',finished:'завершил'}[p.status]||p.status)+(p.status==='finished'?' · выплата '+formatBalance(p.payout)+' ✦':'')+'</small></div></div>').join('')+
-      (room.status==='waiting'?(me?.isMe&&String(room.hostTelegramId)===String(me.telegramId)?'<button class="primary" data-action="bj-start">Начать раздачу ('+room.players.length+'/5)</button>':'<p style="color:#c5b6df">Ожидаем, пока создатель начнёт игру.</p>'):'')+
-      (room.status==='playing'&&me?.status==='playing'?'<div class="cards"><button class="secondary" data-action="bj-hit">Взять карту</button><button class="secondary" data-action="bj-stand">Остановиться</button><button class="primary" data-action="bj-double">Удвоить</button></div>':'')+
-      (room.status==='finished'?'<p style="text-align:center;color:#ffe09a">Раунд завершён. Выплата уже рассчитана сервером.</p><button class="secondary" data-action="bj-leave">К списку столов</button>':'')+
+      '<div class="section-title">ИГРОКИ ('+room.players.length+'/5)</div>'+
+      room.players.map(p=>'<div class="bj-player '+(p.isMe?'me':'')+'"><strong>'+(p.firstName||p.username||('Игрок '+p.seat))+(p.isMe?' · ТВОЯ РУКА':'')+'</strong><div class="bj-cards">'+(p.hand.length?p.hand.map(blackjackCardHtml).join(''):'<small>Карты выдаются при старте</small>')+'</div>'+
+      '<strong>'+ (p.score!==null&&p.score!==undefined?p.score+' очков':'—')+'</strong><div style="font-size:12px;margin-top:5px">'+(statusText[p.status]||p.status)+(p.doubled?' · УДВОЕНО':'')+(p.status==='finished'?' · выплата '+formatBalance(p.payout)+' ✦':'')+'</div></div>').join('')+
+      (room.status==='waiting'?(me&&String(room.hostTelegramId)===String(me.telegramId)?'<div class="bj-tip">Пригласи хотя бы одного игрока. Когда он присоединится, нажми «Начать раздачу».</div><button class="primary" data-action="bj-start">Начать раздачу ('+room.players.length+'/5)</button>':'<div class="bj-tip">Ты за столом. Ждём, пока создатель начнёт раздачу.</div>'):'')+
+      (room.status==='playing'&&me?.status==='playing'?'<div class="bj-tip"><strong>Твой ход.</strong><br>'+blackjackAdvice(me.hand)+'<br><small>Удвоение доступно только после первых двух карт и требует ещё одну такую же ставку.</small></div><div class="bj-actionrow"><button class="secondary" data-action="bj-hit">➕ Взять карту</button><button class="secondary" data-action="bj-stand">✋ Стоп</button><button class="primary" data-action="bj-double" '+(me.hand.length!==2||me.doubled?'disabled':'')+'>×2 Удвоить</button></div>':'')+
+      (room.status==='playing'&&me&&me.status!=='playing'?'<div class="bj-tip">Твой ход завершён. Ждём остальных игроков. Стол обновится автоматически.</div>':'')+
+      (room.status==='finished'?'<div class="bj-tip">Раунд завершён. Дилер открыл карты, сервер рассчитал выплаты.</div><button class="secondary" data-action="bj-leave">К столу заново</button>':'')+
       '<button class="secondary" data-action="bj-refresh">Обновить стол</button>';
   }
 
