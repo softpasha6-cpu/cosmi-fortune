@@ -159,6 +159,52 @@ function playRound(game, bet, choice) {
   throw Object.assign(new Error('Unknown game'), { status: 400 });
 }
 
+app.post('/api/bonus-wheel', requireUser, async (req, res, next) => {
+  const requestId = req.body?.requestId;
+  if (typeof requestId !== 'string' || !/^[a-f0-9-]{36}$/i.test(requestId)) {
+    return res.status(400).json({ error: 'Некорректный идентификатор вращения.' });
+  }
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const locked = await client.query('SELECT balance FROM players WHERE telegram_id=$1 FOR UPDATE', [req.player.telegram_id]);
+    const prior = await client.query(
+      "SELECT id, payout, balance_after, outcome, created_at FROM game_transactions WHERE telegram_id=$1 AND idempotency_key=$2",
+      [req.player.telegram_id, requestId]
+    );
+    if (prior.rowCount) {
+      const row=prior.rows[0];
+      await client.query('COMMIT');
+      return res.json({transactionId:String(row.id),payout:Number(row.payout),balance:Number(row.balance_after),outcome:row.outcome,createdAt:row.created_at,replayed:true});
+    }
+    const claimed = await client.query('SELECT reward FROM bonus_wheel_claims WHERE telegram_id=$1 AND claim_date=CURRENT_DATE', [req.player.telegram_id]);
+    if (claimed.rowCount) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({error:'Бонусную рулетку можно крутить один раз в день.'});
+    }
+    const roll=randInt(100);
+    let reward=0, label='Ничего — попробуй завтра';
+    if(roll<55){reward=0;label='Пусто';}
+    else if(roll<80){reward=25;label='+25 кредитов';}
+    else if(roll<95){reward=50;label='+50 кредитов';}
+    else if(roll<99){reward=100;label='+100 кредитов';}
+    else {reward=250;label='+250 кредитов';}
+    const balanceAfter=Number(locked.rows[0].balance)+reward;
+    await client.query('UPDATE players SET balance=$2, updated_at=NOW() WHERE telegram_id=$1',[req.player.telegram_id,balanceAfter]);
+    const inserted=await client.query(
+      "INSERT INTO game_transactions (telegram_id,game,bet,payout,balance_after,outcome,idempotency_key) VALUES ($1,'bonus_wheel',0,$2,$3,$4::jsonb,$5) RETURNING id,created_at",
+      [req.player.telegram_id,reward,balanceAfter,JSON.stringify({reward,label,roll:roll+1,message:label}),requestId]
+    );
+    await client.query('INSERT INTO bonus_wheel_claims (telegram_id,claim_date,reward) VALUES ($1,CURRENT_DATE,$2)',[req.player.telegram_id,reward]);
+    await client.query('COMMIT');
+    res.json({transactionId:String(inserted.rows[0].id),payout:reward,balance:balanceAfter,outcome:{reward,label,message:label},createdAt:inserted.rows[0].created_at});
+  } catch(error) {
+    await client.query('ROLLBACK').catch(()=>{});
+    if(error.code==='23505') return res.status(409).json({error:'Бонус уже получен сегодня.'});
+    next(error);
+  } finally { client.release(); }
+});
+
 app.post('/api/game', requireUser, async (req, res, next) => {
   const { game, choice } = req.body || {};
   const bet = Number(req.body?.bet);
