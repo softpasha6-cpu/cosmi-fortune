@@ -237,7 +237,7 @@
     blackjackRoomId=room.id;
     const box=app.querySelector('#cf-bj-room');if(!box)return;
     if(blackjackPoll){clearInterval(blackjackPoll);blackjackPoll=null;}
-    if(room.status!=='finished')blackjackPoll=setInterval(async()=>{
+    blackjackPoll=setInterval(async()=>{
       if(blackjackRefreshBusy||current!=='blackjack'||!blackjackRoomId)return;
       blackjackRefreshBusy=true;
       try{const fresh=await api('/api/blackjack/rooms/'+blackjackRoomId);if(current==='blackjack')renderBlackjackRoom(fresh.room);}
@@ -258,7 +258,7 @@
       (room.status==='waiting'?'<div class="bj-tip">Раздача начнётся автоматически, когда за столом будет минимум 2 игрока и все нажмут «Готов».</div><div class="bj-seat-layout">'+room.players.map(p=>'<div class="bj-player '+(p.isMe?'me':'')+'"><div class="bj-seat-number">МЕСТО '+p.seat+'</div><strong>'+(p.firstName||p.username||('Игрок '+p.seat))+(p.isMe?' · ТЫ':'')+'</strong><div style="margin-top:5px">'+(p.ready?'🟢 ГОТОВ':'🟡 НЕ ГОТОВ')+'</div></div>').join('')+'</div><button class="primary" data-action="bj-ready" data-ready="'+Boolean(me?.ready)+'">'+(me?.ready?'✓ Ты готов · отменить':'Я готов')+'</button>':'')+
       (room.status==='playing'&&me?.status==='playing'?'<div class="bj-tip"><strong>Твой ход.</strong><br>'+blackjackAdvice(me.hand)+'<br><small>Удвоение доступно только после первых двух карт и требует ещё одну такую же ставку.</small></div><div class="bj-actionrow"><button class="secondary" data-action="bj-hit">➕ Взять карту</button><button class="secondary" data-action="bj-stand">✋ Стоп</button><button class="primary" data-action="bj-double" '+(me.hand.length!==2||me.doubled?'disabled':'')+'>×2 Удвоить</button></div>':'')+
       (room.status==='playing'&&me&&me.status!=='playing'?'<div class="bj-tip">Твой ход завершён. Ждём остальных игроков. Стол обновится автоматически.</div>':'')+
-      (room.status==='finished'?'<div class="bj-tip">Раунд завершён. Выплаты рассчитаны сервером. Чтобы сыграть ещё раз с этой же компанией, каждый игрок должен нажать «Готов к следующему раунду».</div><button class="primary" data-action="bj-ready" data-ready="'+Boolean(me?.ready)+'">'+(me?.ready?'✓ Готов к следующему раунду':'↻ Готов к следующему раунду')+'</button>':'')+
+      (room.status==='finished'?'<div class="bj-tip">Раунд завершён. Выплаты рассчитаны сервером. Для нового раунда каждый участник должен подтвердить готовность.</div><div class="bj-seat-layout">'+room.players.map(p=>'<div class="bj-player '+(p.isMe?'me':'')+'"><strong>'+(p.firstName||p.username||('Игрок '+p.seat))+'</strong><div style="margin-top:5px">'+(p.ready?'🟢 ГОТОВ':'🟡 ЕЩЁ НЕ ГОТОВ')+'</div></div>').join('')+'</div><button class="primary" data-action="bj-ready" data-ready="'+Boolean(me?.ready)+'">'+(me?.ready?'✓ Ты готов · отменить':'↻ Готов к следующему раунду')+'</button>':'')+
       '<button class="secondary" data-action="bj-refresh">Обновить стол</button>';
   }
 
