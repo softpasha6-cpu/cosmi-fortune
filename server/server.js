@@ -631,8 +631,8 @@ app.post('/api/miner/start',requireUser,async(req,res,next)=>{
  const updated=Number(player.rows[0].balance)-bet;
  await client.query('UPDATE players SET balance=$2,updated_at=NOW() WHERE telegram_id=$1',[req.player.telegram_id,updated]);
  await client.query('INSERT INTO miner_rounds(id,telegram_id,bet,board_size,mine_count,mines) VALUES($1,$2,$3,$4,$5,$6::jsonb)',[id,req.player.telegram_id,bet,size,mines,JSON.stringify(minesAt)]);
- res.json({round:{id,size,mines,picked:[],multiplier:1},balance:updated});
  await client.query('COMMIT');
+ res.json({round:{id,size,mines,picked:[],multiplier:1},balance:updated});
  }catch(e){await client.query('ROLLBACK').catch(()=>{});next(e)}finally{client.release()}
 });
 app.post('/api/miner/pick',requireUser,async(req,res,next)=>{
