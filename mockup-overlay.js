@@ -697,7 +697,10 @@
         <p style="font-size:11px;color:#9c88b8;margin-top:15px">Доступ откроется только после подтверждения обоих условий.</p>
       </section>`;
   }
+  let cfAccessCheckPromise=null;
   async function checkAccessAndStart(){
+    if(cfAccessCheckPromise)return cfAccessCheckPromise;
+    cfAccessCheckPromise=(async()=>{
     renderAccessGate(null,true);
     try{
       const access=await api('/api/access/check');
@@ -708,7 +711,8 @@
       }else {const unavailable=access.channel?.error||access.chat?.error;renderAccessGate(access,false,unavailable?'Не удалось проверить членство. Добавь бота администратором в канал и чат, затем проверь настройки username.':'Выполни оба условия и проверь ещё раз.');}
     }catch(error){
       renderAccessGate(null,false,error.message||'Не удалось проверить подписку. Попробуй ещё раз.');
-    }
+    }finally{cfAccessCheckPromise=null}
+    })();return cfAccessCheckPromise;
   }
   app.addEventListener('click',event=>{
     const button=event.target.closest('#cf-check-membership');
