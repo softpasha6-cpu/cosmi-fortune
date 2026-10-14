@@ -450,6 +450,7 @@
   window.cfNavigate=function(name){try{render(name)}catch(error){console.error('Navigation failed',error);say('Не удалось открыть раздел. Перезапусти приложение.')}};
   // Capture taps before Telegram WebView or underlying page handlers can swallow them.
   document.addEventListener('click', function cosmicNavigationCapture(e){
+    if(Date.now()<cfBlockClickUntil){e.preventDefault();e.stopImmediatePropagation();return;}
     const target=e.target instanceof Element?e.target:null;
     if(!target)return;
     const go=target.closest('#cf-app [data-go]');
@@ -463,12 +464,6 @@
     const openWheel=target.closest('#cf-app [data-action="open-bonus-wheel"]');
     if(openWheel){e.preventDefault();e.stopPropagation();openBonusWheel();}
   }, true);
-  app.addEventListener('pointerup',e=>{
-    const target=e.target instanceof Element?e.target:null;
-    const button=target?.closest('#cf-app [data-go]');
-    if(button){e.preventDefault();e.stopPropagation();window.cfNavigate(button.dataset.go);}
-  },true);
-
   app.addEventListener('change',e=>{if(e.target?.id==='cf-miner-size'){const size=Number(e.target.value),mineSelect=app.querySelector('#cf-miner-mines');if(mineSelect){const max=size*size-1;Array.from(mineSelect.options).forEach(o=>{o.disabled=Number(o.value)>max});if(Number(mineSelect.value)>max)mineSelect.value='3';}const grid=app.querySelector('#cf-miner-grid');if(grid&&!minerRound){grid.style.gridTemplateColumns='repeat('+size+',minmax(0,1fr))';grid.innerHTML=Array.from({length:size*size},(_,i)=>'<button data-miner-tile="'+i+'" style="aspect-ratio:1;border:1px solid #7044a8;border-radius:10px;background:#180b30;color:#d9aaff;font-size:24px">✦</button>').join('')}}});
   let cfGesture=null,cfBlockClickUntil=0,cfLastTouchAt=0;
   const cfBeginGesture=e=>{const p=e.touches?e.touches[0]:e;cfGesture={x:p.clientX,y:p.clientY,id:e.pointerId??null,moved:false};};
