@@ -88,8 +88,8 @@ CREATE TABLE IF NOT EXISTS daily_reward_claims (
 CREATE TABLE IF NOT EXISTS star_purchases (
  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
  telegram_id BIGINT NOT NULL REFERENCES players(telegram_id),
- package_stars INTEGER NOT NULL CHECK (package_stars IN (15,25,50,100)),
- credits BIGINT NOT NULL CHECK (credits IN (50000,100000,200000,400000)),
+ package_stars INTEGER NOT NULL CHECK (package_stars IN (25,50,100,500,1000)),
+ credits BIGINT NOT NULL CHECK (credits IN (40000,75000,170000,900000,2200000)),
  payload TEXT NOT NULL UNIQUE,
  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','paid','cancelled','refunded')),
  telegram_payment_charge_id TEXT UNIQUE,
@@ -144,3 +144,10 @@ CREATE TABLE IF NOT EXISTS luckyjet_rounds (
  finished_at TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS luckyjet_rounds_player_active_idx ON luckyjet_rounds(telegram_id,status);
+
+
+-- Keep existing databases aligned with current purchase package values.
+ALTER TABLE star_purchases DROP CONSTRAINT IF EXISTS star_purchases_credits_check;
+ALTER TABLE star_purchases ADD CONSTRAINT star_purchases_credits_check CHECK (credits IN (40000,75000,170000,900000,2200000));
+ALTER TABLE star_purchases DROP CONSTRAINT IF EXISTS star_purchases_package_stars_check;
+ALTER TABLE star_purchases ADD CONSTRAINT star_purchases_package_stars_check CHECK (package_stars IN (25,50,100,500,1000));
