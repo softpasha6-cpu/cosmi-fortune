@@ -464,10 +464,11 @@
     if(openWheel){e.preventDefault();e.stopPropagation();openBonusWheel();}
   }, true);
   app.addEventListener('change',e=>{if(e.target?.id==='cf-miner-size'){const size=Number(e.target.value),mineSelect=app.querySelector('#cf-miner-mines');if(mineSelect){const max=size*size-1;Array.from(mineSelect.options).forEach(o=>{o.disabled=Number(o.value)>max});if(Number(mineSelect.value)>max)mineSelect.value='3';}const grid=app.querySelector('#cf-miner-grid');if(grid&&!minerRound){grid.style.gridTemplateColumns='repeat('+size+',minmax(0,1fr))';grid.innerHTML=Array.from({length:size*size},(_,i)=>'<button data-miner-tile="'+i+'" style="aspect-ratio:1;border:1px solid #7044a8;border-radius:10px;background:#180b30;color:#d9aaff;font-size:24px">✦</button>').join('')}}});
-  let cfGesture=null,cfBlockClickUntil=0;
+  let cfGesture=null,cfBlockClickUntil=0,cfLastTouchMoved=false;
   document.addEventListener('touchstart',e=>{const p=e.touches&&e.touches[0];if(p)cfGesture={x:p.clientX,y:p.clientY,moved:false};},{passive:true,capture:true});
-  document.addEventListener('touchmove',e=>{const p=e.touches&&e.touches[0];if(cfGesture&&p&&Math.hypot(p.clientX-cfGesture.x,p.clientY-cfGesture.y)>8){cfGesture.moved=true;cfBlockClickUntil=Date.now()+900;}},{passive:true,capture:true});
-  document.addEventListener('touchend',()=>{if(cfGesture&&cfGesture.moved)cfBlockClickUntil=Date.now()+900;cfGesture=null;},{passive:true,capture:true});
+  document.addEventListener('touchmove',e=>{const p=e.touches&&e.touches[0];if(cfGesture&&p&&Math.hypot(p.clientX-cfGesture.x,p.clientY-cfGesture.y)>10){cfGesture.moved=true;cfLastTouchMoved=true;cfBlockClickUntil=Date.now()+700;}},{passive:true,capture:true});
+  document.addEventListener('touchend',()=>{if(cfGesture?.moved){cfLastTouchMoved=true;cfBlockClickUntil=Date.now()+700;}cfGesture=null;},{passive:true,capture:true});
+  document.addEventListener('click',e=>{if(Date.now()<cfBlockClickUntil){const t=e.target instanceof Element?e.target:null;if(t?.closest('#cf-app button,#cf-app [data-go],#cf-app [data-action]')){e.preventDefault();e.stopImmediatePropagation();}}},true);
   // Do not suppress navigation taps after a scroll; iOS WebView can dispatch the tap normally.
   document.addEventListener('click',e=>{const t=e.target instanceof Element?e.target:null;if(t&&t.closest('#cf-app [data-go]'))e.stopPropagation();},{capture:true});
   const cfImmediateClickEvents=new WeakSet();
@@ -475,7 +476,7 @@
   app.addEventListener('touchend',e=>{
     const t=e.target instanceof Element?e.target:null;
     const hit=t?.closest('#cf-app [data-go],#cf-app [data-action="buy-credits"],#cf-app [data-action="request-withdrawal"],#cf-app [data-action="play-game"],#cf-app [data-action="bj-create"],#cf-app [data-action="bj-open-lobby"]');
-    if(!hit||cfGesture?.moved)return;
+    if(!hit||cfGesture?.moved||Date.now()<cfBlockClickUntil)return;
     e.preventDefault();
     cfImmediateTapAt=Date.now();cfImmediateTapTarget=hit;
     const click=new MouseEvent('click',{bubbles:true,cancelable:true,view:window});
@@ -494,7 +495,7 @@
     const t=e.target instanceof Element?e.target:null;if(!t)return;
     const tile=t.closest('#cf-app [data-miner-tile]'),act=t.closest('#cf-app [data-action]');
     if(!tile&&!(act&&['miner-start','miner-cashout','jet-start','jet-cashout'].includes(act.dataset.action)))return;
-    if(cfGesture?.moved)return;
+    if(cfGesture?.moved||Date.now()<cfBlockClickUntil)return;
     cfFastGameTouchAt=Date.now();e.preventDefault();e.stopImmediatePropagation();
     if(tile)minerPick(Number(tile.dataset.minerTile));
     else if(act.dataset.action==='miner-start')minerStart();
