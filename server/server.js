@@ -107,8 +107,8 @@ const OWNER_TELEGRAM_ID='8522347927';
 const REQUIRED_CHANNEL = process.env.REQUIRED_CHANNEL || '@Cosmic_Fortune';
 const REQUIRED_CHAT = process.env.REQUIRED_CHAT || '@CosmisFortunechat';
 const BIG_WIN_THRESHOLD = Math.max(1, Number(process.env.BIG_WIN_THRESHOLD || 100000));
-const CREDIT_PACKAGES={15:50000,25:100000,50:200000,100:400000};
-const REWARD_PACKAGES={100000:15,250000:25,500000:50,1000000:100};
+const CREDIT_PACKAGES={25:40000,50:75000,100:170000,500:900000,1000:2200000};
+const REWARD_PACKAGES={70000:25,100000:50,200000:100,1000000:500,2600000:1000};
 async function tg(method,body){const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),2500);try{const r=await fetch('https://api.telegram.org/bot'+botToken+'/'+method,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:controller.signal});const d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.description||'Telegram API error');return d.result}catch(e){if(e.name==='AbortError')throw new Error('Telegram membership check timed out');throw e}finally{clearTimeout(timer)}}
 const membershipCache=new Map();
 const membershipInflight=new Map();
