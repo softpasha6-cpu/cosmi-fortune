@@ -112,20 +112,20 @@ const REWARD_PACKAGES={70000:25,100000:50,200000:100,1000000:500,2600000:1000};
 async function tg(method,body){const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),2500);try{const r=await fetch('https://api.telegram.org/bot'+botToken+'/'+method,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:controller.signal});const d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.description||'Telegram API error');return d.result}catch(e){if(e.name==='AbortError')throw new Error('Telegram membership check timed out');throw e}finally{clearTimeout(timer)}}
 const membershipCache=new Map();
 const membershipInflight=new Map();
-async function membershipInChat(chatId,userId){
+async function membershipInChat(chatId,userId,forceRefresh=false){
   const key=String(chatId)+':'+String(userId),cached=membershipCache.get(key);
-  if(cached&&cached.until>Date.now())return cached.value;
+  if(!forceRefresh&&cached&&cached.until>Date.now())return cached.value;
   if(membershipInflight.has(key))return membershipInflight.get(key);
   const pending=(async()=>{try{
     const member=await tg('getChatMember',{chat_id:chatId,user_id:Number(userId)});
     return {member:['creator','administrator','member'].includes(member.status)||(member.status==='restricted'&&member.is_member===true),status:member.status||'unknown'};
   }catch(error){
     console.error('Membership check failed for '+chatId+':',error.message);
-    return {member:false,status:'unavailable',error:'Бот не может проверить этот чат. Проверь username и права администратора бота.'};
+    return {member:false,status:'unavailable',error:'Telegram API: '+String(error.message||'не удалось проверить участника')+'. Убедись, что бот является администратором канала и группы.'};
   }})();membershipInflight.set(key,pending);try{const value=await pending;membershipCache.set(key,{value,until:Date.now()+(value.member?60000:3000)});return value}finally{membershipInflight.delete(key)}
 }
-async function checkRequiredMembership(userId){
-  const [channel,chat]=await Promise.all([membershipInChat(REQUIRED_CHANNEL,userId),membershipInChat(REQUIRED_CHAT,userId)]);
+async function checkRequiredMembership(userId,forceRefresh=false){
+  const [channel,chat]=await Promise.all([membershipInChat(REQUIRED_CHANNEL,userId,forceRefresh),membershipInChat(REQUIRED_CHAT,userId,forceRefresh)]);
   return {ready:channel.member&&chat.member,channel,chat,links:{channel:'https://t.me/Cosmic_Fortune',chat:'https://t.me/CosmisFortunechat'}};
 }
 async function notifyUser(userId,text){
@@ -133,8 +133,9 @@ async function notifyUser(userId,text){
   catch(error){console.error('User notification failed for '+userId+':',error.message);return false}
 }
 app.get('/api/access/check', requireUser, async (req, res) => {
-  const access = await checkRequiredMembership(req.player.telegram_id);
-  res.json(access);
+  const access = await checkRequiredMembership(req.player.telegram_id,true);
+  res.set('Cache-Control','no-store, max-age=0');
+  res.json({...access,checkedAt:Date.now()});
 });
 function ownerOnly(req,res){if(String(req.player?.telegram_id)!==OWNER_TELEGRAM_ID){res.status(403).json({error:'Доступ только владельцу.'});return false}return true}
 app.post('/api/stars/invoice',requireUser,async(req,res,next)=>{try{const stars=Number(req.body?.stars),credits=CREDIT_PACKAGES[stars];if(!credits)return res.status(400).json({error:'Неизвестный пакет Stars.'});const payload='cfstars:'+crypto.randomUUID();await pool.query('INSERT INTO star_purchases(telegram_id,package_stars,credits,payload) VALUES($1,$2,$3,$4)',[req.player.telegram_id,stars,credits,payload]);const url=await tg('createInvoiceLink',{title:'Cosmic Fortune',description:credits.toLocaleString('en-US')+' virtual credits',payload,provider_token:'',currency:'XTR',prices:[{label:credits.toLocaleString('en-US')+' credits',amount:stars}]});res.json({url,stars,credits})}catch(e){next(e)}});
