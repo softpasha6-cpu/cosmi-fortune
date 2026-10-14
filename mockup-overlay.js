@@ -465,19 +465,16 @@
     if(openWheel){e.preventDefault();e.stopPropagation();openBonusWheel();}
   }, true);
   app.addEventListener('change',e=>{if(e.target?.id==='cf-miner-size'){const size=Number(e.target.value),mineSelect=app.querySelector('#cf-miner-mines');if(mineSelect){const max=size*size-1;Array.from(mineSelect.options).forEach(o=>{o.disabled=Number(o.value)>max});if(Number(mineSelect.value)>max)mineSelect.value='3';}const grid=app.querySelector('#cf-miner-grid');if(grid&&!minerRound){grid.style.gridTemplateColumns='repeat('+size+',minmax(0,1fr))';grid.innerHTML=Array.from({length:size*size},(_,i)=>'<button data-miner-tile="'+i+'" style="aspect-ratio:1;border:1px solid #7044a8;border-radius:10px;background:#180b30;color:#d9aaff;font-size:24px">✦</button>').join('')}}});
-  let cfGesture=null,cfBlockClickUntil=0,cfLastTouchAt=0;
-  const cfBeginGesture=e=>{const p=e.touches?e.touches[0]:e;cfGesture={x:p.clientX,y:p.clientY,id:e.pointerId??null,moved:false};};
-  const cfMoveGesture=e=>{if(!cfGesture)return;const p=e.touches?e.touches[0]:e;if(Math.hypot(p.clientX-cfGesture.x,p.clientY-cfGesture.y)>7)cfGesture.moved=true;};
-  const cfEndGesture=()=>{if(cfGesture?.moved)cfBlockClickUntil=Date.now()+850;cfGesture=null;};
-  app.addEventListener('touchstart',e=>{cfLastTouchAt=Date.now();cfBeginGesture(e);},{passive:true,capture:true});
-  app.addEventListener('touchmove',e=>{cfLastTouchAt=Date.now();cfMoveGesture(e);},{passive:true,capture:true});
-  app.addEventListener('touchend',e=>{cfLastTouchAt=Date.now();cfEndGesture();},{passive:true,capture:true});
-  app.addEventListener('touchcancel',()=>{cfLastTouchAt=Date.now();cfEndGesture();},{passive:true,capture:true});
-  app.addEventListener('pointerdown',e=>{if(e.pointerType==='touch')return;cfBeginGesture(e);},{passive:true,capture:true});
-  app.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;cfMoveGesture(e);},{passive:true,capture:true});
-  app.addEventListener('pointerup',e=>{if(e.pointerType==='touch')return;cfEndGesture();},{passive:true,capture:true});
-  app.addEventListener('pointercancel',()=>cfEndGesture(),{passive:true,capture:true});
-  app.addEventListener('click',e=>{if(Date.now()<cfBlockClickUntil||Date.now()-cfLastTouchAt<350&&cfGesture?.moved){e.preventDefault();e.stopImmediatePropagation();return}},{capture:true});
+  let cfGesture=null,cfBlockClickUntil=0,cfLastTouchAt=0,cfScrollGesture=false,cfTouchEndAt=0,cfTouchEndMoved=false;
+  const cfPoint=e=>e.changedTouches?.[0]||e.touches?.[0]||e;
+  document.addEventListener('touchstart',e=>{const p=cfPoint(e);cfLastTouchAt=Date.now();cfScrollGesture=false;cfTouchEndMoved=false;cfGesture={x:p.clientX,y:p.clientY,moved:false,target:e.target instanceof Element?e.target.closest('#cf-app [data-go]'):null};},{passive:true,capture:true});
+  document.addEventListener('touchmove',e=>{if(!cfGesture)return;const p=cfPoint(e);if(Math.abs(p.clientX-cfGesture.x)>6||Math.abs(p.clientY-cfGesture.y)>6){cfGesture.moved=true;cfScrollGesture=true;cfBlockClickUntil=Date.now()+1400;}},{passive:true,capture:true});
+  document.addEventListener('touchend',e=>{cfLastTouchAt=Date.now();cfTouchEndAt=Date.now();cfTouchEndMoved=!!cfGesture?.moved;if(cfTouchEndMoved)cfBlockClickUntil=Date.now()+1400;cfGesture=null;},{passive:true,capture:true});
+  document.addEventListener('touchcancel',()=>{cfScrollGesture=true;cfTouchEndMoved=true;cfBlockClickUntil=Date.now()+1400;cfGesture=null;},{passive:true,capture:true});
+  document.addEventListener('click',e=>{const target=e.target instanceof Element?e.target:null;const go=target?.closest('#cf-app [data-go]');if(!go)return;if(Date.now()<cfBlockClickUntil||cfScrollGesture&&Date.now()-cfTouchEndAt<1400||Date.now()-cfTouchEndAt<500&&cfTouchEndMoved){e.preventDefault();e.stopImmediatePropagation();return;}},{capture:true});
+  app.addEventListener('pointerdown',e=>{if(e.pointerType==='touch')return;cfGesture={x:e.clientX,y:e.clientY,moved:false,target:e.target instanceof Element?e.target.closest('#cf-app [data-go]'):null};},{passive:true,capture:true});
+  app.addEventListener('pointermove',e=>{if(cfGesture&&e.pointerType!=='touch'&&Math.hypot(e.clientX-cfGesture.x,e.clientY-cfGesture.y)>7)cfGesture.moved=true;},{passive:true,capture:true});
+  app.addEventListener('pointerup',e=>{if(e.pointerType!=='touch'&&cfGesture?.moved)cfBlockClickUntil=Date.now()+900;cfGesture=null;},{passive:true,capture:true});
   let minerRound=null,jetRound=null,jetTimer=null;
   function syncBalance(n){const b=app.querySelector('#cf-balance');if(b)b.textContent=formatBalance(n);const p=app.querySelector('#cf-profile-balance');if(p)p.textContent=formatBalance(n)}
   async function minerStart(){const bet=Number(app.querySelector('#cf-bet')?.value),size=Number(app.querySelector('#cf-miner-size')?.value),mines=Number(app.querySelector('#cf-miner-mines')?.value);if(!Number.isSafeInteger(bet)||bet<1||bet>100000)return say('Ставка должна быть от 1 до 100 000.');try{const d=await api('/api/miner/start',{method:'POST',body:JSON.stringify({bet,size,mines})});minerRound=d.round;const grid=app.querySelector('#cf-miner-grid');grid.style.gridTemplateColumns='repeat('+size+',minmax(0,1fr))';grid.innerHTML=Array.from({length:size*size},(_,i)=>'<button data-miner-tile="'+i+'" style="aspect-ratio:1;border:1px solid #7044a8;border-radius:10px;background:#180b30;color:#d9aaff;font-size:24px">✦</button>').join('');app.querySelector('[data-action="miner-start"]').style.display='none';app.querySelector('[data-action="miner-cashout"]').style.display='block';app.querySelector('#cf-miner-status').textContent='Раунд начат — открывай клетки';syncBalance(d.balance)}catch(e){say(e.message)}}
