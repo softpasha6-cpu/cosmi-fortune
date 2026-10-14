@@ -674,7 +674,18 @@ app.post('/api/luckyjet/start',requireUser,async(req,res,next)=>{
  const balance=Number(p.rows[0].balance)-bet;
  await client.query('UPDATE players SET balance=$2,updated_at=NOW() WHERE telegram_id=$1',[req.player.telegram_id,balance]);
  await client.query('INSERT INTO luckyjet_rounds(id,telegram_id,bet,crash_at,auto_at) VALUES($1,$2,$3,$4,$5)',[id,req.player.telegram_id,bet,roll,autoAt]);
- await client.query('COMMIT');res.json({round:{id,crashAt:roll,startedAt:Date.now(),autoAt},balance});
+ await client.query('COMMIT');res.json({round:{id,startedAt:Date.now(),autoAt},balance});
+ }catch(e){await client.query('ROLLBACK').catch(()=>{});next(e)}finally{client.release()}
+});
+app.post('/api/luckyjet/status',requireUser,async(req,res,next)=>{
+ const {roundId}=req.body||{};const client=await pool.connect();try{await client.query('BEGIN');
+ const q=await client.query("SELECT * FROM luckyjet_rounds WHERE id=$1 AND telegram_id=$2 FOR UPDATE",[roundId,req.player.telegram_id]);
+ if(!q.rowCount){await client.query('ROLLBACK');return res.status(404).json({error:'Раунд не найден.'})}
+ const r=q.rows[0];if(r.status!=='active'){const b=await client.query('SELECT balance FROM players WHERE telegram_id=$1',[req.player.telegram_id]);await client.query('COMMIT');return res.json({crashed:r.status==='crashed',multiplier:r.status==='cashed_out'?Number(r.payout)/Math.max(1,Number(r.bet)):Number(r.crash_at),crashAt:Number(r.crash_at),balance:Number(b.rows[0].balance)})}
+ const elapsed=(Date.now()-new Date(r.started_at).getTime())/1000,current=Number((1+Math.pow(Math.max(0,elapsed),1.35)*0.23).toFixed(2)),crashed=current>=Number(r.crash_at);
+ if(crashed)await client.query("UPDATE luckyjet_rounds SET status='crashed',finished_at=NOW() WHERE id=$1",[roundId]);
+ const b=await client.query('SELECT balance FROM players WHERE telegram_id=$1',[req.player.telegram_id]);await client.query('COMMIT');
+ res.json({crashed,multiplier:Math.min(current,Number(r.crash_at)),crashAt:crashed?Number(r.crash_at):null,balance:Number(b.rows[0].balance)});
  }catch(e){await client.query('ROLLBACK').catch(()=>{});next(e)}finally{client.release()}
 });
 app.post('/api/luckyjet/cashout',requireUser,async(req,res,next)=>{
