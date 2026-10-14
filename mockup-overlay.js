@@ -470,6 +470,18 @@
   document.addEventListener('touchend',()=>{if(cfGesture&&cfGesture.moved)cfBlockClickUntil=Date.now()+900;cfGesture=null;},{passive:true,capture:true});
   // Do not suppress navigation taps after a scroll; iOS WebView can dispatch the tap normally.
   document.addEventListener('click',e=>{const t=e.target instanceof Element?e.target:null;if(t&&t.closest('#cf-app [data-go]'))e.stopPropagation();},{capture:true});
+  const cfImmediateClickEvents=new WeakSet();
+  let cfImmediateTapAt=0,cfImmediateTapTarget=null;
+  app.addEventListener('touchend',e=>{
+    const t=e.target instanceof Element?e.target:null;
+    const hit=t?.closest('#cf-app [data-go],#cf-app [data-action="buy-credits"],#cf-app [data-action="request-withdrawal"],#cf-app [data-action="play-game"],#cf-app [data-action="bj-create"],#cf-app [data-action="bj-open-lobby"]');
+    if(!hit||cfGesture?.moved)return;
+    e.preventDefault();
+    cfImmediateTapAt=Date.now();cfImmediateTapTarget=hit;
+    const click=new MouseEvent('click',{bubbles:true,cancelable:true,view:window});
+    cfImmediateClickEvents.add(click);
+    hit.dispatchEvent(click);
+  },{capture:true,passive:false});
   let minerRound=null,jetRound=null,jetTimer=null;
   function syncBalance(n){const b=app.querySelector('#cf-balance');if(b)b.textContent=formatBalance(n);const p=app.querySelector('#cf-profile-balance');if(p)p.textContent=formatBalance(n)}
   async function minerStart(){const startButton=app.querySelector('[data-action="miner-start"]');if(startButton?.disabled)return;const bet=Number(app.querySelector('#cf-bet')?.value),size=Number(app.querySelector('#cf-miner-size')?.value),mines=Number(app.querySelector('#cf-miner-mines')?.value);if(!Number.isSafeInteger(bet)||bet<1||bet>100000)return say('Ставка должна быть от 1 до 100 000.');if(startButton){startButton.disabled=true;startButton.textContent='Запускаем…'}try{const d=await api('/api/miner/start',{method:'POST',body:JSON.stringify({bet,size,mines})});minerRound=d.round;const grid=app.querySelector('#cf-miner-grid');grid.style.gridTemplateColumns='repeat('+size+',minmax(0,1fr))';grid.innerHTML=Array.from({length:size*size},(_,i)=>'<button data-miner-tile="'+i+'" style="aspect-ratio:1;border:1px solid #7044a8;border-radius:10px;background:#180b30;color:#d9aaff;font-size:24px">✦</button>').join('');app.querySelector('[data-action="miner-start"]').style.display='none';app.querySelector('[data-action="miner-cashout"]').style.display='block';app.querySelector('#cf-miner-status').textContent='Раунд начат — открывай клетки';syncBalance(d.balance)}catch(e){say(e.message)}finally{if(startButton){startButton.disabled=false;startButton.textContent='Начать игру'}}}
@@ -491,6 +503,7 @@
     else if(act.dataset.action==='jet-cashout')jetCashout();
   },{capture:true,passive:false});
   app.addEventListener('click',async e=>{
+    if(!cfImmediateClickEvents.has(e)&&cfImmediateTapTarget&&Date.now()-cfImmediateTapAt<700&&e.target instanceof Element&&e.target.closest('#cf-app [data-go],#cf-app [data-action="buy-credits"],#cf-app [data-action="request-withdrawal"],#cf-app [data-action="play-game"],#cf-app [data-action="bj-create"],#cf-app [data-action="bj-open-lobby"]')===cfImmediateTapTarget){e.preventDefault();return;}
     if(Date.now()-cfFastGameTouchAt<800){const t=e.target instanceof Element?e.target:null;if(t?.closest('#cf-app [data-miner-tile],#cf-app [data-action="miner-start"],#cf-app [data-action="miner-cashout"],#cf-app [data-action="jet-start"],#cf-app [data-action="jet-cashout"]')){e.preventDefault();return;}}
     const mt=e.target.closest('[data-miner-tile]');if(mt){minerPick(Number(mt.dataset.minerTile));return}if(e.target.closest('[data-action="miner-start"]')){minerStart();return}if(e.target.closest('[data-action="miner-cashout"]')){minerCashout();return}if(e.target.closest('[data-action="jet-start"]')){jetStart();return}if(e.target.closest('[data-action="jet-cashout"]')){jetCashout();return}const close=e.target.closest('[data-action="close-bonus-wheel"]');if(close){app.querySelector('#cf-wheel-modal')?.remove();if(bonusTimerInterval){clearInterval(bonusTimerInterval);bonusTimerInterval=null;}return}
     const closeDaily=e.target.closest('[data-action="close-daily-reward"]');if(closeDaily){closeDailyReward();return}
