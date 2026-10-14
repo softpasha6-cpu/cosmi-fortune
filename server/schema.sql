@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS players (
 CREATE TABLE IF NOT EXISTS game_transactions (
   id BIGSERIAL PRIMARY KEY,
   telegram_id BIGINT NOT NULL REFERENCES players(telegram_id) ON DELETE CASCADE,
-  game TEXT NOT NULL CHECK (game IN ('slots','roulette','blackjack','dice','bonus_wheel')),
+  game TEXT NOT NULL CHECK (game IN ('slots','roulette','blackjack','dice','bonus_wheel','miner','luckyjet')),
   bet BIGINT NOT NULL CHECK (bet >= 0),
   payout BIGINT NOT NULL CHECK (payout >= 0),
   balance_after BIGINT NOT NULL CHECK (balance_after >= 0),
@@ -115,3 +115,32 @@ CREATE TABLE IF NOT EXISTS app_settings (
  setting_value TEXT NOT NULL,
  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+
+CREATE TABLE IF NOT EXISTS miner_rounds (
+ id UUID PRIMARY KEY,
+ telegram_id BIGINT NOT NULL REFERENCES players(telegram_id) ON DELETE CASCADE,
+ bet BIGINT NOT NULL CHECK (bet > 0),
+ board_size INT NOT NULL,
+ mine_count INT NOT NULL,
+ mines JSONB NOT NULL,
+ picked JSONB NOT NULL DEFAULT '[]'::jsonb,
+ status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','lost','cashed_out')),
+ multiplier NUMERIC(12,4) NOT NULL DEFAULT 1,
+ created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+ finished_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS miner_rounds_player_active_idx ON miner_rounds(telegram_id,status);
+
+CREATE TABLE IF NOT EXISTS luckyjet_rounds (
+ id UUID PRIMARY KEY,
+ telegram_id BIGINT NOT NULL REFERENCES players(telegram_id) ON DELETE CASCADE,
+ bet BIGINT NOT NULL CHECK (bet > 0),
+ crash_at NUMERIC(12,4) NOT NULL,
+ started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+ auto_at NUMERIC(12,4),
+ status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','crashed','cashed_out')),
+ payout BIGINT NOT NULL DEFAULT 0,
+ finished_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS luckyjet_rounds_player_active_idx ON luckyjet_rounds(telegram_id,status);
