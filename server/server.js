@@ -133,7 +133,8 @@ async function notifyUser(userId,text){
   catch(error){console.error('User notification failed for '+userId+':',error.message);return false}
 }
 app.get('/api/access/check', requireUser, async (req, res) => {
-  const access = await checkRequiredMembership(req.player.telegram_id,true);
+  // Use the short-lived cache for fast repeat checks; new subscriptions refresh within 3 seconds.
+  const access = await checkRequiredMembership(req.player.telegram_id,false);
   res.set('Cache-Control','no-store, max-age=0');
   res.json({...access,checkedAt:Date.now()});
 });
