@@ -255,7 +255,7 @@
   document.head.appendChild(style);
   document.body.classList.add('cf-code-app');
   const app=document.createElement('div'); app.id='cf-app';
-  app.innerHTML='<div class="shell"><div class="top"><div><div class="brand">✦ COSMIC FORTUNE</div><div class="sub">ТВОЯ УДАЧА В КОСМОСЕ</div></div><div class="balance"><span class="coin">✪</span><span id="cf-balance">—</span><button class="iconbtn" data-go="profile" aria-label="Пополнить">＋</button></div><button class="iconbtn" data-go="bonuses" aria-label="Бонусы">🎁</button></div><div id="cf-content"></div></div><nav class="bottom" aria-label="Навигация"><button data-go="home"><span class="navicon">⌂</span>Главная</button><button data-go="games" onclick="window.cfNavigate(this.dataset.go)"><span class="navicon">🎮</span>Игры</button><button data-go="bonuses"><span class="navicon">🎁</span>Бонусы</button><button data-go="tournaments"><span class="navicon">🏆</span>Турниры</button><button data-go="profile"><span class="navicon">♙</span>Профиль</button></nav><div class="toast" id="cf-toast"></div>';
+  app.innerHTML='<div class="shell"><div class="top"><div><div class="brand">✦ COSMIC FORTUNE</div><div class="sub">ТВОЯ УДАЧА В КОСМОСЕ</div></div><div class="balance"><span class="coin">✪</span><span id="cf-balance">—</span><button class="iconbtn" data-go="profile" aria-label="Пополнить">＋</button></div><button class="iconbtn" data-go="bonuses" aria-label="Бонусы">🎁</button></div><div id="cf-content"></div></div><nav class="bottom" aria-label="Навигация"><button data-go="home"><span class="navicon">⌂</span>Главная</button><button data-go="games"><span class="navicon">🎮</span>Игры</button><button data-go="bonuses"><span class="navicon">🎁</span>Бонусы</button><button data-go="tournaments"><span class="navicon">🏆</span>Турниры</button><button data-go="profile"><span class="navicon">♙</span>Профиль</button></nav><div class="toast" id="cf-toast"></div>';
   document.body.appendChild(app);
   const content=app.querySelector('#cf-content'), toast=app.querySelector('#cf-toast');
   const games=[
@@ -450,7 +450,6 @@
   window.cfNavigate=function(name){try{render(name)}catch(error){console.error('Navigation failed',error);say('Не удалось открыть раздел. Перезапусти приложение.')}};
   // Capture taps before Telegram WebView or underlying page handlers can swallow them.
   document.addEventListener('click', function cosmicNavigationCapture(e){
-    if(Date.now()<cfBlockClickUntil){e.preventDefault();e.stopImmediatePropagation();return;}
     const target=e.target instanceof Element?e.target:null;
     if(!target)return;
     const go=target.closest('#cf-app [data-go]');
@@ -469,7 +468,8 @@
   document.addEventListener('touchstart',e=>{const p=e.touches&&e.touches[0];if(p)cfGesture={x:p.clientX,y:p.clientY,moved:false};},{passive:true,capture:true});
   document.addEventListener('touchmove',e=>{const p=e.touches&&e.touches[0];if(cfGesture&&p&&Math.hypot(p.clientX-cfGesture.x,p.clientY-cfGesture.y)>8){cfGesture.moved=true;cfBlockClickUntil=Date.now()+900;}},{passive:true,capture:true});
   document.addEventListener('touchend',()=>{if(cfGesture&&cfGesture.moved)cfBlockClickUntil=Date.now()+900;cfGesture=null;},{passive:true,capture:true});
-  document.addEventListener('click',e=>{const t=e.target instanceof Element?e.target:null;if(t&&t.closest('#cf-app [data-go]')&&Date.now()<cfBlockClickUntil){e.preventDefault();e.stopImmediatePropagation();}},{capture:true});
+  // Do not suppress navigation taps after a scroll; iOS WebView can dispatch the tap normally.
+  document.addEventListener('click',e=>{const t=e.target instanceof Element?e.target:null;if(t&&t.closest('#cf-app [data-go]'))e.stopPropagation();},{capture:true});
   let minerRound=null,jetRound=null,jetTimer=null;
   function syncBalance(n){const b=app.querySelector('#cf-balance');if(b)b.textContent=formatBalance(n);const p=app.querySelector('#cf-profile-balance');if(p)p.textContent=formatBalance(n)}
   async function minerStart(){const startButton=app.querySelector('[data-action="miner-start"]');if(startButton?.disabled)return;const bet=Number(app.querySelector('#cf-bet')?.value),size=Number(app.querySelector('#cf-miner-size')?.value),mines=Number(app.querySelector('#cf-miner-mines')?.value);if(!Number.isSafeInteger(bet)||bet<1||bet>100000)return say('Ставка должна быть от 1 до 100 000.');if(startButton){startButton.disabled=true;startButton.textContent='Запускаем…'}try{const d=await api('/api/miner/start',{method:'POST',body:JSON.stringify({bet,size,mines})});minerRound=d.round;const grid=app.querySelector('#cf-miner-grid');grid.style.gridTemplateColumns='repeat('+size+',minmax(0,1fr))';grid.innerHTML=Array.from({length:size*size},(_,i)=>'<button data-miner-tile="'+i+'" style="aspect-ratio:1;border:1px solid #7044a8;border-radius:10px;background:#180b30;color:#d9aaff;font-size:24px">✦</button>').join('');app.querySelector('[data-action="miner-start"]').style.display='none';app.querySelector('[data-action="miner-cashout"]').style.display='block';app.querySelector('#cf-miner-status').textContent='Раунд начат — открывай клетки';syncBalance(d.balance)}catch(e){say(e.message)}finally{if(startButton){startButton.disabled=false;startButton.textContent='Начать игру'}}}
