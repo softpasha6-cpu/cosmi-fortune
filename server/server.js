@@ -109,7 +109,7 @@ const REQUIRED_CHAT = process.env.REQUIRED_CHAT || '@CosmisFortunechat';
 const BIG_WIN_THRESHOLD = Math.max(1, Number(process.env.BIG_WIN_THRESHOLD || 100000));
 const CREDIT_PACKAGES={15:50000,25:100000,50:200000,100:400000};
 const REWARD_PACKAGES={100000:15,250000:25,500000:50,1000000:100};
-async function tg(method,body){const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),3500);try{const r=await fetch('https://api.telegram.org/bot'+botToken+'/'+method,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:controller.signal});const d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.description||'Telegram API error');return d.result}catch(e){if(e.name==='AbortError')throw new Error('Telegram membership check timed out');throw e}finally{clearTimeout(timer)}}
+async function tg(method,body){const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),2500);try{const r=await fetch('https://api.telegram.org/bot'+botToken+'/'+method,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:controller.signal});const d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.description||'Telegram API error');return d.result}catch(e){if(e.name==='AbortError')throw new Error('Telegram membership check timed out');throw e}finally{clearTimeout(timer)}}
 const membershipCache=new Map();
 const membershipInflight=new Map();
 async function membershipInChat(chatId,userId){
@@ -122,7 +122,7 @@ async function membershipInChat(chatId,userId){
   }catch(error){
     console.error('Membership check failed for '+chatId+':',error.message);
     return {member:false,status:'unavailable',error:'Бот не может проверить этот чат. Проверь username и права администратора бота.'};
-  }})();membershipInflight.set(key,pending);try{const value=await pending;membershipCache.set(key,{value,until:Date.now()+(value.member?20000:2500)});return value}finally{membershipInflight.delete(key)}
+  }})();membershipInflight.set(key,pending);try{const value=await pending;membershipCache.set(key,{value,until:Date.now()+(value.member?60000:3000)});return value}finally{membershipInflight.delete(key)}
 }
 async function checkRequiredMembership(userId){
   const [channel,chat]=await Promise.all([membershipInChat(REQUIRED_CHANNEL,userId),membershipInChat(REQUIRED_CHAT,userId)]);
