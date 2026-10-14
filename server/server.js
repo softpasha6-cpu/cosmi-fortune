@@ -611,7 +611,97 @@ app.post('/api/game', requireUser, async (req, res, next) => {
   }
 });
 
-app.use((err, _req, res, _next) => {
+
+const minerMultiplier = (size, mines, safePicks) => {
+  let p=1;
+  for(let i=0;i<safePicks;i++) p *= (size-mines-i)/(size-i);
+  return safePicks===0?1:Number((0.97/Math.max(p,0.0001)).toFixed(2));
+};
+const pickUnique = (total,count) => { const a=[]; while(a.length<count){const n=randInt(total);if(!a.includes(n))a.push(n)} return a; };
+app.post('/api/miner/start',requireUser,async(req,res,next)=>{
+ const bet=Number(req.body?.bet),size=Number(req.body?.size),mines=Number(req.body?.mines);
+ if(!Number.isSafeInteger(bet)||bet<1||bet>MAX_BET)return res.status(400).json({error:'Ставка от 1 до 100 000.'});
+ if(![3,5,6].includes(size)||![3,5,7,10].includes(mines)||mines>=size*size)return res.status(400).json({error:'Некорректное поле или количество мин.'});
+ const client=await pool.connect();try{await client.query('BEGIN');
+ const player=await client.query('SELECT balance FROM players WHERE telegram_id=$1 FOR UPDATE',[req.player.telegram_id]);
+ if(!player.rowCount||Number(player.rows[0].balance)<bet){await client.query('ROLLBACK');return res.status(400).json({error:'Недостаточно виртуальных кредитов.'})}
+ const active=await client.query("SELECT id FROM miner_rounds WHERE telegram_id=$1 AND status='active' FOR UPDATE",[req.player.telegram_id]);
+ if(active.rowCount){await client.query('ROLLBACK');return res.status(409).json({error:'Сначала заверши предыдущий раунд Минера.'})}
+ const id=crypto.randomUUID(), minesAt=pickUnique(size*size,mines);
+ const updated=Number(player.rows[0].balance)-bet;
+ await client.query('UPDATE players SET balance=$2,updated_at=NOW() WHERE telegram_id=$1',[req.player.telegram_id,updated]);
+ await client.query('INSERT INTO miner_rounds(id,telegram_id,bet,board_size,mine_count,mines) VALUES($1,$2,$3,$4,$5,$6::jsonb)',[id,req.player.telegram_id,bet,size,mines,JSON.stringify(minesAt)]);
+ res.json({round:{id,size,mines,picked:[],multiplier:1},balance:updated});
+ await client.query('COMMIT');
+ }catch(e){await client.query('ROLLBACK').catch(()=>{});next(e)}finally{client.release()}
+});
+app.post('/api/miner/pick',requireUser,async(req,res,next)=>{
+ const {roundId}=req.body||{},index=Number(req.body?.index);if(typeof roundId!=='string'||!Number.isInteger(index)||index<0||index>35)return res.status(400).json({error:'Некорректная клетка.'});
+ const client=await pool.connect();try{await client.query('BEGIN');
+ const q=await client.query("SELECT * FROM miner_rounds WHERE id=$1 AND telegram_id=$2 FOR UPDATE",[roundId,req.player.telegram_id]);
+ if(!q.rowCount){await client.query('ROLLBACK');return res.status(404).json({error:'Раунд не найден.'})}
+ const r=q.rows[0],picked=r.picked||[],mines=r.mines||[];
+ if(r.status!=='active'){await client.query('ROLLBACK');return res.status(409).json({error:'Раунд уже завершён.'})}
+ if(index>=Number(r.board_size)**2||picked.includes(index)){await client.query('ROLLBACK');return res.status(400).json({error:'Клетка уже открыта или вне поля.'})}
+ picked.push(index);const hit=mines.includes(index);
+ if(hit){await client.query("UPDATE miner_rounds SET picked=$2::jsonb,status='lost',finished_at=NOW() WHERE id=$1",[roundId,JSON.stringify(picked)]);const b=await client.query('SELECT balance FROM players WHERE telegram_id=$1',[req.player.telegram_id]);await client.query('COMMIT');return res.json({hit,finished:true,round:{id:roundId,picked,multiplier:Number(r.multiplier),mines},balance:Number(b.rows[0].balance)})}
+ const multiplier=minerMultiplier(Number(r.board_size)**2,Number(r.mine_count),picked.length);
+ await client.query("UPDATE miner_rounds SET picked=$2::jsonb,multiplier=$3 WHERE id=$1",[roundId,JSON.stringify(picked),multiplier]);
+ const b=await client.query('SELECT balance FROM players WHERE telegram_id=$1',[req.player.telegram_id]);await client.query('COMMIT');
+ res.json({hit:false,finished:false,round:{id:roundId,picked,multiplier},balance:Number(b.rows[0].balance)});
+ }catch(e){await client.query('ROLLBACK').catch(()=>{});next(e)}finally{client.release()}
+});
+app.post('/api/miner/cashout',requireUser,async(req,res,next)=>{
+ const {roundId}=req.body||{};const client=await pool.connect();try{await client.query('BEGIN');
+ const q=await client.query("SELECT * FROM miner_rounds WHERE id=$1 AND telegram_id=$2 FOR UPDATE",[roundId,req.player.telegram_id]);
+ if(!q.rowCount||q.rows[0].status!=='active'){await client.query('ROLLBACK');return res.status(409).json({error:'Нет активного раунда для выплаты.'})}
+ const r=q.rows[0],payout=Math.floor(Number(r.bet)*Number(r.multiplier));
+ const b=await client.query('UPDATE players SET balance=balance+$2,updated_at=NOW() WHERE telegram_id=$1 RETURNING balance',[req.player.telegram_id,payout]);
+ await client.query("UPDATE miner_rounds SET status='cashed_out',finished_at=NOW() WHERE id=$1",[roundId]);
+ await client.query("INSERT INTO game_transactions(telegram_id,game,bet,payout,balance_after,outcome,idempotency_key) VALUES($1,'miner',$2,$3,$4,$5::jsonb,$6)",[req.player.telegram_id,r.bet,payout,Number(b.rows[0].balance),JSON.stringify({message:'Минер: выигрыш забран',multiplier:Number(r.multiplier),picked:r.picked}),crypto.randomUUID()]);
+ await client.query('COMMIT');res.json({payout,balance:Number(b.rows[0].balance),multiplier:Number(r.multiplier)});
+ }catch(e){await client.query('ROLLBACK').catch(()=>{});next(e)}finally{client.release()}
+});
+app.post('/api/luckyjet/start',requireUser,async(req,res,next)=>{
+ const bet=Number(req.body?.bet),autoAt=req.body?.autoAt==null?null:Number(req.body.autoAt);
+ if(!Number.isSafeInteger(bet)||bet<1||bet>MAX_BET)return res.status(400).json({error:'Ставка от 1 до 100 000.'});
+ if(autoAt!==null&&(!Number.isFinite(autoAt)||autoAt<1.1||autoAt>100))return res.status(400).json({error:'Авто-вывод должен быть от 1.1× до 100×.'});
+ const client=await pool.connect();try{await client.query('BEGIN');const p=await client.query('SELECT balance FROM players WHERE telegram_id=$1 FOR UPDATE',[req.player.telegram_id]);
+ if(!p.rowCount||Number(p.rows[0].balance)<bet){await client.query('ROLLBACK');return res.status(400).json({error:'Недостаточно виртуальных кредитов.'})}
+ const active=await client.query("SELECT id FROM luckyjet_rounds WHERE telegram_id=$1 AND status='active' FOR UPDATE",[req.player.telegram_id]);
+ if(active.rowCount){await client.query('ROLLBACK');return res.status(409).json({error:'Сначала заверши предыдущий Lucky Jet.'})}
+ const id=crypto.randomUUID(),roll=Math.max(1.01,Math.min(50,Number((1/(1-Math.random()*0.98)).toFixed(2))));
+ const balance=Number(p.rows[0].balance)-bet;
+ await client.query('UPDATE players SET balance=$2,updated_at=NOW() WHERE telegram_id=$1',[req.player.telegram_id,balance]);
+ await client.query('INSERT INTO luckyjet_rounds(id,telegram_id,bet,crash_at,auto_at) VALUES($1,$2,$3,$4,$5)',[id,req.player.telegram_id,bet,roll,autoAt]);
+ await client.query('COMMIT');res.json({round:{id,crashAt:roll,startedAt:Date.now(),autoAt},balance});
+ }catch(e){await client.query('ROLLBACK').catch(()=>{});next(e)}finally{client.release()}
+});
+app.post('/api/luckyjet/cashout',requireUser,async(req,res,next)=>{
+ const {roundId}=req.body||{};const client=await pool.connect();try{await client.query('BEGIN');
+ const q=await client.query("SELECT * FROM luckyjet_rounds WHERE id=$1 AND telegram_id=$2 FOR UPDATE",[roundId,req.player.telegram_id]);
+ if(!q.rowCount||q.rows[0].status!=='active'){await client.query('ROLLBACK');return res.status(409).json({error:'Раунд уже завершён.'})}
+ const r=q.rows[0],elapsed=(Date.now()-new Date(r.started_at).getTime())/1000;
+ const current=Math.min(Number(r.crash_at),Number((1+Math.pow(Math.max(0,elapsed),1.35)*0.23).toFixed(2)));
+ const requested=Number(req.body?.multiplier)||current;
+ if(current>=Number(r.crash_at)||requested>=Number(r.crash_at)){await client.query("UPDATE luckyjet_rounds SET status='crashed',finished_at=NOW() WHERE id=$1",[roundId]);await client.query('COMMIT');return res.status(409).json({error:'Ракета уже остановилась. Ставка проиграна.',crashAt:Number(r.crash_at)})}
+ const multiplier=Math.min(current,requested),payout=Math.floor(Number(r.bet)*multiplier);
+ const b=await client.query('UPDATE players SET balance=balance+$2,updated_at=NOW() WHERE telegram_id=$1 RETURNING balance',[req.player.telegram_id,payout]);
+ await client.query("UPDATE luckyjet_rounds SET status='cashed_out',payout=$2,finished_at=NOW() WHERE id=$1",[roundId,payout]);
+ await client.query("INSERT INTO game_transactions(telegram_id,game,bet,payout,balance_after,outcome,idempotency_key) VALUES($1,'luckyjet',$2,$3,$4,$5::jsonb,$6)",[req.player.telegram_id,r.bet,payout,Number(b.rows[0].balance),JSON.stringify({message:'Lucky Jet: выигрыш забран',multiplier}),crypto.randomUUID()]);
+ await client.query('COMMIT');res.json({payout,balance:Number(b.rows[0].balance),multiplier});
+ }catch(e){await client.query('ROLLBACK').catch(()=>{});next(e)}finally{client.release()}
+});
+app.post('/api/luckyjet/crash',requireUser,async(req,res,next)=>{
+ const {roundId}=req.body||{};const client=await pool.connect();try{await client.query('BEGIN');
+ const q=await client.query("SELECT * FROM luckyjet_rounds WHERE id=$1 AND telegram_id=$2 FOR UPDATE",[roundId,req.player.telegram_id]);
+ if(!q.rowCount){await client.query('ROLLBACK');return res.status(404).json({error:'Раунд не найден.'})}
+ const r=q.rows[0];if(r.status==='active')await client.query("UPDATE luckyjet_rounds SET status='crashed',finished_at=NOW() WHERE id=$1",[roundId]);
+ const b=await client.query('SELECT balance FROM players WHERE telegram_id=$1',[req.player.telegram_id]);await client.query('COMMIT');res.json({crashAt:Number(r.crash_at),balance:Number(b.rows[0].balance)});
+ }catch(e){await client.query('ROLLBACK').catch(()=>{});next(e)}finally{client.release()}
+});
+
+\napp.use((err, _req, res, _next) => {
   const status = Number(err.status) || (err.message === 'Origin not allowed' ? 403 : 500);
   if (status >= 500) console.error(err);
   res.status(status).json({ error: status === 500 ? 'Внутренняя ошибка сервера' : err.message, ...(err.code ? { code: err.code } : {}) });
