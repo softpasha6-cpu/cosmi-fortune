@@ -699,9 +699,11 @@
     const chatUnavailable=!!(access && access.chat && access.chat.status==='unavailable');
     const bottom=app.querySelector('.bottom');
     if(bottom)bottom.style.display='none';
-    const channelLabel=channelOk?'✓ Канал — подписка подтверждена':(channelUnavailable?'⚠ Проверка канала недоступна':'Подписаться на канал');
-    const chatLabel=chatOk?'✓ Чат — вступление подтверждено':(chatUnavailable?'⚠ Проверка чата недоступна':'Вступить в чат');
-    const stateText=checking?'Проверяем членство в Telegram…':(message || ((channelOk?'✓ Канал подтверждён':'○ Нет подписки на канал')+'<br>'+(chatOk?'✓ Чат подтверждён':'○ Нет вступления в чат')));
+    const channelLabel=channelOk?'✓ Канал — подписка подтверждена':(channelUnavailable?'⚠ Проверка недоступна':'📣 Подписаться на канал');
+    const chatLabel=chatOk?'✓ Чат — вступление подтверждено':(chatUnavailable?'⚠ Проверка недоступна':'💬 Вступить в чат');
+    const channelState=channelOk?'✓ Канал подтверждён':(channelUnavailable?'⚠ Telegram не смог проверить канал':'○ Подписка на канал не подтверждена');
+    const chatState=chatOk?'✓ Чат подтверждён':(chatUnavailable?'⚠ Telegram не смог проверить чат':'○ Вступление в чат не подтверждено');
+    const stateText=checking?'Проверяем членство в Telegram…':(message || (channelState+'<br>'+chatState));
     content.innerHTML=`
       <section style="margin:22px 0;padding:22px 16px;border:1px solid #8f42ff;border-radius:24px;background:radial-gradient(ellipse at top,#32104f,#0a0718 75%);box-shadow:0 0 35px #8f42ff25;text-align:center">
         <div style="font-size:54px;margin-bottom:10px">🚀</div>
@@ -737,5 +739,6 @@
     event.preventDefault();
     checkAccessAndStart();
   });
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&app.querySelector('#cf-check-membership'))checkAccessAndStart()});
   checkAccessAndStart();
 })();
