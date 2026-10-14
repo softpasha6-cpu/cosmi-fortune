@@ -69,7 +69,7 @@ function verifyTelegramInitData(initData) {
   };
 }
 
-async async function requireUser(req, res, next) {
+async function requireUser(req, res, next) {
   try {
     const initData = req.get('X-Telegram-Init-Data');
     const user = verifyTelegramInitData(initData);
