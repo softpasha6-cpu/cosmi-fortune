@@ -515,8 +515,8 @@ app.post('/api/bonus-wheel', requireUser, async (req, res, next) => {
     }
     const roll=randInt(1000000);
     let reward=1000, label='+1 000 виртуальных кредитов';
-    if(roll<10){reward=100;label='ДЖЕКПОТ: +100 игровых звёзд ✦';}
-    else if(roll<1000){reward=25;label='+25 игровых звёзд ✦';}
+    if(roll<10){reward=1000000;label='ДЖЕКПОТ: +1 000 000 виртуальных кредитов ✦ (не реальные рубли)';}
+    else if(roll<1000){reward=250000;label='+250 000 виртуальных кредитов ✦ (не реальные рубли)';}
     else if(roll<1100){reward=50000;label='500 ₽ в игровом эквиваленте · +50 000 виртуальных кредитов';}
     else if(roll<50100){reward=25000;label='+25 000 виртуальных кредитов';}
     else if(roll<150100){reward=10000;label='+10 000 виртуальных кредитов';}
@@ -532,6 +532,7 @@ app.post('/api/bonus-wheel', requireUser, async (req, res, next) => {
     await client.query('INSERT INTO bonus_wheel_claims (telegram_id,claim_date,reward) VALUES ($1,CURRENT_DATE,$2) ON CONFLICT (telegram_id,claim_date) DO UPDATE SET reward=EXCLUDED.reward',[req.player.telegram_id,reward]);
     await client.query('INSERT INTO bonus_wheel_cooldowns (telegram_id,claimed_at,reward) VALUES ($1,NOW(),$2) ON CONFLICT (telegram_id) DO UPDATE SET claimed_at=NOW(),reward=EXCLUDED.reward',[req.player.telegram_id,reward]);
     await client.query('COMMIT');
+    if(reward>=BIG_WIN_THRESHOLD){await notifyUser(req.player.telegram_id,'🎉 КРУПНЫЙ ВЫИГРЫШ в бонусной рулетке Cosmic Fortune!\n\n🏆 Приз: '+reward.toLocaleString('ru-RU')+' виртуальных кредитов ✦\n💰 Текущий баланс: '+balanceAfter.toLocaleString('ru-RU')+' виртуальных кредитов.\n\nℹ️ Это игровые кредиты, не реальные рубли и не денежная выплата.');}
     res.json({transactionId:String(inserted.rows[0].id),payout:reward,balance:balanceAfter,outcome:{reward,label,message:label},createdAt:inserted.rows[0].created_at});
   } catch(error) {
     await client.query('ROLLBACK').catch(()=>{});
