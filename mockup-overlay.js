@@ -754,13 +754,16 @@
     return task;
   }
   // Handle the membership button at document capture phase so Telegram WebView
-  // or other app-level click handlers cannot swallow the tap.
+  // or other app-level click handlers cannot swallow the tap. Debounce pointerup+click.
+  let cfMembershipTapAt=0;
   document.addEventListener('click',event=>{
     const button=event.target instanceof Element?event.target.closest('#cf-check-membership'):null;
     if(!button)return;
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
+    if(Date.now()-cfMembershipTapAt<500)return;
+    cfMembershipTapAt=Date.now();
     button.textContent='Проверяем подписку…';
     button.style.opacity='0.8';
     checkAccessAndStart(true);
@@ -771,6 +774,8 @@
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
+    if(Date.now()-cfMembershipTapAt<500)return;
+    cfMembershipTapAt=Date.now();
     button.textContent='Проверяем подписку…';
     checkAccessAndStart(true);
   },{capture:true,passive:false});
