@@ -732,7 +732,11 @@
   }
   let cfAccessCheckPromise=null;
   async function checkAccessAndStart(forceRefresh=false){
-    if(cfAccessCheckPromise)return cfAccessCheckPromise;
+    if(cfAccessCheckPromise){
+      if(!forceRefresh)return cfAccessCheckPromise;
+      await cfAccessCheckPromise.catch(()=>{});
+      if(!app.querySelector('#cf-check-membership'))return;
+    }
     const task=(async()=>{
     renderAccessGate(null,true);
     try{
