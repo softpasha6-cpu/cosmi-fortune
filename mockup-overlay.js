@@ -753,12 +753,27 @@
     cfAccessCheckPromise=task;
     return task;
   }
-  app.addEventListener('click',event=>{
+  // Handle the membership button at document capture phase so Telegram WebView
+  // or other app-level click handlers cannot swallow the tap.
+  document.addEventListener('click',event=>{
     const button=event.target instanceof Element?event.target.closest('#cf-check-membership'):null;
     if(!button)return;
     event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    button.textContent='Проверяем подписку…';
+    button.style.opacity='0.8';
     checkAccessAndStart(true);
-  });
+  },true);
+  document.addEventListener('pointerup',event=>{
+    const button=event.target instanceof Element?event.target.closest('#cf-check-membership'):null;
+    if(!button||event.pointerType==='mouse')return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    button.textContent='Проверяем подписку…';
+    checkAccessAndStart(true);
+  },{capture:true,passive:false});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&app.querySelector('#cf-check-membership'))checkAccessAndStart()});
   checkAccessAndStart();
 })();
