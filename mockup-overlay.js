@@ -468,14 +468,14 @@
   document.addEventListener('touchstart',e=>{const p=e.touches&&e.touches[0];if(p)cfGesture={x:p.clientX,y:p.clientY,moved:false};},{passive:true,capture:true});
   document.addEventListener('touchmove',e=>{const p=e.touches&&e.touches[0];if(cfGesture&&p&&Math.hypot(p.clientX-cfGesture.x,p.clientY-cfGesture.y)>10){cfGesture.moved=true;cfLastTouchMoved=true;cfBlockClickUntil=Date.now()+700;}},{passive:true,capture:true});
   document.addEventListener('touchend',()=>{if(cfGesture?.moved){cfLastTouchMoved=true;cfBlockClickUntil=Date.now()+700;}cfGesture=null;},{passive:true,capture:true});
-  document.addEventListener('click',e=>{if(Date.now()<cfBlockClickUntil){const t=e.target instanceof Element?e.target:null;if(t?.closest('#cf-app button,#cf-app [data-go],#cf-app [data-action]')){e.preventDefault();e.stopImmediatePropagation();}}},true);
+  document.addEventListener('click',e=>{if(Date.now()<cfBlockClickUntil){const t=e.target instanceof Element?e.target:null;if(t?.closest('#cf-app button,#cf-app [data-go],#cf-app [data-action]')&&!t.closest('#cf-check-membership')){e.preventDefault();e.stopImmediatePropagation();}}},true);
   // Do not suppress navigation taps after a scroll; iOS WebView can dispatch the tap normally.
   document.addEventListener('click',e=>{const t=e.target instanceof Element?e.target:null;if(t&&t.closest('#cf-app [data-go]'))e.stopPropagation();},{capture:true});
   const cfImmediateClickEvents=new WeakSet();
   let cfImmediateTapAt=0,cfImmediateTapTarget=null;
   app.addEventListener('touchend',e=>{
     const t=e.target instanceof Element?e.target:null;
-    const hit=t?.closest('#cf-app [data-go],#cf-app [data-action="buy-credits"],#cf-app [data-action="request-withdrawal"],#cf-app [data-action="play-game"],#cf-app [data-action="bj-create"],#cf-app [data-action="bj-open-lobby"]');
+    const hit=t?.closest('#cf-app #cf-check-membership,#cf-app [data-go],#cf-app [data-action="buy-credits"],#cf-app [data-action="request-withdrawal"],#cf-app [data-action="play-game"],#cf-app [data-action="bj-create"],#cf-app [data-action="bj-open-lobby"]');
     if(!hit||cfGesture?.moved||Date.now()<cfBlockClickUntil)return;
     e.preventDefault();
     cfImmediateTapAt=Date.now();cfImmediateTapTarget=hit;
@@ -504,7 +504,7 @@
     else if(act.dataset.action==='jet-cashout')jetCashout();
   },{capture:true,passive:false});
   app.addEventListener('click',async e=>{
-    if(!cfImmediateClickEvents.has(e)&&cfImmediateTapTarget&&Date.now()-cfImmediateTapAt<700&&e.target instanceof Element&&e.target.closest('#cf-app [data-go],#cf-app [data-action="buy-credits"],#cf-app [data-action="request-withdrawal"],#cf-app [data-action="play-game"],#cf-app [data-action="bj-create"],#cf-app [data-action="bj-open-lobby"]')===cfImmediateTapTarget){e.preventDefault();return;}
+    if(!cfImmediateClickEvents.has(e)&&cfImmediateTapTarget&&Date.now()-cfImmediateTapAt<700&&e.target instanceof Element&&e.target.closest('#cf-app #cf-check-membership,#cf-app [data-go],#cf-app [data-action="buy-credits"],#cf-app [data-action="request-withdrawal"],#cf-app [data-action="play-game"],#cf-app [data-action="bj-create"],#cf-app [data-action="bj-open-lobby"]')===cfImmediateTapTarget){e.preventDefault();return;}
     if(Date.now()-cfFastGameTouchAt<800){const t=e.target instanceof Element?e.target:null;if(t?.closest('#cf-app [data-miner-tile],#cf-app [data-action="miner-start"],#cf-app [data-action="miner-cashout"],#cf-app [data-action="jet-start"],#cf-app [data-action="jet-cashout"]')){e.preventDefault();return;}}
     const mt=e.target.closest('[data-miner-tile]');if(mt){minerPick(Number(mt.dataset.minerTile));return}if(e.target.closest('[data-action="miner-start"]')){minerStart();return}if(e.target.closest('[data-action="miner-cashout"]')){minerCashout();return}if(e.target.closest('[data-action="jet-start"]')){jetStart();return}if(e.target.closest('[data-action="jet-cashout"]')){jetCashout();return}const close=e.target.closest('[data-action="close-bonus-wheel"]');if(close){app.querySelector('#cf-wheel-modal')?.remove();if(bonusTimerInterval){clearInterval(bonusTimerInterval);bonusTimerInterval=null;}return}
     const closeDaily=e.target.closest('[data-action="close-daily-reward"]');if(closeDaily){closeDailyReward();return}
@@ -726,17 +726,17 @@
         <a href="https://t.me/Cosmic_Fortune" target="_blank" rel="noopener" style="display:block;margin:14px 0;padding:15px;border:1px solid #9a52ed;border-radius:15px;background:#1b0c2c;color:#fff;text-decoration:none;font-weight:800">📣 ${channelLabel}</a>
         <a href="https://t.me/CosmisFortunechat" target="_blank" rel="noopener" style="display:block;margin:14px 0;padding:15px;border:1px solid #9a52ed;border-radius:15px;background:#1b0c2c;color:#fff;text-decoration:none;font-weight:800">💬 ${chatLabel}</a>
         <div style="margin:12px 0;color:${channelOk&&chatOk?'#b4ffcb':'#c4b1dc'};font-size:13px">${stateText}</div>
-        <button id="cf-check-membership" type="button" style="width:100%;padding:15px;border:1px solid #e6a6ff;border-radius:15px;background:linear-gradient(100deg,#b622f5,#7010dc);font-weight:900;color:#fff" ${checking?'disabled':''}>${checking?'Проверяем…':'Проверить подписку'}</button>
+        <button id="cf-check-membership" type="button" aria-live="polite" style="width:100%;min-height:52px;padding:15px;border:1px solid #e6a6ff;border-radius:15px;background:linear-gradient(100deg,#b622f5,#7010dc);font-weight:900;color:#fff;touch-action:manipulation;pointer-events:auto">${checking?'Проверяем…':'Проверить подписку'}</button>
         <p style="font-size:11px;color:#9c88b8;margin-top:15px">Доступ откроется только после подтверждения обоих условий.</p>
       </section>`;
   }
   let cfAccessCheckPromise=null;
-  async function checkAccessAndStart(){
+  async function checkAccessAndStart(forceRefresh=false){
     if(cfAccessCheckPromise)return cfAccessCheckPromise;
-    cfAccessCheckPromise=(async()=>{
+    const task=(async()=>{
     renderAccessGate(null,true);
     try{
-      const access=await api('/api/access/check');
+      const access=await api('/api/access/check'+(forceRefresh?'?refresh=1':''));
       if(access.ready){
         app.querySelector('.bottom')?.style.removeProperty('display');
         render('home');
@@ -744,14 +744,16 @@
       }else {const unavailable=access.channel?.error||access.chat?.error;renderAccessGate(access,false,unavailable?'Не удалось проверить членство. Добавь бота администратором в канал и чат, затем проверь настройки username.':'Выполни оба условия и проверь ещё раз.');}
     }catch(error){
       renderAccessGate(null,false,error.message||'Не удалось проверить подписку. Попробуй ещё раз.');
-    }finally{cfAccessCheckPromise=null}
-    })();return cfAccessCheckPromise;
+    }finally{if(cfAccessCheckPromise===task)cfAccessCheckPromise=null}
+    })();
+    cfAccessCheckPromise=task;
+    return task;
   }
   app.addEventListener('click',event=>{
-    const button=event.target.closest('#cf-check-membership');
+    const button=event.target instanceof Element?event.target.closest('#cf-check-membership'):null;
     if(!button)return;
     event.preventDefault();
-    checkAccessAndStart();
+    checkAccessAndStart(true);
   });
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&app.querySelector('#cf-check-membership'))checkAccessAndStart()});
   checkAccessAndStart();
