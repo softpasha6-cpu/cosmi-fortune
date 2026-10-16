@@ -109,7 +109,7 @@ const REQUIRED_CHAT = process.env.REQUIRED_CHAT || '@CosmisFortunechat';
 const BIG_WIN_THRESHOLD = Math.max(1, Number(process.env.BIG_WIN_THRESHOLD || 100000));
 const CREDIT_PACKAGES={25:40000,50:75000,100:170000,500:900000,1000:2200000};
 const REWARD_PACKAGES={70000:25,100000:50,200000:100,1000000:500,2600000:1000};
-async function tg(method,body){const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),2500);try{const r=await fetch('https://api.telegram.org/bot'+botToken+'/'+method,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:controller.signal});const d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.description||'Telegram API error');return d.result}catch(e){if(e.name==='AbortError')throw new Error('Telegram membership check timed out');throw e}finally{clearTimeout(timer)}}
+async function tg(method,body,timeoutMs=2500){const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),timeoutMs);try{const r=await fetch('https://api.telegram.org/bot'+botToken+'/'+method,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:controller.signal});const d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.description||'Telegram API error');return d.result}catch(e){if(e.name==='AbortError')throw new Error('Telegram membership check timed out');throw e}finally{clearTimeout(timer)}}
 const membershipCache=new Map();
 const membershipInflight=new Map();
 async function membershipInChat(chatId,userId,forceRefresh=false){
@@ -117,7 +117,7 @@ async function membershipInChat(chatId,userId,forceRefresh=false){
   if(!forceRefresh&&cached&&cached.until>Date.now())return cached.value;
   if(membershipInflight.has(key))return membershipInflight.get(key);
   const pending=(async()=>{try{
-    const member=await tg('getChatMember',{chat_id:chatId,user_id:Number(userId)});
+    const member=await tg('getChatMember',{chat_id:chatId,user_id:Number(userId)},1000);
     return {member:['creator','administrator','member'].includes(member.status)||(member.status==='restricted'&&member.is_member===true),status:member.status||'unknown'};
   }catch(error){
     console.error('Membership check failed for '+chatId+':',error.message);
@@ -133,8 +133,9 @@ async function notifyUser(userId,text){
   catch(error){console.error('User notification failed for '+userId+':',error.message);return false}
 }
 app.get('/api/access/check', requireUser, async (req, res) => {
-  // Use the short-lived cache for fast repeat checks; new subscriptions refresh within 3 seconds.
-  const access = await checkRequiredMembership(req.player.telegram_id,false);
+  // The explicit button action bypasses cached negative results and asks Telegram directly.
+  const forceRefresh = req.query.refresh === '1';
+  const access = await checkRequiredMembership(req.player.telegram_id,forceRefresh);
   res.set('Cache-Control','no-store, max-age=0');
   res.json({...access,checkedAt:Date.now()});
 });
