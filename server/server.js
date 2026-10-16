@@ -115,14 +115,14 @@ const membershipInflight=new Map();
 async function membershipInChat(chatId,userId,forceRefresh=false){
   const key=String(chatId)+':'+String(userId),cached=membershipCache.get(key);
   if(!forceRefresh&&cached&&cached.until>Date.now())return cached.value;
-  if(membershipInflight.has(key))return membershipInflight.get(key);
+  if(!forceRefresh&&membershipInflight.has(key))return membershipInflight.get(key);
   const pending=(async()=>{try{
     const member=await tg('getChatMember',{chat_id:chatId,user_id:Number(userId)},1000);
     return {member:['creator','administrator','member'].includes(member.status)||(member.status==='restricted'&&member.is_member===true),status:member.status||'unknown'};
   }catch(error){
     console.error('Membership check failed for '+chatId+':',error.message);
     return {member:false,status:'unavailable',error:'Telegram API: '+String(error.message||'не удалось проверить участника')+'. Убедись, что бот является администратором канала и группы.'};
-  }})();membershipInflight.set(key,pending);try{const value=await pending;membershipCache.set(key,{value,until:Date.now()+(value.member?60000:3000)});return value}finally{membershipInflight.delete(key)}
+  }})();if(!forceRefresh)membershipInflight.set(key,pending);try{const value=await pending;membershipCache.set(key,{value,until:Date.now()+(value.member?60000:1000)});return value}finally{if(membershipInflight.get(key)===pending)membershipInflight.delete(key)}
 }
 async function checkRequiredMembership(userId,forceRefresh=false){
   const [channel,chat]=await Promise.all([membershipInChat(REQUIRED_CHANNEL,userId,forceRefresh),membershipInChat(REQUIRED_CHAT,userId,forceRefresh)]);
