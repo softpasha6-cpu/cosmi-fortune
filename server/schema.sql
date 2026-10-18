@@ -151,3 +151,13 @@ ALTER TABLE star_purchases DROP CONSTRAINT IF EXISTS star_purchases_credits_chec
 ALTER TABLE star_purchases ADD CONSTRAINT star_purchases_credits_check CHECK (credits IN (40000,50000,75000,100000,170000,200000,400000,900000,2200000));
 ALTER TABLE star_purchases DROP CONSTRAINT IF EXISTS star_purchases_package_stars_check;
 ALTER TABLE star_purchases ADD CONSTRAINT star_purchases_package_stars_check CHECK (package_stars IN (15,25,50,100,500,1000));
+
+
+-- Telegram bot users, tracked separately from Mini App players.
+CREATE TABLE IF NOT EXISTS bot_users (
+  telegram_id BIGINT PRIMARY KEY,
+  username TEXT,
+  first_name TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
