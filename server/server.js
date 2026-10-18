@@ -84,13 +84,7 @@ async function requireUser(req, res, next) {
       [user.id, user.username, user.firstName]
     );
     req.player = result.rows[0];
-    // This endpoint is the only authenticated route allowed before membership is confirmed.
-    if (req.path !== '/api/access/check') {
-      const access = await checkRequiredMembership(user.id);
-      if (!access.ready) {
-        throw Object.assign(new Error('Сначала подпишись на канал Cosmic Fortune и вступи в чат.'), { status: 403, code: 'SUBSCRIPTION_REQUIRED' });
-      }
-    }
+    // Membership is handled in the Telegram bot; the Mini App only requires valid Telegram initData.
     next();
   } catch (error) {
     next(error);
