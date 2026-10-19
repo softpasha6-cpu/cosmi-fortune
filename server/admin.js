@@ -48,6 +48,51 @@ async function system(chatId,{pool,tg}) {
  let wh; try{wh=await tg('getWebhookInfo',{},3500)}catch(e){wh={url:'',pending_update_count:'?',last_error_message:e.message}}
  return send(tg,chatId,'🖥 СОСТОЯНИЕ СЕРВЕРА\n\n✅ API отвечает, PostgreSQL доступен.\n🕒 Время БД: '+stamp(db.rows[0].server_time)+'\n🌐 Webhook: '+(wh.url?'настроен':'не настроен')+'\n📨 Очередь Telegram: '+(wh.pending_update_count??'—')+'\n'+(wh.last_error_message?'⚠️ Ошибка webhook: '+String(wh.last_error_message).slice(0,300):'')+'\n\nAPI: https://cosmic-fortune-api.onrender.com/health');
 }
+async function playersList(chatId,{pool,tg},page=0) {
+ const offset=Math.max(0,Number(page)||0)*10;
+ const [r,total]=await Promise.all([
+  pool.query(\`SELECT u.telegram_id::text id,u.username,u.first_name,u.created_at,
+   p.balance,p.updated_at,COALESCE(g.rounds,0)::bigint rounds
+   FROM (SELECT telegram_id,username,first_name,created_at FROM bot_users
+         UNION SELECT telegram_id,username,first_name,created_at FROM players) u
+   LEFT JOIN players p ON p.telegram_id=u.telegram_id
+   LEFT JOIN (SELECT telegram_id,COUNT(*) rounds FROM game_transactions GROUP BY telegram_id) g ON g.telegram_id=u.telegram_id
+   ORDER BY COALESCE(p.updated_at,u.created_at) DESC NULLS LAST LIMIT 10 OFFSET $1\`,[offset]),
+  pool.query('SELECT COUNT(*)::int n FROM (SELECT telegram_id FROM bot_users UNION SELECT telegram_id FROM players) x')
+ ]);
+ const rows=r.rows.map(u=>[{text:(u.username?'@'+u.username:(u.first_name||'Игрок'))+' · '+fmt(u.balance)+' кредитов · '+fmt(u.rounds)+' игр',callback_data:'admin:player:'+u.id}]);
+ const nav=[];
+ if(page>0)nav.push({text:'⬅️ Назад',callback_data:'admin:players:'+String(page-1)});
+ if(offset+10<Number(total.rows[0].n))nav.push({text:'Вперёд ➡️',callback_data:'admin:players:'+String(page+1)});
+ if(nav.length)rows.push(nav);
+ rows.push([{text:'🔎 Найти по ID / username',callback_data:'admin:users'}]);
+ return send(tg,chatId,'👥 ИГРОКИ COSMIC FORTUNE\n\nВсего пользователей: '+fmt(total.rows[0].n)+'\nСтраница '+(page+1)+'. Нажми на игрока, чтобы посмотреть его подробную статистику.',{inline_keyboard:[...rows,[{text:'↩️ Админ-меню',callback_data:'admin:home'}]]});
+}
+async function playerCard(chatId,id,{pool,tg}) {
+ const p=await pool.query(\`SELECT COALESCE(a.telegram_id,b.telegram_id)::text id,
+   COALESCE(a.username,b.username) username,COALESCE(a.first_name,b.first_name,'') first_name,
+   a.balance,a.created_at app_created,b.created_at bot_created,a.updated_at
+   FROM (SELECT telegram_id,username,first_name,created_at,updated_at,balance FROM players WHERE telegram_id=$1) a
+   FULL JOIN (SELECT telegram_id,username,first_name,created_at FROM bot_users WHERE telegram_id=$1) b
+   ON a.telegram_id=b.telegram_id LIMIT 1\`,[id]);
+ if(!p.rowCount)return send(tg,chatId,'Игрок не найден.');
+ const u=p.rows[0];
+ const [g,byGame,s,w,recent]=await Promise.all([
+  pool.query('SELECT COUNT(*)::bigint n,COALESCE(SUM(bet),0)::bigint bets,COALESCE(SUM(payout),0)::bigint payouts,MAX(created_at) last_game FROM game_transactions WHERE telegram_id=$1',[u.id]),
+  pool.query('SELECT game,COUNT(*)::bigint rounds,COALESCE(SUM(bet),0)::bigint bets,COALESCE(SUM(payout),0)::bigint payouts FROM game_transactions WHERE telegram_id=$1 GROUP BY game ORDER BY COUNT(*) DESC LIMIT 7',[u.id]),
+  pool.query("SELECT COUNT(*)::int n,COALESCE(SUM(package_stars),0)::bigint stars,COALESCE(SUM(credits),0)::bigint credits FROM star_purchases WHERE telegram_id=$1 AND status='paid'",[u.id]),
+  pool.query("SELECT COUNT(*)::int total,COUNT(*) FILTER(WHERE status='pending')::int pending,COUNT(*) FILTER(WHERE status='paid')::int paid,COUNT(*) FILTER(WHERE status='rejected')::int rejected FROM withdrawal_requests WHERE telegram_id=$1",[u.id]),
+  pool.query('SELECT game,bet,payout,balance_after,created_at FROM game_transactions WHERE telegram_id=$1 ORDER BY created_at DESC LIMIT 5',[u.id])
+ ]);
+ const lines=byGame.rows.map(v=>'• '+v.game+': '+fmt(v.rounds)+' игр, ставки '+fmt(v.bets)+', выплаты '+fmt(v.payouts));
+ const last=recent.rows.map(v=>'• '+stamp(v.created_at)+' — '+v.game+': ставка '+fmt(v.bet)+', выплата '+fmt(v.payout)+', баланс '+fmt(v.balance_after));
+ const text='👤 КАРТОЧКА ИГРОКА\n\nИмя: '+(u.first_name||'—')+'\nUsername: '+(u.username?'@'+u.username:'—')+'\nTelegram ID: '+u.id+'\nБаланс: '+fmt(u.balance)+' кредитов\nРегистрация в боте: '+(u.bot_created?stamp(u.bot_created):'—')+'\nПрофиль приложения: '+(u.app_created?stamp(u.app_created):'не создан')+'\nПоследняя активность: '+(u.updated_at?stamp(u.updated_at):'—')+
+  '\n\n🎮 ИГРЫ\nРаундов: '+fmt(g.rows[0].n)+'\nСумма ставок: '+fmt(g.rows[0].bets)+'\nСумма выплат: '+fmt(g.rows[0].payouts)+'\nПоследняя игра: '+(g.rows[0].last_game?stamp(g.rows[0].last_game):'—')+'\n'+(lines.join('\n')||'Игровой статистики пока нет.')+
+  '\n\n⭐ ПОКУПКИ STARS\nУспешных оплат: '+fmt(s.rows[0].n)+'\nПотрачено Stars: '+fmt(s.rows[0].stars)+'\nПолучено кредитов: '+fmt(s.rows[0].credits)+
+  '\n\n🎁 ВЫВОДЫ\nВсего заявок: '+fmt(w.rows[0].total)+'\nОжидают: '+fmt(w.rows[0].pending)+' · Выплачено: '+fmt(w.rows[0].paid)+' · Отклонено: '+fmt(w.rows[0].rejected)+
+  '\n\n🕹 ПОСЛЕДНИЕ 5 ИГР\n'+(last.join('\n')||'Игр пока нет.');
+ return send(tg,chatId,text,{inline_keyboard:[[{text:'👥 К списку игроков',callback_data:'admin:players:0'}],[{text:'🔎 Найти другого игрока',callback_data:'admin:users'}],[{text:'↩️ Админ-меню',callback_data:'admin:home'}]]});
+}
 async function lookup(chatId,term,{pool,tg}) {
  const raw=String(term||'').trim().replace(/^@/,''); if(!raw)return send(tg,chatId,'Использование: /user Telegram_ID или /user username');
  const numeric=/^\d+$/.test(raw);
@@ -75,7 +120,9 @@ async function callback(q,deps) {
  else if(data==='admin:payments')await payments(chatId,deps);
  else if(data==='admin:games')await gameStats(chatId,deps);
  else if(data==='admin:system')await system(chatId,deps);
- else if(data==='admin:users')await send(tg,chatId,'👤 ПОИСК ИГРОКА\n\nОтправь:\n/user 123456789\nили\n/user username');
+ else if(data==='admin:users')await send(tg,chatId,'👤 ПОИСК ИГРОКА\n\nОтправь в чат:\n/user 123456789\nили\n/user username',back([[{text:'👥 Открыть список игроков',callback_data:'admin:players:0'}]]));
+ else if(data.startsWith('admin:players:'))await playersList(chatId,deps,Number(data.slice('admin:players:'.length)));
+ else if(data.startsWith('admin:player:'))await playerCard(chatId,data.slice('admin:player:'.length),deps);
  else if(data==='admin:notifications'){
   const r=await pool.query("SELECT setting_value FROM app_settings WHERE setting_key='owner_notifications_enabled'");
   const enabled=r.rows[0]?.setting_value!=='false',next=!enabled;
