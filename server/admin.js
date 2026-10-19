@@ -51,13 +51,13 @@ async function system(chatId,{pool,tg}) {
 async function playersList(chatId,{pool,tg},page=0) {
  const offset=Math.max(0,Number(page)||0)*10;
  const [r,total]=await Promise.all([
-  pool.query(\`SELECT u.telegram_id::text id,u.username,u.first_name,u.created_at,
+  pool.query(`SELECT u.telegram_id::text id,u.username,u.first_name,u.created_at,
    p.balance,p.updated_at,COALESCE(g.rounds,0)::bigint rounds
    FROM (SELECT telegram_id,username,first_name,created_at FROM bot_users
          UNION SELECT telegram_id,username,first_name,created_at FROM players) u
    LEFT JOIN players p ON p.telegram_id=u.telegram_id
    LEFT JOIN (SELECT telegram_id,COUNT(*) rounds FROM game_transactions GROUP BY telegram_id) g ON g.telegram_id=u.telegram_id
-   ORDER BY COALESCE(p.updated_at,u.created_at) DESC NULLS LAST LIMIT 10 OFFSET $1\`,[offset]),
+   ORDER BY COALESCE(p.updated_at,u.created_at) DESC NULLS LAST LIMIT 10 OFFSET $1`,[offset]),
   pool.query('SELECT COUNT(*)::int n FROM (SELECT telegram_id FROM bot_users UNION SELECT telegram_id FROM players) x')
  ]);
  const rows=r.rows.map(u=>[{text:(u.username?'@'+u.username:(u.first_name||'Игрок'))+' · '+fmt(u.balance)+' кредитов · '+fmt(u.rounds)+' игр',callback_data:'admin:player:'+u.id}]);
@@ -69,12 +69,12 @@ async function playersList(chatId,{pool,tg},page=0) {
  return send(tg,chatId,'👥 ИГРОКИ COSMIC FORTUNE\n\nВсего пользователей: '+fmt(total.rows[0].n)+'\nСтраница '+(page+1)+'. Нажми на игрока, чтобы посмотреть его подробную статистику.',{inline_keyboard:[...rows,[{text:'↩️ Админ-меню',callback_data:'admin:home'}]]});
 }
 async function playerCard(chatId,id,{pool,tg}) {
- const p=await pool.query(\`SELECT COALESCE(a.telegram_id,b.telegram_id)::text id,
+ const p=await pool.query(`SELECT COALESCE(a.telegram_id,b.telegram_id)::text id,
    COALESCE(a.username,b.username) username,COALESCE(a.first_name,b.first_name,'') first_name,
    a.balance,a.created_at app_created,b.created_at bot_created,a.updated_at
    FROM (SELECT telegram_id,username,first_name,created_at,updated_at,balance FROM players WHERE telegram_id=$1) a
    FULL JOIN (SELECT telegram_id,username,first_name,created_at FROM bot_users WHERE telegram_id=$1) b
-   ON a.telegram_id=b.telegram_id LIMIT 1\`,[id]);
+   ON a.telegram_id=b.telegram_id LIMIT 1`,[id]);
  if(!p.rowCount)return send(tg,chatId,'Игрок не найден.');
  const u=p.rows[0];
  const [g,byGame,s,w,recent]=await Promise.all([
