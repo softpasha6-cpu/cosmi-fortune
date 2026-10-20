@@ -371,7 +371,8 @@
     try{
       const data=await api('/api/me');
       const balance=app.querySelector('#cf-balance');
-      if(balance) balance.textContent=formatBalance(data.player.balance);\n      const homeBalance=app.querySelector('#cf-home-balance');if(homeBalance)homeBalance.textContent=formatBalance(data.player.balance);
+      if(balance) balance.textContent=formatBalance(data.player.balance);
+      const homeBalance=app.querySelector('#cf-home-balance');if(homeBalance)homeBalance.textContent=formatBalance(data.player.balance);
       const profileBalance=app.querySelector('#cf-profile-balance');
       if(profileBalance) profileBalance.textContent=formatBalance(data.player.balance);
       const title=app.querySelector('#cf-profile-name');if(title)title.textContent=data.player.firstName||data.player.username||'Игрок Cosmic Fortune';
