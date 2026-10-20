@@ -116,7 +116,7 @@
     #cf-app .art-slots{background-image:radial-gradient(ellipse at 50% 35%,#ffbe32 0,transparent 35%),linear-gradient(145deg,#4b1207,#a53609 52%,#16051a)}
     #cf-app .art-roulette{background-image:url("./a_vibrant_glossy_high_detail_casino_game_app_ico.png");background-size:116% 116%;background-position:center;background-repeat:no-repeat;filter:brightness(1.3) saturate(1.12)}#cf-app .cf-game-tile.roulette .cf-game-art:before{display:none}#cf-app .cf-game-tile.roulette .cf-game-emoji,#cf-app .cf-game-tile.roulette .cf-game-title{display:none}
     #cf-app .art-blackjack{background-image:url("./a_highly_detailed_glossy_neon_gold_casino_themed.png");background-size:116% 116%;background-position:center;background-repeat:no-repeat;filter:brightness(1.3) saturate(1.12)}#cf-app .cf-game-tile.blackjack .cf-game-art:before{display:none}#cf-app .cf-game-tile.blackjack .cf-game-emoji,#cf-app .cf-game-tile.blackjack .cf-game-title{display:none}
-    #cf-app .art-dice{background-image:radial-gradient(circle at 50% 40%,#9c45ff 0,transparent 32%),linear-gradient(145deg,#190b47,#4b1684 55%,#08051b)}
+    #cf-app .art-dice{background-image:url("./a_glossy_high_detail_casino_gambling_app_icon_sty.png");background-size:116% 116%;background-position:center;background-repeat:no-repeat;filter:brightness(1.3) saturate(1.12)}#cf-app .cf-game-tile.dice .cf-game-art:before{display:none}#cf-app .cf-game-tile.dice .cf-game-emoji,#cf-app .cf-game-tile.dice .cf-game-title{display:none}
     #cf-app .cf-game-tile.luckyjet{border-color:#d98bff}
     #cf-app .cf-game-tile.miner{border-color:#54cfff}
     #cf-app .cf-game-tile.slots{border-color:#ffb83f}
