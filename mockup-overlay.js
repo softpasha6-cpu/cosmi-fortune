@@ -9,7 +9,7 @@
   const style = document.createElement('style');
   style.id = 'cf-app-style';
   style.textContent = `
-    body.cf-code-app>header,body.cf-code-app>main,body.cf-code-app>footer,body.cf-code-app>.bottom-nav{display:none!important}
+    body.cf-code-app> :not(#cf-app){display:none!important}
     #cf-app{position:fixed;inset:0;z-index:2147483000;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;touch-action:pan-y;color:#fff;background:radial-gradient(ellipse at 50% 0%,#37116a 0%,#0a0718 45%,#03040a 100%);font:15px system-ui,-apple-system,sans-serif;padding:env(safe-area-inset-top) 0 calc(82px + env(safe-area-inset-bottom));}
     #cf-app *{box-sizing:border-box} #cf-app .shell{width:min(100%,620px);margin:auto;padding:12px 14px 20px}
     /* Keep avatar fallback text from rendering as a giant initial over the profile. */
@@ -834,6 +834,7 @@
     button.textContent='Проверяем подписку…';
     checkAccessAndStart(true);
   },{capture:true,passive:false});
-  // Require verified membership in both the channel and chat before opening the app.
-  checkAccessAndStart(false);
+  // Startup: open the home screen directly. Subscription verification is disabled.
+  render('home');
+  refreshAccount();
 })();
