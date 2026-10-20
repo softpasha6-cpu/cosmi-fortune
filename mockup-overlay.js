@@ -261,9 +261,8 @@
     #cf-app:has(.cf-home-art-full) #cf-content{width:100%;height:100%;margin:0;padding:0;overflow:hidden}
     #cf-app .cf-home-art-full{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100dvh;margin:0;padding:0;line-height:0;background:#070411;overflow:hidden}
     #cf-app .cf-home-art-full img{display:block;width:100%;height:100%;max-width:none;max-height:100dvh;margin:0;padding:0;object-fit:contain;object-position:center center;user-select:none;-webkit-user-drag:none}
-    #cf-app .cf-home-balance-real{position:absolute;z-index:5;top:max(8px,env(safe-area-inset-top));left:4%;right:4%;height:42px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 13px;border:1px solid #f5cf75;border-radius:18px;background:linear-gradient(110deg,#180d2bfa,#090611fa);box-shadow:0 3px 15px #000b;color:#ffe5a0;font-size:11px;font-weight:900;letter-spacing:.05em}
-    #cf-app .cf-home-balance-real strong{font-size:17px;color:#fff;letter-spacing:0}
-    #cf-app .cf-home-hide-stars{position:absolute;z-index:4;right:0;top:0;width:34%;height:9%;background:#080511}
+    #cf-app .cf-home-balance-real{position:absolute;z-index:5;top:2%;left:4%;right:4%;height:38px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 12px;border:1px solid #f5cf75;border-radius:18px;background:#10071fe8;box-shadow:0 3px 12px #0009;color:#ffe5a0;font-size:10px;font-weight:900;letter-spacing:.04em;pointer-events:none}
+    #cf-app .cf-home-balance-real strong{font-size:16px;color:#fff;letter-spacing:0}
     #cf-app .cf-art-hotspot{position:absolute;z-index:6;display:block;padding:0;margin:0;border:0;background:transparent;opacity:0;min-height:0;min-width:0;cursor:pointer}
     #cf-app .cf-hotspot-games{left:17%;right:17%;top:63%;height:9%}
     #cf-app .cf-hotspot-bonuses{left:3%;width:55%;top:79%;height:15%}
@@ -394,7 +393,6 @@
     <section class="cf-home-art-full" aria-label="Cosmic Fortune — главный экран">
       <img src="./cosmic-fortune-home-4k.webp?v=20261020c" alt="Главный экран Cosmic Fortune" decoding="async" fetchpriority="high">
       <div class="cf-home-balance-real"><span>✦ МОЙ БАЛАНС</span><strong id="cf-home-balance">Загрузка…</strong></div>
-      <div class="cf-home-hide-stars" aria-hidden="true"></div>
       <button type="button" class="cf-art-hotspot cf-hotspot-games" data-go="games" aria-label="Открыть игры"></button>
       <button type="button" class="cf-art-hotspot cf-hotspot-bonuses" data-action="open-daily-reward" aria-label="Открыть ежедневные награды"></button>
       <button type="button" class="cf-art-hotspot cf-hotspot-wheel" data-action="open-bonus-wheel" aria-label="Открыть рулетку"></button>
