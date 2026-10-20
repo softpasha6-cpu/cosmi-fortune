@@ -9,12 +9,12 @@
   const style = document.createElement('style');
   style.id = 'cf-app-style';
   style.textContent = `
-    body.cf-code-app> :not(#cf-app){display:none!important}
-    #cf-app{position:fixed;inset:0;z-index:2147483000;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;touch-action:pan-y;color:#fff;background:radial-gradient(ellipse at 50% 0%,#37116a 0%,#0a0718 45%,#03040a 100%);font:15px system-ui,-apple-system,sans-serif;padding:env(safe-area-inset-top) 0 calc(82px + env(safe-area-inset-bottom));}
+    body.cf-code-app>header,body.cf-code-app>main,body.cf-code-app>footer,body.cf-code-app>.bottom-nav{display:none!important}
+    #cf-app{position:fixed;inset:0;z-index:2147483000;overflow:auto;overflow-x:hidden;color:#fff;background:radial-gradient(ellipse at 50% 0%,#37116a 0%,#0a0718 45%,#03040a 100%);font:15px system-ui,-apple-system,sans-serif;padding:env(safe-area-inset-top) 0 calc(82px + env(safe-area-inset-bottom));}
     #cf-app *{box-sizing:border-box} #cf-app .shell{width:min(100%,620px);margin:auto;padding:12px 14px 20px}
     /* Keep avatar fallback text from rendering as a giant initial over the profile. */
     #cf-app #cf-profile-avatar{font-size:0!important;line-height:0!important;color:transparent!important;overflow:hidden;flex:0 0 58px;width:58px;height:58px;border-radius:50%;background-color:#160d24;background-position:center;background-size:cover;background-repeat:no-repeat;border:1px solid #e9bc61;filter:none;text-shadow:none;}
-    #cf-app button,#cf-app input,#cf-app select{touch-action:manipulation}#cf-app button{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}#cf-app [data-miner-tile],#cf-app [data-action="miner-start"],#cf-app [data-action="miner-cashout"],#cf-app [data-action="jet-start"],#cf-app [data-action="jet-cashout"]{min-height:44px;position:relative;z-index:2;pointer-events:auto}
+    #cf-app button,#cf-app input{touch-action:manipulation}
     #cf-app input{font-size:16px}
     #cf-app .home-actions{display:flex;gap:12px;align-items:center;margin-top:18px}
     #cf-app .bonus-icon{width:72px;height:72px;flex:none;border:1px solid #e9bc61;border-radius:22px;background:radial-gradient(circle at 35% 25%,#7c4aaf,#21103c 70%);font-size:38px;box-shadow:0 0 26px #bb8a3260;animation:cfBonusGlow 2.5s ease-in-out infinite}
@@ -171,11 +171,7 @@
     #cf-app .wheel{width:min(68vw,260px);aspect-ratio:1;margin:12px auto;border-radius:50%;border:8px solid #ffca42;background:conic-gradient(#f42aff 0 45deg,#145bff 45deg 90deg,#12c99a 90deg 135deg,#ff8b16 135deg 180deg,#a328ff 180deg 225deg,#1376ff 225deg 270deg,#f32b77 270deg 315deg,#ffc22c 315deg);box-shadow:0 0 24px #ff9d22;display:grid;place-items:center;font-size:35px}
     #cf-app .profilehead{text-align:center;padding:18px;background:radial-gradient(circle at 50% 20%,#4d1d83,#0c0918 70%);border-radius:18px;border:1px solid #6538a0}
     #cf-app .avatar{font-size:68px;filter:drop-shadow(0 0 14px #a24cff)}
-    #cf-app .bottom{position:fixed;z-index:1000;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;padding:8px 6px calc(12px + env(safe-area-inset-bottom));border-top:1px solid #5b2c83;background:linear-gradient(180deg,#10091dF2,#080512F8);backdrop-filter:blur(14px);box-sizing:border-box;border-radius:22px 22px 0 0}
-    #cf-app .bottom button{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:5px 1px;border:0;border-radius:12px;background:transparent;color:#cdb9e7;font-size:11px;line-height:1.15;cursor:pointer;touch-action:manipulation;pointer-events:auto;position:relative;z-index:1001}
-    #cf-app .bottom button .navicon{font-size:23px;line-height:1.1}
-    #cf-app .bottom button:active{background:#a53dff35;color:#ffe08a}
-#cf-app .bottom{position:fixed;z-index:5;bottom:0;left:0;right:0;padding:8px 4px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:#080713f5;border-top:1px solid #69409b;backdrop-filter:blur(16px)}
+    #cf-app .bottom{position:fixed;z-index:5;bottom:0;left:0;right:0;padding:8px 4px calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:#080713f5;border-top:1px solid #69409b;backdrop-filter:blur(16px)}
     #cf-app .bottom button{border:0;background:transparent;color:#a69abf;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;padding:4px 0}
     #cf-app .bottom .navicon{font-size:21px} #cf-app .bottom button.active{color:#e49aff;text-shadow:0 0 12px #c32aff}
     #cf-app .toast{position:fixed;z-index:8;bottom:calc(76px + env(safe-area-inset-bottom));left:8%;right:8%;padding:12px;border:1px solid #8b43c6;border-radius:12px;background:#1a102bf5;text-align:center;display:none}
@@ -255,146 +251,18 @@
     #cf-app .cf-roulette-choices button.is-selected{border-color:#ffdb73;box-shadow:0 0 0 2px #ffdb7344,0 0 16px #ffca4d55}
     #cf-app .cf-roulette-number-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:2px;margin-top:4px;width:100%;box-sizing:border-box} #cf-app .cf-roulette-number-grid button{min-width:0;min-height:22px;height:22px;padding:0;border:1px solid #e4c57888;border-radius:4px;font-size:10px;line-height:1;font-weight:900} #cf-app .cf-roulette-number-grid button.is-selected{outline:2px solid #ffdf7c;box-shadow:0 0 12px #ffdf7c88;transform:scale(1.06)}
     #cf-app .cf-roulette-footnote{font-size:11px;color:#c8e6d4;margin-top:9px}
-
-    /* Artwork is the entire home screen: hide the overlay chrome and old navigation. */
-    #cf-app:has(.cf-home-art-full){padding:0!important;overflow:hidden!important;background:#070411!important}
-    #cf-app:has(.cf-home-art-full) .shell{width:100%!important;height:100dvh!important;max-width:none!important;margin:0!important;padding:0!important}
-    #cf-app:has(.cf-home-art-full) .shell>.top,
-    #cf-app:has(.cf-home-art-full) nav.bottom,
-    #cf-app:has(.cf-home-art-full) .toast{display:none!important}
-    #cf-app:has(.cf-home-art-full) #cf-content{width:100%;height:100%;margin:0;padding:0;overflow:hidden}
-    #cf-app .cf-home-art-full{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100dvh;margin:0;padding:0;line-height:0;background:#070411;overflow:hidden}
-    #cf-app .cf-home-art-full img{display:block;width:100%;height:100%;max-width:none;max-height:100dvh;margin:0;padding:0;object-fit:contain;object-position:center center;user-select:none;-webkit-user-drag:none}
-    /* Update the printed balance number in the artwork; do not add a new panel. */
-    #cf-app .cf-home-balance-cover{position:absolute;z-index:5;left:18.4%;top:3.35%;width:20.6%;height:4.1%;border:0;border-radius:4px;background:#170d25;pointer-events:none}
-    #cf-app .cf-home-balance-value{position:absolute;z-index:6;left:19.1%;top:3.65%;width:19.2%;height:3.5%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:clamp(11px,2.8vw,19px);font-weight:1000;letter-spacing:-.45px;text-shadow:0 1px 3px #000;white-space:nowrap;pointer-events:none}
-    #cf-app .cf-home-stars-cover{position:absolute;z-index:6;right:2.2%;top:1.8%;width:28.4%;height:5.8%;border:0;border-radius:9px;background:#0c0717;pointer-events:none}
-    #cf-app .cf-art-hotspot{position:absolute;z-index:6;display:block;padding:0;margin:0;border:0;background:transparent;opacity:0;min-height:0;min-width:0;cursor:pointer}
-    #cf-app .cf-hotspot-games{left:17%;right:17%;top:63%;height:9%}
-    #cf-app .cf-hotspot-bonuses{left:3%;width:55%;top:79%;height:15%}
-    #cf-app .cf-hotspot-wheel{right:2%;width:40%;top:79%;height:17%}
-    #cf-app .cf-hotspot-channel{left:2%;width:23%;top:18%;height:15%}
-    #cf-app .cf-hotspot-chat{right:2%;width:23%;top:18%;height:15%}
-    #cf-app .cf-art-hotspot:focus-visible{opacity:.15;outline:2px solid #ffd36a}
-
-    #cf-app .cf-home-hero{min-height:0;padding:22px 16px 18px;text-align:center;background:radial-gradient(ellipse at 50% 0%,#56219a 0%,#190b37 45%,#080611 82%);border-color:#a34dff;box-shadow:inset 0 0 45px #9a35ff20,0 0 24px #8d32ff25}
-    #cf-app .cf-home-hero:before{width:220px;height:220px;right:50%;transform:translateX(50%);top:24px;background:radial-gradient(circle at 40% 30%,#a9a0ff,#5521a7 40%,#160a39 72%,transparent 74%);opacity:.52}
-    #cf-app .cf-home-hero:after{letter-spacing:10px;opacity:.3}
-    #cf-app .cf-home-crown{position:relative;font-size:36px;line-height:1;color:#ffd56a;text-shadow:0 0 20px #ffb72e;margin:0 0 8px}
-    #cf-app .cf-home-hero h1{position:relative;margin:8px 0 10px;font-size:clamp(32px,9vw,48px);letter-spacing:-1.2px;text-shadow:0 0 18px #9c31ff66}
-    #cf-app .cf-home-hero h1 span{color:#dba0ff}
-    #cf-app .cf-home-hero p{position:relative;max-width:340px;margin:0 auto 14px}
-    #cf-app .cf-home-hero .primary{position:relative;min-width:190px;background:linear-gradient(180deg,#ffe68a,#ffb91e 54%,#e78605);border:1px solid #fff0a0;color:#2b1300;box-shadow:0 0 24px #ffb51c66,inset 0 1px #fff8}
-    #cf-app .cf-home-membership{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0 18px}
-    #cf-app .cf-home-subscription{display:flex;align-items:center;gap:8px;min-width:0;text-decoration:none;color:#fff;padding:11px 9px;border:1px solid #7144aa;border-radius:15px;background:linear-gradient(140deg,#211039,#0b0916);box-shadow:inset 0 1px #ffffff0a}
-    #cf-app .cf-home-subscription>span:nth-child(2){flex:1;min-width:0}
-    #cf-app .cf-home-subscription strong{display:block;font-size:11px;line-height:1.25}
-    #cf-app .cf-home-subscription small{display:block;color:#bba9d9;font-size:9px;margin-top:4px}
-    #cf-app .cf-home-subscription b{color:#ffd66c;font-size:15px}
-    #cf-app .cf-home-sub-icon{display:grid;place-items:center;width:31px;height:31px;flex:none;border-radius:10px;background:linear-gradient(145deg,#3e9fff,#1265cf);font-size:17px;font-weight:900}
-    #cf-app .cf-home-title{margin-top:18px}
-    #cf-app .cf-home-games{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-    #cf-app .cf-home-game{min-width:0;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:7px;padding:9px 5px 10px;border:1px solid #7b36c2;border-radius:15px;background:radial-gradient(ellipse at 50% 20%,#38205d,#100b1b 78%);box-shadow:inset 0 1px #ffffff12,0 0 12px #802aff12}
-    #cf-app .cf-home-game:active{transform:scale(.98)}
-    #cf-app .cf-home-game-art{display:grid;place-items:center;width:100%;height:64px;border-radius:10px;background:radial-gradient(circle at 50% 35%,#7630bd,#21103c 70%);font-size:38px;filter:drop-shadow(0 5px 8px #0007)}
-    #cf-app .cf-home-game strong{font-size:10px;letter-spacing:.2px;text-align:center}
-    #cf-app .cf-home-game.slots .cf-home-game-art{background:radial-gradient(circle,#f4a638,#8e2349 48%,#1b0d37)}
-    #cf-app .cf-home-game.roulette .cf-home-game-art{background:radial-gradient(circle,#f6cf65,#6b321d 48%,#170c29)}
-    #cf-app .cf-home-game.jet .cf-home-game-art{background:radial-gradient(circle,#c64dff,#35106b 60%,#0b0918)}
-    #cf-app .cf-home-game.dice .cf-home-game-art{background:radial-gradient(circle,#ffcb64,#7d3a15 48%,#1a0c31)}
-    #cf-app .cf-home-game.blackjack .cf-home-game-art{background:radial-gradient(circle,#4eaf85,#12513d 52%,#071b17)}
-    #cf-app .cf-home-game.miner .cf-home-game-art{background:radial-gradient(circle,#54e6ff,#234b9c 50%,#100a28)}
-    #cf-app .cf-home-play{display:flex;width:100%;justify-content:center;margin-top:12px;background:linear-gradient(180deg,#ffe68a,#ffb91e 54%,#e78605);border:1px solid #fff0a0;color:#2b1300;box-shadow:0 0 22px #ffb51c55,inset 0 1px #fff8;font-size:17px;min-height:54px}
-    #cf-app .cf-home-bonuses{display:grid;grid-template-columns:1fr;gap:11px;margin-top:16px}
-    #cf-app .cf-home-daily,#cf-app .cf-home-wheel{min-width:0;padding:13px;border:1px solid #8b42d4;border-radius:18px;background:linear-gradient(145deg,#1c1030,#090811);box-shadow:inset 0 1px #ffffff0a,0 0 16px #7e28ff16}
-    #cf-app .cf-home-section-heading{display:flex;align-items:center;gap:9px;margin-bottom:11px}
-    #cf-app .cf-home-section-heading>span{font-size:27px;filter:drop-shadow(0 0 8px #f7bd45)}
-    #cf-app .cf-home-section-heading strong{display:block;font-size:13px;color:#ffdc79;letter-spacing:.3px}
-    #cf-app .cf-home-section-heading small{display:block;font-size:10px;color:#c0addc;margin-top:3px}
-    #cf-app .cf-home-rewards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:10px 0 12px}
-    #cf-app .cf-home-rewards>div{min-width:0;padding:9px 2px;border:1px solid #52336e;border-radius:10px;background:#100b1c;text-align:center}
-    #cf-app .cf-home-rewards small{display:block;font-size:8px;color:#c7b6df}
-    #cf-app .cf-home-rewards b{display:block;color:#fff0bb;font-size:11px;margin-top:6px}
-    #cf-app .cf-home-rewards span{display:block;font-size:10px;color:#ffd56a}
-    #cf-app .cf-home-daily .primary,#cf-app .cf-home-wheel .primary{width:100%;min-height:43px;background:linear-gradient(180deg,#ffe68a,#ffb91e 54%,#e78605);border:1px solid #fff0a0;color:#2b1300;box-shadow:0 0 18px #ffb51c33;font-size:13px}
-    #cf-app .cf-home-wheel-art{height:100px;display:flex;align-items:center;justify-content:center;gap:12px;margin:0 auto 10px;width:100%;border-radius:13px;background:radial-gradient(circle at 50% 50%,#4c2187,#130b2b 65%,#090811);border:1px solid #54357b;font-size:34px}
-    #cf-app .cf-home-wheel-art span{display:grid;place-items:center;width:55px;height:55px;border-radius:50%;border:3px solid #ffe58b;background:conic-gradient(#8b22d8,#1f60c8,#df9c1c,#b32c5b,#8b22d8);font-size:16px;color:#fff}
-    @media(min-width:520px){#cf-app .cf-home-bonuses{grid-template-columns:1.2fr .8fr}#cf-app .cf-home-hero{padding-top:28px;padding-bottom:24px}}
-    @media(max-width:360px){#cf-app .cf-home-membership{gap:6px}#cf-app .cf-home-subscription{padding:9px 6px;gap:6px}#cf-app .cf-home-subscription strong{font-size:10px}#cf-app .cf-home-game{min-height:100px}#cf-app .cf-home-game-art{height:56px;font-size:32px}}
-    #cf-app.cf-games-active{overflow:hidden!important;padding:0!important;height:100dvh!important}
-    #cf-app.cf-games-active .shell{height:100%;width:100%;max-width:620px;margin:0 auto;padding:0!important;overflow:hidden}
-    #cf-app.cf-games-active #cf-content{height:100%;min-height:0;overflow:hidden}
-    #cf-app.cf-games-active .top{display:none!important}
-    #cf-app.cf-games-active .bottom{display:grid!important;position:absolute;z-index:1000;left:0;right:0;bottom:0;height:78px;padding-bottom:calc(8px + env(safe-area-inset-bottom));background:linear-gradient(180deg,#10091df2,#080512fa);border-top:1px solid #5b2c83;box-sizing:border-box}
-    #cf-app .cf-games-page{position:relative;width:100%;height:100%;min-height:0;box-sizing:border-box;overflow:hidden;isolation:isolate;background:#080414}
-    #cf-app .cf-games-wallpaper{position:absolute;z-index:0;inset:0 0 0 0;overflow:hidden;background:#080414;pointer-events:none}
-    #cf-app .cf-games-wallpaper img{width:100%;height:100%;object-fit:fill;object-position:center top;display:block}\n    #cf-app .cf-games-wallpaper:after{content:"";position:absolute;left:0;right:0;top:35%;bottom:0;background:linear-gradient(180deg,#09041400 0%,#090414 7%,#090414 100%);pointer-events:none}
-    #cf-app .cf-games-live-balance{position:absolute;z-index:4;top:2.9%;right:18%;width:31%;height:34px;display:flex;align-items:center;justify-content:flex-end;overflow:hidden;white-space:nowrap;color:#fff;font-size:clamp(15px,4.4vw,27px);font-weight:900;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.035em;text-shadow:0 1px 5px #000;pointer-events:none}
-    #cf-app .cf-games-scroll{position:absolute;z-index:2;left:0;right:0;top:37%;bottom:11%;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding:10px 10px 24px;box-sizing:border-box;scrollbar-width:none;background:linear-gradient(180deg,#090414 0%,#090414f5 18%,#090414f5 100%)}
-    #cf-app .cf-games-scroll::-webkit-scrollbar{display:none}
-    #cf-app .cf-games-section-title{text-align:center;color:#ffe18a;font-size:23px;font-weight:1000;letter-spacing:.06em;text-shadow:0 2px 12px #a52aff;margin:0 0 14px}
-    #cf-app .cf-games-section-title small{display:block;margin-top:5px;color:#e1d0ff;font-size:11px;font-weight:600;letter-spacing:0}
-    #cf-app .cf-games-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
-    #cf-app .cf-game-tile{min-width:0;min-height:175px;position:relative;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;padding:0;border:1px solid #b64cff;border-radius:17px;background:radial-gradient(ellipse at 50% 20%,#59228b 0%,#1b0c34 55%,#090512 100%);color:#fff;text-align:left;box-shadow:inset 0 0 18px #9e32ff36,0 0 12px #8c22ff28;cursor:pointer;touch-action:manipulation}
-    #cf-app .cf-game-tile:active{transform:scale(.98);filter:brightness(1.15)}
-    #cf-app .cf-game-tile-art{height:118px;display:flex;align-items:center;justify-content:center;font-size:76px;line-height:1;text-shadow:0 0 18px #b34aff;filter:drop-shadow(0 5px 9px #0009)}
-    #cf-app .cf-game-tile-info{display:flex;flex-direction:column;gap:3px;min-height:51px;justify-content:center;padding:8px 10px;background:linear-gradient(90deg,#0a0618f5,#1d0b35f5);border-top:1px solid #9d3cff}
-    #cf-app .cf-game-tile-info strong{font-size:clamp(12px,3.5vw,15px);font-weight:900;color:#ffe28c;text-transform:uppercase;overflow-wrap:anywhere}
-    #cf-app .cf-game-tile-info small{font-size:10px;line-height:1.25;color:#cbb7ef}
-    #cf-app .cf-game-tile-arrow{position:absolute;right:8px;top:8px;width:25px;height:25px;display:grid;place-items:center;border-radius:50%;border:1px solid #df8aff;color:#fff;font-size:20px;background:#160625a8}
-    #cf-app .cf-image-nav{position:absolute;z-index:40;left:0;right:0;bottom:0;height:10.5%;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));pointer-events:auto;background:transparent;padding:0 1%;box-sizing:border-box}
-    #cf-app .cf-image-nav button{pointer-events:auto;min-width:0;width:100%;height:100%;border:0;background:transparent;border-radius:12px;cursor:pointer;touch-action:manipulation;position:relative;z-index:41;-webkit-tap-highlight-color:#ffffff22}
-    #cf-app .cf-image-nav button:active{background:#ffffff22;outline:1px solid #d8a4ff}
-    #cf-app .cf-image-nav button:active{background:#ffffff18}
-    #cf-app .cf-games-topup{position:absolute;z-index:5;top:2%;right:5%;width:13%;height:5.5%;border:0;background:transparent;cursor:pointer;touch-action:manipulation}
-    @media(max-width:360px){#cf-app .cf-game-tile{min-height:155px}#cf-app .cf-game-tile-art{height:100px;font-size:64px}#cf-app .cf-games-scroll{top:30%;}}
-    #cf-app .cf-home-page{padding:0;margin:0;width:100%;height:100%;min-height:0}
-    #cf-app .cf-home-static{overflow:hidden}
-    #cf-app .cf-home-poster-wrap{position:absolute;inset:0;overflow:hidden;background:#080411;line-height:0;border:0;border-radius:0;box-shadow:none}
-    #cf-app .cf-home-uploaded-image{display:block;width:100%;height:100%;object-fit:fill;object-position:center}
-    #cf-app .cf-poster-live-balance{position:absolute;z-index:4;left:20.8%;top:5.15%;width:32.4%;height:3.05%;display:flex;align-items:center;justify-content:flex-end;overflow:hidden;white-space:nowrap;color:#fff;font-size:clamp(15px,4.2vw,30px);font-weight:900;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.035em;text-shadow:0 1px 4px #000;pointer-events:none}
-    #cf-app .cf-poster-hotspot{position:absolute;z-index:10;display:block;padding:0;border:0;border-radius:12px;background:transparent;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:#ffffff22;pointer-events:auto}
-    #cf-app .cf-poster-hotspot:focus-visible{outline:2px solid #ffe38b;background:#ffffff12}
-    #cf-app .cf-hotspot-topup{left:61%;top:5.1%;width:11%;height:6.5%}
-    #cf-app .cf-hotspot-slots{left:7%;top:37%;width:27%;height:12%}
-    #cf-app .cf-hotspot-roulette{left:36%;top:37%;width:28%;height:12%}
-    #cf-app .cf-hotspot-jet{right:7%;top:37%;width:27%;height:12%}
-    #cf-app .cf-hotspot-dice{left:7%;top:50%;width:27%;height:12%}
-    #cf-app .cf-hotspot-blackjack{left:36%;top:50%;width:28%;height:12%}
-    #cf-app .cf-hotspot-miner{right:7%;top:50%;width:27%;height:12%}
-    #cf-app .cf-hotspot-play{left:17%;top:65%;width:66%;height:9%}
-    #cf-app .cf-hotspot-daily{left:4%;top:74%;width:52%;height:16%}
-    #cf-app .cf-hotspot-wheel{right:3%;top:74%;width:43%;height:16%}
-    #cf-app .cf-hotspot-profile{right:3%;bottom:1%;width:22%;height:7%}
-    #cf-app .cf-home-nav-home{left:0%;bottom:0%;width:25%;height:8%;z-index:60;pointer-events:auto}
-    #cf-app .cf-home-nav-games{left:25%;bottom:0%;width:25%;height:8%;z-index:60;pointer-events:auto}
-    #cf-app .cf-home-nav-bonuses{left:50%;bottom:0%;width:25%;height:8%;z-index:60;pointer-events:auto}
-    #cf-app .cf-home-nav-profile{right:0%;bottom:0%;width:25%;height:8%;z-index:60;pointer-events:auto}
-    #cf-app .cf-hotspot-channel{left:4%;top:21%;width:22%;height:13%}
-    #cf-app .cf-hotspot-chat{right:4%;top:21%;width:22%;height:13%}
-    #cf-app .cf-home-balance{display:flex;align-items:center;gap:12px;width:100%;min-height:72px;padding:12px 15px;border:1px solid #d9ad54;border-radius:18px;background:linear-gradient(110deg,#28143e,#120b20 72%);color:#fff;text-align:left;cursor:pointer;box-sizing:border-box;touch-action:manipulation}
-    #cf-app .cf-home-balance-icon{width:43px;height:43px;flex:none;display:grid;place-items:center;border-radius:13px;background:linear-gradient(145deg,#ffe39a,#b87820);color:#341746;font-size:25px}
-    #cf-app .cf-home-balance-copy{display:grid;gap:4px;min-width:0;flex:1}
-    #cf-app .cf-home-balance-copy small{font-size:9px;font-weight:900;letter-spacing:.15em;color:#d6b9f7}
-    #cf-app .cf-home-balance-copy strong{font-size:clamp(19px,5vw,25px);line-height:1.1;color:#ffe39a;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
-    #cf-app .cf-home-balance-plus{width:32px;height:32px;flex:none;display:grid;place-items:center;border-radius:10px;background:#593078;color:#fff0b2;font-size:24px}
-    #cf-app .cf-home-page button:active{transform:scale(.985);filter:brightness(1.1)}
-
-
   `;
   document.head.appendChild(style);
   document.body.classList.add('cf-code-app');
   const app=document.createElement('div'); app.id='cf-app';
-  app.innerHTML='<div class="shell"><div class="top"><div><div class="brand">✦ COSMIC FORTUNE</div><div class="sub">ТВОЯ УДАЧА В КОСМОСЕ</div></div><div class="balance"><span class="coin">✪</span><span id="cf-balance">—</span><button class="iconbtn" data-go="profile" aria-label="Пополнить">＋</button></div><button class="iconbtn" data-go="bonuses" aria-label="Бонусы">🎁</button></div><div id="cf-content"></div></div><nav class="bottom" aria-label="Навигация"><button data-go="home"><span class="navicon">⌂</span>Главная</button><button data-go="games"><span class="navicon">🎮</span>Игры</button><button data-go="bonuses"><span class="navicon">🎁</span>Бонусы</button><button data-go="bonuses" aria-label="Турниры"><span class="navicon">🏆</span>Турниры</button><button data-go="profile"><span class="navicon">♙</span>Профиль</button></nav><div class="toast" id="cf-toast"></div>';
+  app.innerHTML='<div class="shell"><div class="top"><div><div class="brand">✦ COSMIC FORTUNE</div><div class="sub">ТВОЯ УДАЧА В КОСМОСЕ</div></div><div class="balance"><span class="coin">✪</span><span id="cf-balance">—</span><button class="iconbtn" data-go="profile" aria-label="Пополнить">＋</button></div><button class="iconbtn" data-go="bonuses" aria-label="Бонусы">🎁</button></div><div id="cf-content"></div></div><nav class="bottom" aria-label="Навигация"><button data-go="home"><span class="navicon">⌂</span>Главная</button><button data-go="games" onclick="window.cfNavigate(this.dataset.go)"><span class="navicon">🎮</span>Игры</button><button data-go="bonuses"><span class="navicon">🎁</span>Бонусы</button><button data-go="tournaments"><span class="navicon">🏆</span>Турниры</button><button data-go="profile"><span class="navicon">♙</span>Профиль</button></nav><div class="toast" id="cf-toast"></div>';
   document.body.appendChild(app);
   const content=app.querySelector('#cf-content'), toast=app.querySelector('#cf-toast');
   const games=[
     ['slots','🎰','Космические слоты','Три барабана · серверный расчёт'],
     ['dice','🎲','Кости','Бросок на сервере · выплата 2×'],
     ['roulette','🎡','Рулетка','Красное или чёрное'],
-    ['blackjack','🃏','Блэкджек','Сравни карты с дилером'],
-    ['miner','💎','Минер','Открывай кристаллы и избегай мин · новинка'],
-    ['luckyjet','🚀','Lucky Jet','Забирай выигрыш до остановки ракеты · новинка']
+    ['blackjack','🃏','Блэкджек','Сравни карты с дилером']
   ];
   const API_BASE='https://cosmic-fortune-api.onrender.com';
   const telegram=window.Telegram&&window.Telegram.WebApp;
@@ -404,9 +272,8 @@
     const signed=initData();
     if(!signed) throw new Error('Открой мини-приложение через Telegram для входа в аккаунт.');
     const response=await fetch(API_BASE+path,{...options,headers:{'Content-Type':'application/json','X-Telegram-Init-Data':signed,...(options.headers||{})}});
-    const raw=await response.text();
-    let data;try{data=JSON.parse(raw)}catch{throw new Error('Сервер вернул не JSON (HTTP '+response.status+'). Проверь, что Render завершил деплой API.')}
-    if(!response.ok) throw new Error(data.error||('Ошибка сервера HTTP '+response.status));
+    const data=await response.json().catch(()=>({error:'Некорректный ответ сервера'}));
+    if(!response.ok) throw new Error(data.error||'Ошибка сервера');
     return data;
   }
   const formatBalance=n=>Number(n).toLocaleString('ru-RU');
@@ -438,7 +305,6 @@
       const data=await api('/api/me');
       const balance=app.querySelector('#cf-balance');
       if(balance) balance.textContent=formatBalance(data.player.balance);
-      const homeBalance=app.querySelector('#cf-home-balance');if(homeBalance)homeBalance.textContent=formatBalance(data.player.balance);
       const profileBalance=app.querySelector('#cf-profile-balance');
       if(profileBalance) profileBalance.textContent=formatBalance(data.player.balance);
       const title=app.querySelector('#cf-profile-name');if(title)title.textContent=data.player.firstName||data.player.username||'Игрок Cosmic Fortune';
@@ -454,9 +320,8 @@
     }
   }
   const primary=(text,act)=>'<button class="primary" data-action="'+act+'">'+text+'</button>';
-  function home(){return '<section class="cf-home-page cf-home-static cf-reference-home" aria-label="Главная Cosmic Fortune"><div class="cf-home-poster-wrap"><img class="cf-home-uploaded-image" src="./a_vertical_high_gloss_neon_casino_game_ui_poster.png" alt="Cosmic Fortune — главная" draggable="false"><button class="cf-poster-hotspot cf-hotspot-profile" data-go="profile" aria-label="Профиль"></button><button class="cf-poster-hotspot cf-hotspot-play" data-go="games" aria-label="Играть"></button><button class="cf-poster-hotspot cf-hotspot-miner" data-go="miner" aria-label="Miner"></button><button class="cf-poster-hotspot cf-hotspot-daily" data-action="open-daily-reward" aria-label="Ежедневные призы"></button><button class="cf-poster-hotspot cf-hotspot-wheel" data-action="open-bonus-wheel" aria-label="Колесо удачи"></button><button class="cf-poster-hotspot cf-hotspot-channel" data-cf-telegram="channel" href="https://t.me/Cosmic_Fortune" aria-label="Подписаться на канал"></button><button class="cf-poster-hotspot cf-hotspot-chat" data-cf-telegram="chat" href="https://t.me/CosmisFortunechat" aria-label="Подписаться на чат"></button></div></section>'}
- 
-function gameList(){return '<section class="cf-games-page"><div class="cf-games-scroll"><div class="cf-games-section-title">✦ ВСЕ ИГРЫ ✦<small>Выбери игру и начинай играть</small></div><div class="cf-games-grid">'+games.map(g=>'<button type="button" class="cf-game-tile cf-game-'+g[0]+'" data-go="'+g[0]+'"><span class="cf-game-tile-art" aria-hidden="true">'+g[1]+'</span><span class="cf-game-tile-info"><strong>'+g[2]+'</strong><small>'+g[3]+'</small></span><span class="cf-game-tile-arrow">›</span></button>').join('')+'</div></div></section>'}
+  function home(){return '<section class="hero"><div class="eyebrow">ТВОЯ ВСЕЛЕННАЯ ВЫИГРЫШЕЙ</div><h1>COSMIC<br><span>FORTUNE</span></h1><p>Играй в космические игры, получай виртуальные кредиты и забирай ежедневные бонусы.</p><button type="button" class="primary" data-go="games" onclick="window.cfNavigate(this.dataset.go)">✦ Играть　›</button></section><div class="home-actions"><div><button type="button" class="bonus-icon" data-action="open-bonus-wheel" aria-label="Открыть бонусную рулетку">🎡</button><div class="bonus-icon-label">Рулетка дня</div></div><button type="button" class="widecard" data-go="bonuses" style="margin:0;flex:1;min-height:72px"><div class="art">🎁</div><div><strong>Бонусы и награды</strong><small>Ежедневная награда</small></div> ›</button></div>'}
+  function gameList(){return '<div class="section-title">ИГРЫ</div><div style="color:#c6b5e2;margin:0 2px 14px">ВЫБЕРИ СВОЮ УДАЧУ</div>'+games.map(g=>'<button class="widecard" data-go="'+g[0]+'"><div class="art" data-art="'+g[0]+'"><span>'+g[1]+'</span></div><div style="flex:1"><strong>'+g[2]+'</strong><small>'+g[3]+'</small></div>›</button>').join('')}
   function panel(title,body){return '<div class="section-title">'+title+'</div><section class="gamepanel">'+body+'</section>'}
   function gameAvatar(game){
     const views={
@@ -544,7 +409,7 @@ function gameList(){return '<section class="cf-games-page"><div class="cf-games-
       '<button class="secondary" data-action="bj-refresh">Обновить стол</button>';
   }
 
-  function bonusWheelCard(){return '<section class="gamepanel" style="text-align:center"><div class="cf-bonus-wheel-wrap"><div class="cf-bonus-pointer"></div><div class="wheel spinwheel cf-bonus-prize-wheel" id="cf-bonus-wheel"><span class="cf-bonus-label l1" data-prize="million"><small>1 000 000 ✦</small></span><span class="cf-bonus-label l2" data-prize="250k"><small>250 000 ✦</small></span><span class="cf-bonus-label l3" data-prize="500rub"><small>500₽</small></span><span class="cf-bonus-label l4" data-prize="25k"><small>25к₽</small></span><span class="cf-bonus-label l5" data-prize="10k"><small>10к₽</small></span><span class="cf-bonus-label l6" data-prize="5k"><small>5к₽</small></span><span class="cf-bonus-label l7" data-prize="2k"><small>2к₽</small></span><span class="cf-bonus-label l8" data-prize="1k"><small>1к₽</small></span></div></div><div id="cf-bonus-timer" style="font-size:12px;color:#ffdf8b;margin:8px 0">Проверяем доступность…</div>'+primary('🎡 Крутить бесплатно','bonus-wheel')+'<div id="cf-bonus-result" style="min-height:26px;margin-top:12px;color:#ffe09a"></div><p style="color:#9e8ab9;font-size:10px;margin:6px 0 0">Все призы — виртуальные игровые кредиты ✦. Обозначения не являются реальными рублями и не означают денежную выплату.</p></section>'}
+  function bonusWheelCard(){return '<section class="gamepanel" style="text-align:center"><div class="cf-bonus-wheel-wrap"><div class="cf-bonus-pointer"></div><div class="wheel spinwheel cf-bonus-prize-wheel" id="cf-bonus-wheel"><span class="cf-bonus-label l1" data-prize="100stars"><small>100 ⭐</small></span><span class="cf-bonus-label l2" data-prize="25stars"><small>25 ⭐</small></span><span class="cf-bonus-label l3" data-prize="500rub"><small>500₽</small></span><span class="cf-bonus-label l4" data-prize="25k"><small>25к₽</small></span><span class="cf-bonus-label l5" data-prize="10k"><small>10к₽</small></span><span class="cf-bonus-label l6" data-prize="5k"><small>5к₽</small></span><span class="cf-bonus-label l7" data-prize="2k"><small>2к₽</small></span><span class="cf-bonus-label l8" data-prize="1k"><small>1к₽</small></span></div></div><div id="cf-bonus-timer" style="font-size:12px;color:#ffdf8b;margin:8px 0">Проверяем доступность…</div>'+primary('🎡 Крутить бесплатно','bonus-wheel')+'<div id="cf-bonus-result" style="min-height:26px;margin-top:12px;color:#ffe09a"></div><p style="color:#9e8ab9;font-size:10px;margin:6px 0 0">Рублёвые обозначения — виртуальные игровые бонусы.</p></section>'}
   let bonusTimerInterval=null;
   async function refreshBonusStatus(){
     const timer=app.querySelector('#cf-bonus-timer'),button=app.querySelector('[data-action="bonus-wheel"]');
@@ -571,24 +436,14 @@ function gameList(){return '<section class="cf-games-page"><div class="cf-games-
   let dailyTimerInterval=null;
   function closeDailyReward(){app.querySelector('#cf-daily-modal')?.remove();if(dailyTimerInterval){clearInterval(dailyTimerInterval);dailyTimerInterval=null}}
   function bonuses(){return '<div class="section-title">🎁 Бонусы и награды</div><div class="cf-bonus-menu"><button class="cf-bonus-open" data-action="open-daily-reward"><span class="cf-bonus-open-icon">📅</span><span><strong>Ежедневные награды · 8 дней</strong><small>Забирай кредиты каждые 24 часа</small></span></button><button class="cf-bonus-open" data-action="open-bonus-wheel"><span class="cf-bonus-open-icon">🎡</span><span><strong>Бонусная рулетка</strong><small>Бесплатное вращение каждые 24 часа</small></span></button></div>'}
-  function profile(){return '<div class="section-title">👤 Мой профиль</div><section class="gamepanel cf-profile-card"><div class="cf-profile-identity"><div class="avatar" id="cf-profile-avatar">🚀</div><div style="min-width:0"><strong id="cf-profile-name">Загрузка профиля…</strong><div id="cf-profile-username" class="cf-profile-muted">Загружаем Telegram</div></div></div><div class="cf-profile-data"><div><small>TELEGRAM ID</small><strong id="cf-profile-id">—</strong></div><div><small>USERNAME</small><strong id="cf-profile-tag">—</strong></div></div><div class="cf-profile-balance"><small>ВИРТУАЛЬНЫЕ КРЕДИТЫ</small><strong>✦ <span id="cf-profile-balance">—</span></strong><p>Используются для ставок внутри игры.</p></div><div class="cf-profile-balance cf-stars-balance"><small>ПОПОЛНЕНИЕ КРЕДИТОВ</small><strong>⭐ Покупка за Telegram Stars</strong><p>Кредиты начисляются только после подтверждения оплаты Telegram.</p><div style="display:grid;gap:8px;margin-top:12px"><button class="widecard" style="margin:0" data-action="buy-credits" data-stars="25"><div style="flex:1;text-align:left"><strong>25 ⭐ → 40,000 кредитов</strong><small>Оплата внутри Telegram</small></div>›</button><button class="widecard" style="margin:0" data-action="buy-credits" data-stars="50"><div style="flex:1;text-align:left"><strong>50 ⭐ → 75,000 кредитов</strong><small>Оплата внутри Telegram</small></div>›</button><button class="widecard" style="margin:0" data-action="buy-credits" data-stars="100"><div style="flex:1;text-align:left"><strong>100 ⭐ → 170,000 кредитов</strong><small>Оплата внутри Telegram</small></div>›</button><button class="widecard" style="margin:0" data-action="buy-credits" data-stars="500"><div style="flex:1;text-align:left"><strong>500 ⭐ → 900,000 кредитов</strong><small>Оплата внутри Telegram</small></div>›</button><button class="widecard" style="margin:0" data-action="buy-credits" data-stars="1000"><div style="flex:1;text-align:left"><strong>1,000 ⭐ → 2,200,000 кредитов</strong><small>Оплата внутри Telegram</small></div>›</button></div><button class="widecard cf-history-open" style="margin-top:12px;border:1px solid #8b5bd0;background:linear-gradient(110deg,#2c1745,#160d25)" data-action="open-purchase-history" aria-expanded="false"><span style="font-size:20px">🧾</span><div style="flex:1;text-align:left"><strong>История покупок</strong><small>Все пополнения и статусы оплат</small></div><span class="cf-history-chevron">⌄</span></button><div id="cf-payment-history" style="display:none;margin-top:12px;padding:0 10px"></div></div><div class="cf-profile-balance"><small>ЗАЯВКА НА ПОДАРОК</small><strong>🎁 Обмен кредитов на вознаграждение</strong><p>Владелец проверяет заявки вручную. Кредиты резервируются; автоматической отправки подарка нет.</p><div style="display:grid;gap:8px;margin-top:12px"><button class="widecard" style="margin:0" data-action="request-withdrawal" data-credits="70000"><div style="flex:1;text-align:left"><strong>70,000 кредитов</strong><small>Заявка на вывод · 25 ⭐</small></div>›</button><button class="widecard" style="margin:0" data-action="request-withdrawal" data-credits="100000"><div style="flex:1;text-align:left"><strong>100,000 кредитов</strong><small>Заявка на вывод · 50 ⭐</small></div>›</button><button class="widecard" style="margin:0" data-action="request-withdrawal" data-credits="200000"><div style="flex:1;text-align:left"><strong>200,000 кредитов</strong><small>Заявка на вывод · 100 ⭐</small></div>›</button><button class="widecard" style="margin:0" data-action="request-withdrawal" data-credits="1000000"><div style="flex:1;text-align:left"><strong>1,000,000 кредитов</strong><small>Заявка на вывод · 500 ⭐</small></div>›</button><button class="widecard" style="margin:0" data-action="request-withdrawal" data-credits="2600000"><div style="flex:1;text-align:left"><strong>2,600,000 кредитов</strong><small>Заявка на вывод · 1,000 ⭐</small></div>›</button></div><div id="cf-withdrawal-result" style="font-size:12px;margin-top:10px"></div></div><div id="cf-owner-tools"></div></section><section class="gamepanel"><button class="widecard cf-history-open" style="margin:0;border:1px solid #8b5bd0;background:linear-gradient(110deg,#2c1745,#160d25)" data-action="open-game-history" aria-expanded="false"><span style="font-size:20px">🎮</span><div style="flex:1;text-align:left"><strong>История игр</strong><small>Все раунды, ставки и результаты</small></div><span class="cf-history-chevron">⌄</span></button><div id="cf-profile-history" style="display:none;margin-top:12px"><p class="cf-profile-muted">Загружаем историю…</p></div></section>'+panel('Быстрые действия','<button class="widecard" data-go="games">🎮　Играть　›</button><button class="widecard" data-go="bonuses">🎁　Бонусы и награды　›</button>')}
+  function profile(){return '<div class="section-title">👤 Мой профиль</div><section class="gamepanel cf-profile-card"><div class="cf-profile-identity"><div class="avatar" id="cf-profile-avatar">🚀</div><div style="min-width:0"><strong id="cf-profile-name">Загрузка профиля…</strong><div id="cf-profile-username" class="cf-profile-muted">Загружаем Telegram</div></div></div><div class="cf-profile-data"><div><small>TELEGRAM ID</small><strong id="cf-profile-id">—</strong></div><div><small>USERNAME</small><strong id="cf-profile-tag">—</strong></div></div><div class="cf-profile-balance"><small>ВИРТУАЛЬНЫЕ КРЕДИТЫ</small><strong>✦ <span id="cf-profile-balance">—</span></strong><p>Используются для ставок внутри игры.</p></div><div class="cf-profile-balance cf-stars-balance"><small>ПОПОЛНЕНИЕ КРЕДИТОВ</small><strong>⭐ Покупка за Telegram Stars</strong><p>Кредиты начисляются только после подтверждения оплаты Telegram.</p><div style="display:grid;gap:8px;margin-top:12px"><button class="widecard" style="margin:0" data-action="buy-credits" data-stars="15"><div style="flex:1;text-align:left"><strong>15 ⭐ → 50 000 кредитов</strong><small>Оплата внутри Telegram</small></div>›</button><button class="widecard" style="margin:0" data-action="buy-credits" data-stars="25"><div style="flex:1;text-align:left"><strong>25 ⭐ → 100 000 кредитов</strong><small>Оплата внутри Telegram</small></div>›</button><button class="widecard" style="margin:0" data-action="buy-credits" data-stars="50"><div style="flex:1;text-align:left"><strong>50 ⭐ → 200 000 кредитов</strong><small>Оплата внутри Telegram</small></div>›</button><button class="widecard" style="margin:0" data-action="buy-credits" data-stars="100"><div style="flex:1;text-align:left"><strong>100 ⭐ → 400 000 кредитов</strong><small>Оплата внутри Telegram</small></div>›</button></div><div id="cf-payment-history" style="margin-top:12px"></div></div><div class="cf-profile-balance"><small>ЗАЯВКА НА ПОДАРОК</small><strong>🎁 Обмен кредитов на вознаграждение</strong><p>Владелец проверяет заявки вручную. Кредиты резервируются; автоматической отправки подарка нет.</p><div style="display:grid;gap:8px;margin-top:12px"><button class="widecard" style="margin:0" data-action="request-withdrawal" data-credits="100000"><div style="flex:1;text-align:left"><strong>100 000 кредитов</strong><small>Заявка на подарок · справочный эквивалент 15 ⭐</small></div>›</button><button class="widecard" style="margin:0" data-action="request-withdrawal" data-credits="250000"><div style="flex:1;text-align:left"><strong>250 000 кредитов</strong><small>Заявка на подарок · справочный эквивалент 25 ⭐</small></div>›</button><button class="widecard" style="margin:0" data-action="request-withdrawal" data-credits="500000"><div style="flex:1;text-align:left"><strong>500 000 кредитов</strong><small>Заявка на подарок · справочный эквивалент 50 ⭐</small></div>›</button><button class="widecard" style="margin:0" data-action="request-withdrawal" data-credits="1000000"><div style="flex:1;text-align:left"><strong>1 000 000 кредитов</strong><small>Заявка на подарок · справочный эквивалент 100 ⭐</small></div>›</button></div><div id="cf-withdrawal-result" style="font-size:12px;margin-top:10px"></div></div><div id="cf-owner-tools"></div></section><section class="gamepanel"><div class="section-title">📜 История игр</div><p class="cf-profile-muted">Все игровые раунды этого Telegram-аккаунта.</p><div id="cf-profile-history"><p class="cf-profile-muted">Загружаем историю…</p></div></section>'+panel('Быстрые действия','<button class="widecard" data-go="games">🎮　Играть　›</button><button class="widecard" data-go="bonuses">🎁　Бонусы и награды　›</button>')}
   function tournaments(){return panel('🏆 Турниры','<div class="bigart">🏆</div><p style="text-align:center;color:#c4b5dd">Турнирная таблица ещё не подключена. Игровые раунды в слотах, костях, рулетке и блэкджеке уже отправляются на сервер.</p>'+primary('К списку игр','games'))}
-
-  function miner(){return panel('💎 МИНЕР','<div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;color:#e8d9ff"><label style="display:flex;flex-direction:column;gap:7px;font-size:14px;font-weight:700">РАЗМЕР ПОЛЯ<select id="cf-miner-size" style="background:#160b29;color:white;border:1px solid #7044a8;border-radius:10px;padding:10px;font-size:16px"><option value="3">3 × 3</option><option value="5" selected>5 × 5</option><option value="6">6 × 6</option></select></label><label style="display:flex;flex-direction:column;gap:7px;font-size:14px;font-weight:700">КОЛИЧЕСТВО МИН<select id="cf-miner-mines" style="background:#160b29;color:white;border:1px solid #7044a8;border-radius:10px;padding:10px;font-size:16px"><option value="3">3</option><option value="5" selected>5</option><option value="7">7</option><option value="10">10</option></select></label></div><div id="cf-miner-grid" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px">'+Array.from({length:25},(_,i)=>'<button data-miner-tile="'+i+'" style="aspect-ratio:1;border:1px solid #7044a8;border-radius:10px;background:#180b30;color:#d9aaff;font-size:24px">✦</button>').join('')+'</div><div id="cf-miner-multiplier" style="font-size:24px;color:#ffda73;margin:12px 0">1.00×</div><div id="cf-miner-status">Открывай кристаллы и избегай мин</div><div style="margin-top:18px"><label for="cf-bet" style="display:block;margin-bottom:8px;font-size:14px;font-weight:800;letter-spacing:.08em;color:#c9b1eb">РАЗМЕР СТАВКИ</label><input id="cf-bet" aria-label="Размер ставки в виртуальных кредитах" type="number" min="1" max="100000" step="1" value="100" style="display:block;box-sizing:border-box;width:100%;height:54px;padding:0 16px;background:#0b0918;color:white;border:1px solid #7044a8;border-radius:12px;font-size:20px"></div><button class="primary" data-action="miner-start" style="margin-top:12px">Начать игру</button><button class="primary" data-action="miner-cashout" style="display:none;margin-top:8px">Забрать выигрыш</button>');}
-  function luckyjet(){return panel('🚀 LUCKY JET','<style>@keyframes cfStars{to{background-position:80px 120px,40px 70px}}@keyframes cfBlast{0%{transform:scale(.1);opacity:0}30%{transform:scale(1.25);opacity:1}100%{transform:scale(1.8);opacity:0}}@keyframes cfGlow{50%{box-shadow:0 0 32px #b52cff}}.cf-flight{height:350px;position:relative;overflow:hidden;border:1px solid #7540ad;border-radius:20px;background:radial-gradient(ellipse at 70% 80%,#5b168b,#201039 45%,#070615);box-shadow:inset 0 0 36px #a02fff33}.cf-stars{position:absolute;inset:-120px;background-image:radial-gradient(#fff 1px,transparent 2px),radial-gradient(#db9cff 1px,transparent 2px);background-size:43px 51px,73px 81px;animation:cfStars 3s linear infinite;opacity:.65;will-change:background-position}.cf-flight.is-flying .cf-stars{animation:cfStars 1.05s linear infinite;opacity:.9}.cf-flight.is-flying .cf-trail-glow{opacity:1}.cf-trail-glow{position:absolute;left:calc(18% - 165px);bottom:calc(20% + 42px);width:230px;height:18px;border-radius:100%;transform:rotate(-35deg);transform-origin:right center;background:linear-gradient(90deg,transparent,#8b31ff55,#ffb9ff);filter:blur(7px);opacity:.8;transition:opacity .2s;z-index:1}.cf-rocket{position:absolute;left:18%;bottom:20%;font-size:128px;line-height:1;filter:drop-shadow(0 0 24px #c64dff);transform:rotate(0deg);transform-origin:50% 50%;transition:transform .18s linear;will-change:transform;z-index:3}.cf-trail{position:absolute;left:calc(18% - 165px);bottom:calc(20% + 45px);width:230px;height:8px;transform:rotate(-35deg);transform-origin:right center;transition:transform .18s linear;background:linear-gradient(90deg,transparent 0%,#a53cff 38%,#ffb4ff 78%,#fff 100%);border-radius:99px;box-shadow:0 0 10px #c64dff,0 0 22px #a020f088;will-change:transform;z-index:2}.cf-button{width:100%;min-height:58px;border:1px solid #f1b0ff;border-radius:15px;background:linear-gradient(105deg,#e32aff,#8b16ff 58%,#5d32ff);color:#fff;font-size:17px;font-weight:900;box-shadow:0 5px 0 #481276,0 0 20px #b52cff66}.cf-button:active{transform:translateY(3px);filter:brightness(1.2)}.cf-bet-input{box-sizing:border-box;width:100%;height:54px;margin-top:8px;padding:0 14px;border:1px solid #7540ad;border-radius:12px;background:#090714;color:white;font-size:20px}</style><div class="cf-flight" id="cf-jet-scene"><div class="cf-stars"></div><div class="cf-trail-glow"></div><div class="cf-trail" id="cf-jet-trail"></div><div id="cf-jet-rocket-wrap" class="cf-rocket">🚀</div><div id="cf-jet-explosion" style="display:none;position:absolute;left:42%;top:28%;font-size:90px;z-index:5">💥</div><div style="position:absolute;top:16px;left:16px;font-size:11px;letter-spacing:.15em;color:#e0b8ff;font-weight:900">COSMIC FLIGHT</div><div style="position:absolute;left:0;right:0;bottom:18px;text-align:center"><div id="cf-jet-multiplier" style="font-size:58px;font-weight:1000;color:#d56aff;text-shadow:0 0 22px #b52cff">1.00×</div><div id="cf-jet-status" style="margin-top:8px;color:#f0e1ff">Ракета готова к запуску</div></div></div><div style="padding:14px;margin-top:14px;border:1px solid #553080;border-radius:16px;background:linear-gradient(135deg,#1b1030,#0b0816)"><label for="cf-bet" style="display:block;color:#d3b2fa;font-size:12px;font-weight:900;letter-spacing:.12em">РАЗМЕР СТАВКИ · ✦</label><input class="cf-bet-input" id="cf-bet" type="number" min="1" max="100000" step="1" value="100"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0;color:#e9d9ff"><label><input id="cf-jet-auto" type="checkbox" style="accent-color:#bd37ff"> Авто-вывод</label><input class="cf-bet-input" id="cf-jet-auto-value" type="number" min="1.1" max="100" step="0.1" value="2.0" style="width:105px;margin:0"></div><div id="cf-jet-result" style="color:#ffe08a;font-weight:800;margin:8px 0"></div><button class="cf-button" data-action="jet-start">🚀 ЗАПУСТИТЬ РАКЕТУ</button><button class="cf-button" data-action="jet-cashout" style="display:none;margin-top:8px;background:linear-gradient(105deg,#12dba0,#07835e);border-color:#a0ffe2;box-shadow:0 5px 0 #075a46">✦ ЗАБРАТЬ ВЫИГРЫШ</button></div>');}
-  const renderers={home,games:gameList,slots,dice,roulette,blackjack,miner,luckyjet,bonuses,profile,tournaments};
+  const renderers={home,games:gameList,slots,dice,roulette,blackjack,bonuses,profile,tournaments};
   let current='home',selected='Больше 7',opened=0;
-  function render(name){current=renderers[name]?name:'home';content.innerHTML=renderers[current]();app.classList.toggle('cf-games-active',current==='games');const topBar=app.querySelector('.top');if(topBar)topBar.style.display=current==='home'||current==='games'?'none':'';const bottomNav=app.querySelector('.bottom');if(bottomNav)bottomNav.style.display='grid';if(current==='bonuses')refreshDailyRewardStatus();if(current==='profile'){renderTelegramProfileImmediately();refreshAccount();}app.querySelectorAll('.bottom button').forEach(b=>b.classList.toggle('active',b.dataset.go===current || (current==='mines'||current==='dice'||current==='wheel'||current==='crash')&&b.dataset.go==='games'));app.scrollTo({top:0,behavior:'instant'});}
+  function render(name){current=renderers[name]?name:'home';content.innerHTML=renderers[current]();if(current==='bonuses')refreshDailyRewardStatus();if(current==='profile'){renderTelegramProfileImmediately();refreshAccount();}app.querySelectorAll('.bottom button').forEach(b=>b.classList.toggle('active',b.dataset.go===current || (current==='mines'||current==='dice'||current==='wheel'||current==='crash')&&b.dataset.go==='games'));app.scrollTo({top:0,behavior:'instant'});}
   window.cfNavigate=function(name){try{render(name)}catch(error){console.error('Navigation failed',error);say('Не удалось открыть раздел. Перезапусти приложение.')}};
   // Capture taps before Telegram WebView or underlying page handlers can swallow them.
   document.addEventListener('click', function cosmicNavigationCapture(e){
-    const social=e.target instanceof Element?e.target.closest('#cf-app [data-cf-telegram]'):null;
-    if(social){
-      e.preventDefault();e.stopPropagation();
-      const url=social.getAttribute('href');
-      try{if(telegram?.openTelegramLink)telegram.openTelegramLink(url);else window.open(url,'_blank','noopener,noreferrer')}catch{window.location.href=url}
-      return;
-    }
     const target=e.target instanceof Element?e.target:null;
     if(!target)return;
     const go=target.closest('#cf-app [data-go]');
@@ -599,55 +454,16 @@ function gameList(){return '<section class="cf-games-page"><div class="cf-games-
       if(renderers[destination]) render(destination);
       return;
     }
-    const openDaily=target.closest('#cf-app [data-action="open-daily-reward"]');
-    if(openDaily){e.preventDefault();e.stopPropagation();openDailyReward();return;}
     const openWheel=target.closest('#cf-app [data-action="open-bonus-wheel"]');
     if(openWheel){e.preventDefault();e.stopPropagation();openBonusWheel();}
   }, true);
-  app.addEventListener('change',e=>{if(e.target?.id==='cf-miner-size'){const size=Number(e.target.value),mineSelect=app.querySelector('#cf-miner-mines');if(mineSelect){const max=size*size-1;Array.from(mineSelect.options).forEach(o=>{o.disabled=Number(o.value)>max});if(Number(mineSelect.value)>max)mineSelect.value='3';}const grid=app.querySelector('#cf-miner-grid');if(grid&&!minerRound){grid.style.gridTemplateColumns='repeat('+size+',minmax(0,1fr))';grid.innerHTML=Array.from({length:size*size},(_,i)=>'<button data-miner-tile="'+i+'" style="aspect-ratio:1;border:1px solid #7044a8;border-radius:10px;background:#180b30;color:#d9aaff;font-size:24px">✦</button>').join('')}}});
-  let cfGesture=null,cfBlockClickUntil=0,cfLastTouchMoved=false;
-  document.addEventListener('touchstart',e=>{const p=e.touches&&e.touches[0];if(p)cfGesture={x:p.clientX,y:p.clientY,moved:false};},{passive:true,capture:true});
-  document.addEventListener('touchmove',e=>{const p=e.touches&&e.touches[0];if(cfGesture&&p&&Math.hypot(p.clientX-cfGesture.x,p.clientY-cfGesture.y)>10){cfGesture.moved=true;cfLastTouchMoved=true;cfBlockClickUntil=Date.now()+700;}},{passive:true,capture:true});
-  document.addEventListener('touchend',()=>{if(cfGesture?.moved){cfLastTouchMoved=true;cfBlockClickUntil=Date.now()+700;}cfGesture=null;},{passive:true,capture:true});
-  document.addEventListener('click',e=>{if(Date.now()<cfBlockClickUntil){const t=e.target instanceof Element?e.target:null;if(t?.closest('#cf-app button,#cf-app [data-go],#cf-app [data-action]')&&!t.closest('#cf-check-membership')){e.preventDefault();e.stopImmediatePropagation();}}},true);
-  // Do not suppress navigation taps after a scroll; iOS WebView can dispatch the tap normally.
-  document.addEventListener('click',e=>{const t=e.target instanceof Element?e.target:null;if(t&&t.closest('#cf-app [data-go]'))e.stopPropagation();},{capture:true});
-  const cfImmediateClickEvents=new WeakSet();
-  let cfImmediateTapAt=0,cfImmediateTapTarget=null;
-  app.addEventListener('touchend',e=>{
-    const t=e.target instanceof Element?e.target:null;
-    const hit=t?.closest('#cf-app #cf-check-membership,#cf-app [data-go],#cf-app [data-action="buy-credits"],#cf-app [data-action="request-withdrawal"],#cf-app [data-action="play-game"],#cf-app [data-action="bj-create"],#cf-app [data-action="bj-open-lobby"]');
-    if(!hit||cfGesture?.moved||Date.now()<cfBlockClickUntil)return;
-    e.preventDefault();
-    cfImmediateTapAt=Date.now();cfImmediateTapTarget=hit;
-    const click=new MouseEvent('click',{bubbles:true,cancelable:true,view:window});
-    cfImmediateClickEvents.add(click);
-    hit.dispatchEvent(click);
-  },{capture:true,passive:false});
-  let minerRound=null,jetRound=null,jetTimer=null;
-  function syncBalance(n){const b=app.querySelector('#cf-balance');if(b)b.textContent=formatBalance(n);const h=app.querySelector('#cf-home-balance');if(h)h.textContent=formatBalance(n);const p=app.querySelector('#cf-profile-balance');if(p)p.textContent=formatBalance(n)}
-  async function minerStart(){const startButton=app.querySelector('[data-action="miner-start"]');if(startButton?.disabled)return;const bet=Number(app.querySelector('#cf-bet')?.value),size=Number(app.querySelector('#cf-miner-size')?.value),mines=Number(app.querySelector('#cf-miner-mines')?.value);if(!Number.isSafeInteger(bet)||bet<1||bet>100000)return say('Ставка должна быть от 1 до 100 000.');if(startButton){startButton.disabled=true;startButton.textContent='Запускаем…'}try{const d=await api('/api/miner/start',{method:'POST',body:JSON.stringify({bet,size,mines})});minerRound=d.round;const grid=app.querySelector('#cf-miner-grid');grid.style.gridTemplateColumns='repeat('+size+',minmax(0,1fr))';grid.innerHTML=Array.from({length:size*size},(_,i)=>'<button data-miner-tile="'+i+'" style="aspect-ratio:1;border:1px solid #7044a8;border-radius:10px;background:#180b30;color:#d9aaff;font-size:24px">✦</button>').join('');app.querySelector('[data-action="miner-start"]').style.display='none';app.querySelector('[data-action="miner-cashout"]').style.display='block';app.querySelector('#cf-miner-status').textContent='Раунд начат — открывай клетки';syncBalance(d.balance)}catch(e){say(e.message)}finally{if(startButton){startButton.disabled=false;startButton.textContent='Начать игру'}}}
-  async function minerPick(i){if(!minerRound)return;try{const d=await api('/api/miner/pick',{method:'POST',body:JSON.stringify({roundId:minerRound.id,index:i})});minerRound=d.round;const tile=app.querySelector('[data-miner-tile="'+i+'"]');if(tile){tile.textContent=d.hit?'💣':'💎';tile.disabled=true}app.querySelector('#cf-miner-multiplier').textContent=Number(d.round.multiplier).toFixed(2)+'×';app.querySelector('#cf-miner-status').textContent=d.hit?'Мина! Раунд завершён':'Кристалл найден — забирай выигрыш или продолжай';if(d.finished){minerRound=null;app.querySelector('[data-action="miner-start"]').style.display='block';app.querySelector('[data-action="miner-cashout"]').style.display='none';syncBalance(d.balance)}}catch(e){say(e.message)}}
-  async function minerCashout(){if(!minerRound)return;try{const d=await api('/api/miner/cashout',{method:'POST',body:JSON.stringify({roundId:minerRound.id})});minerRound=null;syncBalance(d.balance);app.querySelector('[data-action="miner-start"]').style.display='block';app.querySelector('[data-action="miner-cashout"]').style.display='none';app.querySelector('#cf-miner-status').textContent='Выплата: '+formatBalance(d.payout)+' ✦'}catch(e){say(e.message)}}
-  async function jetStart(){const startButton=app.querySelector('[data-action="jet-start"]');if(startButton?.disabled)return;const bet=Number(app.querySelector('#cf-bet')?.value),auto=app.querySelector('#cf-jet-auto')?.checked,autoAt=Number(app.querySelector('#cf-jet-auto-value')?.value);if(!Number.isSafeInteger(bet)||bet<1||bet>100000)return say('Ставка должна быть от 1 до 100 000.');if(auto&&(!Number.isFinite(autoAt)||autoAt<1.1||autoAt>100))return say('Авто-вывод: от 1.1× до 100×.');if(startButton){startButton.disabled=true;startButton.textContent='🚀 Запускаем…'}try{const d=await api('/api/luckyjet/start',{method:'POST',body:JSON.stringify({bet,autoAt:auto?autoAt:null})});jetRound=d.round;syncBalance(d.balance);app.querySelector('[data-action="jet-start"]').style.display='none';app.querySelector('[data-action="jet-cashout"]').style.display='block';app.querySelector('#cf-jet-status').textContent='🚀 Полёт начался! Забери выигрыш вовремя.';const scene=app.querySelector('#cf-jet-scene'),explosion=app.querySelector('#cf-jet-explosion'),rocket=app.querySelector('#cf-jet-rocket-wrap');if(scene){scene.classList.add('is-flying');scene.style.background='radial-gradient(ellipse at 70% 80%,#5b168b,#201039 45%,#070615)'}if(scene)scene.classList.remove('is-flying');if(rocket){rocket.style.opacity='1';rocket.style.transform='translate(0px,0px) rotate(0deg)'}if(explosion){explosion.style.display='none';explosion.style.animation='none'}app.querySelector('#cf-jet-multiplier').style.color='#d56aff';if(jetTimer)clearInterval(jetTimer);jetTimer=setInterval(async()=>{if(!jetRound)return;try{const st=await api('/api/luckyjet/status',{method:'POST',body:JSON.stringify({roundId:jetRound.id})});const m=Number(st.multiplier||1);app.querySelector('#cf-jet-multiplier').textContent=m.toFixed(2)+'×';const wrap=app.querySelector('#cf-jet-rocket-wrap');const x=Math.min(245,Math.max(0,(m-1)*36)),y=-Math.min(245,Math.max(0,(m-1)*30)),flightAngle=Math.atan2(y,x||1)*180/Math.PI,rocketAngle=flightAngle+45;if(wrap)wrap.style.transform='translate('+x+'px,'+y+'px) rotate('+rocketAngle+'deg)';const trail=app.querySelector('#cf-jet-trail'),glow=app.querySelector('.cf-trail-glow');if(trail)trail.style.transform='translate('+x+'px,'+y+'px) rotate('+flightAngle+'deg)';if(glow)glow.style.transform='translate('+x+'px,'+y+'px) rotate('+flightAngle+'deg)';if(st.crashed){jetRound=null;clearInterval(jetTimer);jetTimer=null;syncBalance(st.balance);const scene=app.querySelector('#cf-jet-scene'),explosion=app.querySelector('#cf-jet-explosion'),rocket=app.querySelector('#cf-jet-rocket-wrap');if(scene){scene.classList.remove('is-flying');scene.style.background='radial-gradient(ellipse at 70% 55%,#7a1c36,#1a0a24 60%,#090718)'}if(rocket){rocket.style.opacity='0';rocket.style.transform+=' scale(.2)'}if(explosion){explosion.style.display='block';explosion.style.animation='cfBlast .8s ease-out forwards'}app.querySelector('#cf-jet-multiplier').textContent='💥 '+Number(st.crashAt).toFixed(2)+'×';app.querySelector('#cf-jet-multiplier').style.color='#ff6b73';app.querySelector('#cf-jet-status').textContent='РАКЕТА ВЗОРВАЛАСЬ';app.querySelector('[data-action="jet-start"]').style.display='block';app.querySelector('[data-action="jet-cashout"]').style.display='none'}else if(auto&&m>=autoAt){await jetCashout()}}catch(e){clearInterval(jetTimer);jetTimer=null;say(e.message)}},180)}catch(e){say(e.message)}finally{if(startButton){startButton.disabled=false;startButton.textContent='🚀 ЗАПУСТИТЬ РАКЕТУ'}}}
-  async function jetCashout(){if(!jetRound)return;try{const m=Number(app.querySelector('#cf-jet-multiplier').textContent.replace('×',''));const d=await api('/api/luckyjet/cashout',{method:'POST',body:JSON.stringify({roundId:jetRound.id,multiplier:m})});jetRound=null;if(jetTimer)clearInterval(jetTimer);jetTimer=null;syncBalance(d.balance);app.querySelector('#cf-jet-scene').style.animation='cfGlow 1.2s ease-in-out 2';app.querySelector('#cf-jet-status').textContent='✨ ВЫВОД УСПЕШЕН!';app.querySelector('#cf-jet-multiplier').style.color='#63ffc0';app.querySelector('#cf-jet-result').textContent='✦ Выплата '+formatBalance(d.payout)+' при '+d.multiplier.toFixed(2)+'×';app.querySelector('[data-action="jet-start"]').style.display='block';app.querySelector('[data-action="jet-cashout"]').style.display='none'}catch(e){say(e.message)}}
-  let cfFastGameTouchAt=0;
-  app.addEventListener('touchend',e=>{
-    const t=e.target instanceof Element?e.target:null;if(!t)return;
-    const tile=t.closest('#cf-app [data-miner-tile]'),act=t.closest('#cf-app [data-action]');
-    if(!tile&&!(act&&['miner-start','miner-cashout','jet-start','jet-cashout'].includes(act.dataset.action)))return;
-    if(cfGesture?.moved||Date.now()<cfBlockClickUntil)return;
-    cfFastGameTouchAt=Date.now();e.preventDefault();e.stopImmediatePropagation();
-    if(tile)minerPick(Number(tile.dataset.minerTile));
-    else if(act.dataset.action==='miner-start')minerStart();
-    else if(act.dataset.action==='miner-cashout')minerCashout();
-    else if(act.dataset.action==='jet-start')jetStart();
-    else if(act.dataset.action==='jet-cashout')jetCashout();
-  },{capture:true,passive:false});
+  app.addEventListener('pointerup',e=>{
+    const target=e.target instanceof Element?e.target:null;
+    const button=target?.closest('#cf-app [data-go]');
+    if(button){e.preventDefault();e.stopPropagation();window.cfNavigate(button.dataset.go);}
+  },true);
   app.addEventListener('click',async e=>{
-    if(!cfImmediateClickEvents.has(e)&&cfImmediateTapTarget&&Date.now()-cfImmediateTapAt<700&&e.target instanceof Element&&e.target.closest('#cf-app #cf-check-membership,#cf-app [data-go],#cf-app [data-action="buy-credits"],#cf-app [data-action="request-withdrawal"],#cf-app [data-action="play-game"],#cf-app [data-action="bj-create"],#cf-app [data-action="bj-open-lobby"]')===cfImmediateTapTarget){e.preventDefault();return;}
-    if(Date.now()-cfFastGameTouchAt<800){const t=e.target instanceof Element?e.target:null;if(t?.closest('#cf-app [data-miner-tile],#cf-app [data-action="miner-start"],#cf-app [data-action="miner-cashout"],#cf-app [data-action="jet-start"],#cf-app [data-action="jet-cashout"]')){e.preventDefault();return;}}
-    const mt=e.target.closest('[data-miner-tile]');if(mt){minerPick(Number(mt.dataset.minerTile));return}if(e.target.closest('[data-action="miner-start"]')){minerStart();return}if(e.target.closest('[data-action="miner-cashout"]')){minerCashout();return}if(e.target.closest('[data-action="jet-start"]')){jetStart();return}if(e.target.closest('[data-action="jet-cashout"]')){jetCashout();return}const close=e.target.closest('[data-action="close-bonus-wheel"]');if(close){app.querySelector('#cf-wheel-modal')?.remove();if(bonusTimerInterval){clearInterval(bonusTimerInterval);bonusTimerInterval=null;}return}
+    const close=e.target.closest('[data-action="close-bonus-wheel"]');if(close){app.querySelector('#cf-wheel-modal')?.remove();if(bonusTimerInterval){clearInterval(bonusTimerInterval);bonusTimerInterval=null;}return}
     const closeDaily=e.target.closest('[data-action="close-daily-reward"]');if(closeDaily){closeDailyReward();return}
     if(e.target.id==='cf-daily-modal'){closeDailyReward();return}
     if(e.target.closest('[data-action="open-daily-reward"]')){openDailyReward();return}
@@ -656,18 +472,6 @@ function gameList(){return '<section class="cf-games-page"><div class="cf-games-
     const mine=e.target.closest('[data-mine]'); if(mine){say('Эта игра ещё не подключена к серверу.');return}
     const choice=e.target.closest('[data-choice]');if(choice){selected=choice.dataset.choice;app.querySelectorAll('[data-choice],[data-number]').forEach(b=>{b.classList.toggle('is-selected',b===choice);b.style.borderColor=b===choice?'#ffdb73':''});return}const numberChoice=e.target.closest('[data-number]');if(numberChoice){selected=Number(numberChoice.dataset.number);app.querySelectorAll('[data-choice],[data-number]').forEach(b=>{b.classList.toggle('is-selected',b===numberChoice);b.style.borderColor=b===numberChoice?'#ffdb73':''});return}
     const action=e.target.closest('[data-action]');if(!action)return;
-    if(action.dataset.action==='open-purchase-history'){
-      const box=app.querySelector('#cf-payment-history');if(!box)return;
-      const opening=box.style.display==='none'||!box.style.display;box.style.display=opening?'block':'none';action.setAttribute('aria-expanded',String(opening));
-      const chev=action.querySelector('.cf-history-chevron');if(chev)chev.textContent=opening?'⌃':'⌄';
-      if(opening)loadPaymentHistory();return
-    }
-    if(action.dataset.action==='open-game-history'){
-      const box=app.querySelector('#cf-profile-history');if(!box)return;
-      const opening=box.style.display==='none'||!box.style.display;box.style.display=opening?'block':'none';action.setAttribute('aria-expanded',String(opening));
-      const chev=action.querySelector('.cf-history-chevron');if(chev)chev.textContent=opening?'⌃':'⌄';
-      if(opening){try{const data=await api('/api/me');renderHistoryInProfile(data.history||[])}catch(e){box.textContent='Не удалось загрузить историю игр.'}}return
-    }
     if(action.dataset.action==='games'){render('games');return}
     if(action.dataset.action==='bj-open-lobby'){await openBlackjackLobby();return}
     if(action.dataset.action==='bj-close-lobby'){app.querySelector('#cf-bj-lobby-modal')?.remove();return}
@@ -742,7 +546,7 @@ function gameList(){return '<section class="cf-games-page"><div class="cf-games-
         const data=await api('/api/bonus-wheel',{method:'POST',body:JSON.stringify({requestId:crypto.randomUUID()})});
         if(wheel){
           const label=String(data.outcome?.label||'');
-          const prizeIndex=label.includes('1 000 000 виртуальных кредитов')?0:label.includes('250 000 виртуальных кредитов')?1:label.includes('500 ₽')?2:label.includes('25 000')?3:label.includes('10 000')?4:label.includes('5 000')?5:label.includes('2 000')?6:7;
+          const prizeIndex=label.includes('100 игровых звёзд')?0:label.includes('25 игровых звёзд')?1:label.includes('500 ₽')?2:label.includes('25 000')?3:label.includes('10 000')?4:label.includes('5 000')?5:label.includes('2 000')?6:7;
           const step=360/8, target=-(prizeIndex*step+step/2);
           wheel.style.transform='rotate(0deg)';void wheel.offsetWidth;
           wheel.style.transform='rotate('+(1800+target)+'deg)';
@@ -805,8 +609,8 @@ function gameList(){return '<section class="cf-games-page"><div class="cf-games-
       }catch(error){say(error.message)}
       return
     }
-    if(action.dataset.action==='buy-credits'){const stars=Number(action.dataset.stars),oldMarkup=action.innerHTML;action.disabled=true;action.innerHTML='⏳ Открываем оплату…';try{const d=await api('/api/stars/invoice',{method:'POST',body:JSON.stringify({stars})});if(!telegram?.openInvoice)throw new Error('Открой мини-приложение через Telegram.');telegram.openInvoice(d.url,status=>{if(status==='paid'){say('Платёж подтверждён. Обновляем баланс…');setTimeout(()=>{refreshAccount();loadPaymentHistory()},1000)}else if(status==='failed')say('Оплата не прошла; кредиты не начислены.')})}catch(e){say(e.message)}finally{action.disabled=false;action.innerHTML=oldMarkup}return}
-    if(action.dataset.action==='request-withdrawal'){const oldMarkup=action.innerHTML;action.disabled=true;action.innerHTML='⏳ Отправляем заявку…';try{const d=await api('/api/stars/withdrawals',{method:'POST',body:JSON.stringify({credits:Number(action.dataset.credits)})});const el=app.querySelector('#cf-withdrawal-result');if(el)el.textContent=d.message+' ID: '+d.request.id;const b=app.querySelector('#cf-balance');if(b)b.textContent=formatBalance(d.balance);say('Заявка создана.');await refreshAccount()}catch(e){say(e.message)}finally{action.disabled=false;action.innerHTML=oldMarkup}return}
+    if(action.dataset.action==='buy-credits'){const stars=Number(action.dataset.stars);action.disabled=true;try{const d=await api('/api/stars/invoice',{method:'POST',body:JSON.stringify({stars})});if(!telegram?.openInvoice)throw new Error('Открой мини-приложение через Telegram.');telegram.openInvoice(d.url,status=>{if(status==='paid'){say('Платёж подтверждён. Обновляем баланс…');setTimeout(()=>{refreshAccount();loadPaymentHistory()},1000)}else if(status==='failed')say('Оплата не прошла; кредиты не начислены.')})}catch(e){say(e.message)}finally{action.disabled=false}return}
+    if(action.dataset.action==='request-withdrawal'){action.disabled=true;try{const d=await api('/api/stars/withdrawals',{method:'POST',body:JSON.stringify({credits:Number(action.dataset.credits)})});const el=app.querySelector('#cf-withdrawal-result');if(el)el.textContent=d.message+' ID: '+d.request.id;const b=app.querySelector('#cf-balance');if(b)b.textContent=formatBalance(d.balance);say('Заявка создана.');await refreshAccount()}catch(e){say(e.message)}finally{action.disabled=false}return}
     if(action.dataset.action==='owner-webhook-setup'){action.disabled=true;try{let d;try{d=await api('/api/owner/payment-webhook/setup',{method:'POST',body:JSON.stringify({})})}catch(e){if(!e.message.includes('уже настроен'))throw e;if(!confirm(e.message+' Заменить webhook?'))throw e;d=await api('/api/owner/payment-webhook/setup',{method:'POST',body:JSON.stringify({confirmReplace:true})})}say(d.message);await loadOwnerTools()}catch(e){say(e.message)}finally{action.disabled=false}return}
     if(action.dataset.action==='owner-refresh'){await loadOwnerTools();return}
     if(action.dataset.action==='owner-review'){const id=action.dataset.id,review=action.dataset.review;if(!confirm(review==='paid'?'Подтверждаешь, что подарок уже отправлен?':'Отклонить заявку и вернуть кредиты?'))return;action.disabled=true;try{await api('/api/owner/withdrawals/'+encodeURIComponent(id)+'/review',{method:'POST',body:JSON.stringify({action:review,note:review==='paid'?'Подарок отправлен вручную':'Заявка отклонена'})});say('Заявка обновлена.');await loadOwnerTools();await refreshAccount()}catch(e){say(e.message)}finally{action.disabled=false}return}
@@ -854,11 +658,9 @@ function gameList(){return '<section class="cf-games-page"><div class="cf-games-
     const chatUnavailable=!!(access && access.chat && access.chat.status==='unavailable');
     const bottom=app.querySelector('.bottom');
     if(bottom)bottom.style.display='none';
-    const channelLabel=channelOk?'✓ Канал — подписка подтверждена':(channelUnavailable?'⚠ Проверка недоступна':'📣 Подписаться на канал');
-    const chatLabel=chatOk?'✓ Чат — вступление подтверждено':(chatUnavailable?'⚠ Проверка недоступна':'💬 Вступить в чат');
-    const channelState=channelOk?'✓ Канал подтверждён':(channelUnavailable?'⚠ Telegram не смог проверить канал':'○ Подписка на канал не подтверждена');
-    const chatState=chatOk?'✓ Чат подтверждён':(chatUnavailable?'⚠ Telegram не смог проверить чат':'○ Вступление в чат не подтверждено');
-    const stateText=checking?'Проверяем членство в Telegram…':(message || (channelState+'<br>'+chatState));
+    const channelLabel=channelOk?'✓ Канал — подписка подтверждена':(channelUnavailable?'⚠ Проверка канала недоступна':'Подписаться на канал');
+    const chatLabel=chatOk?'✓ Чат — вступление подтверждено':(chatUnavailable?'⚠ Проверка чата недоступна':'Вступить в чат');
+    const stateText=checking?'Проверяем членство в Telegram…':(message || ((channelOk?'✓ Канал подтверждён':'○ Нет подписки на канал')+'<br>'+(chatOk?'✓ Чат подтверждён':'○ Нет вступления в чат')));
     content.innerHTML=`
       <section style="margin:22px 0;padding:22px 16px;border:1px solid #8f42ff;border-radius:24px;background:radial-gradient(ellipse at top,#32104f,#0a0718 75%);box-shadow:0 0 35px #8f42ff25;text-align:center">
         <div style="font-size:54px;margin-bottom:10px">🚀</div>
@@ -867,21 +669,14 @@ function gameList(){return '<section class="cf-games-page"><div class="cf-games-
         <a href="https://t.me/Cosmic_Fortune" target="_blank" rel="noopener" style="display:block;margin:14px 0;padding:15px;border:1px solid #9a52ed;border-radius:15px;background:#1b0c2c;color:#fff;text-decoration:none;font-weight:800">📣 ${channelLabel}</a>
         <a href="https://t.me/CosmisFortunechat" target="_blank" rel="noopener" style="display:block;margin:14px 0;padding:15px;border:1px solid #9a52ed;border-radius:15px;background:#1b0c2c;color:#fff;text-decoration:none;font-weight:800">💬 ${chatLabel}</a>
         <div style="margin:12px 0;color:${channelOk&&chatOk?'#b4ffcb':'#c4b1dc'};font-size:13px">${stateText}</div>
-        <button id="cf-check-membership" type="button" aria-live="polite" style="width:100%;min-height:52px;padding:15px;border:1px solid #e6a6ff;border-radius:15px;background:linear-gradient(100deg,#b622f5,#7010dc);font-weight:900;color:#fff;touch-action:manipulation;pointer-events:auto">${checking?'Проверяем…':'Проверить подписку'}</button>
+        <button id="cf-check-membership" type="button" style="width:100%;padding:15px;border:1px solid #e6a6ff;border-radius:15px;background:linear-gradient(100deg,#b622f5,#7010dc);font-weight:900;color:#fff" ${checking?'disabled':''}>${checking?'Проверяем…':'Проверить подписку'}</button>
         <p style="font-size:11px;color:#9c88b8;margin-top:15px">Доступ откроется только после подтверждения обоих условий.</p>
       </section>`;
   }
-  let cfAccessCheckPromise=null;
-  async function checkAccessAndStart(forceRefresh=false){
-    if(cfAccessCheckPromise){
-      if(!forceRefresh)return cfAccessCheckPromise;
-      await cfAccessCheckPromise.catch(()=>{});
-      if(!app.querySelector('#cf-check-membership'))return;
-    }
-    const task=(async()=>{
+  async function checkAccessAndStart(){
     renderAccessGate(null,true);
     try{
-      const access=await api('/api/access/check'+(forceRefresh?'?refresh=1':''));
+      const access=await api('/api/access/check');
       if(access.ready){
         app.querySelector('.bottom')?.style.removeProperty('display');
         render('home');
@@ -889,38 +684,13 @@ function gameList(){return '<section class="cf-games-page"><div class="cf-games-
       }else {const unavailable=access.channel?.error||access.chat?.error;renderAccessGate(access,false,unavailable?'Не удалось проверить членство. Добавь бота администратором в канал и чат, затем проверь настройки username.':'Выполни оба условия и проверь ещё раз.');}
     }catch(error){
       renderAccessGate(null,false,error.message||'Не удалось проверить подписку. Попробуй ещё раз.');
-    }finally{if(cfAccessCheckPromise===task)cfAccessCheckPromise=null}
-    })();
-    cfAccessCheckPromise=task;
-    return task;
+    }
   }
-  // Handle the membership button at document capture phase so Telegram WebView
-  // or other app-level click handlers cannot swallow the tap. Debounce pointerup+click.
-  let cfMembershipTapAt=0;
-  document.addEventListener('click',event=>{
-    const button=event.target instanceof Element?event.target.closest('#cf-check-membership'):null;
+  app.addEventListener('click',event=>{
+    const button=event.target.closest('#cf-check-membership');
     if(!button)return;
     event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
-    if(Date.now()-cfMembershipTapAt<500)return;
-    cfMembershipTapAt=Date.now();
-    button.textContent='Проверяем подписку…';
-    button.style.opacity='0.8';
-    checkAccessAndStart(true);
-  },true);
-  document.addEventListener('pointerup',event=>{
-    const button=event.target instanceof Element?event.target.closest('#cf-check-membership'):null;
-    if(!button||event.pointerType==='mouse')return;
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
-    if(Date.now()-cfMembershipTapAt<500)return;
-    cfMembershipTapAt=Date.now();
-    button.textContent='Проверяем подписку…';
-    checkAccessAndStart(true);
-  },{capture:true,passive:false});
-  // Startup: open the home screen directly. Subscription verification is disabled.
-  render('home');
-  refreshAccount();
+    checkAccessAndStart();
+  });
+  checkAccessAndStart();
 })();
