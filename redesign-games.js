@@ -3,7 +3,7 @@ const s=document.createElement('style');s.id='cf-redesign-style';s.textContent=`
 #cf-app .cf-home-page.cf-home-static{min-height:0;background:none!important}
 #cf-app .cf-home-page.cf-home-static .cf-home-poster-wrap{display:none!important}
 #cf-app .cf-home-redesign{padding:8px 0 20px}
-#cf-app .cf-home-hero{overflow:hidden;min-height:205px;border:1px solid #7650bd;border-radius:22px;padding:22px 18px;background:radial-gradient(circle at 85% 25%,#7041bd,#261044 40%,#0c0818 78%);box-shadow:0 10px 30px #0005}
+#cf-app .cf-home-hero{overflow:hidden;min-height:205px;border:1px solid #7650bd;border-radius:22px;padding:22px 18px;background:linear-gradient(90deg,#0b0618f2 0%,#21103be0 52%,#170a2b88 100%),url("https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=85") center/cover no-repeat;box-shadow:0 10px 30px #0005}
 #cf-app .cf-home-kicker{color:#f5d889;font-size:10px;letter-spacing:2px;font-weight:900}
 #cf-app .cf-home-hero h1{font-size:32px;line-height:1.05;margin:14px 0 8px;max-width:80%}
 #cf-app .cf-home-hero p{font-size:12px;line-height:1.5;color:#d9c9f1;max-width:75%;margin:0 0 16px}
