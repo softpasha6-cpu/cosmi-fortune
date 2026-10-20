@@ -317,6 +317,23 @@
     #cf-app .cf-home-wheel-art span{display:grid;place-items:center;width:55px;height:55px;border-radius:50%;border:3px solid #ffe58b;background:conic-gradient(#8b22d8,#1f60c8,#df9c1c,#b32c5b,#8b22d8);font-size:16px;color:#fff}
     @media(min-width:520px){#cf-app .cf-home-bonuses{grid-template-columns:1.2fr .8fr}#cf-app .cf-home-hero{padding-top:28px;padding-bottom:24px}}
     @media(max-width:360px){#cf-app .cf-home-membership{gap:6px}#cf-app .cf-home-subscription{padding:9px 6px;gap:6px}#cf-app .cf-home-subscription strong{font-size:10px}#cf-app .cf-home-game{min-height:100px}#cf-app .cf-home-game-art{height:56px;font-size:32px}}
+    #cf-app .cf-games-page{width:100%;box-sizing:border-box;padding:0 0 24px}
+    #cf-app .cf-games-banner{height:185px;position:relative;overflow:hidden;border:1px solid #a64cff;border-radius:20px;background:#0a0617;margin:0 0 14px}
+    #cf-app .cf-games-banner img{width:100%;height:100%;object-fit:cover;object-position:center 34%;display:block;opacity:.9}
+    #cf-app .cf-games-banner-shade{position:absolute;inset:0;background:linear-gradient(0deg,#090414 0%,#09041430 75%)}
+    #cf-app .cf-games-banner-title{position:absolute;left:16px;right:12px;bottom:13px}
+    #cf-app .cf-games-banner-title small{font-size:9px;letter-spacing:.14em;color:#e6c7ff;font-weight:800}
+    #cf-app .cf-games-banner-title h1{margin:4px 0;color:#ffe18a;font-size:27px;line-height:1.05;font-weight:1000;text-shadow:0 2px 12px #9b25ff}
+    #cf-app .cf-games-banner-title p{margin:0;color:#e4d6ff;font-size:12px}
+    #cf-app .cf-games-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+    #cf-app .cf-game-tile{min-width:0;min-height:175px;position:relative;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;padding:0;border:1px solid #b64cff;border-radius:17px;background:radial-gradient(ellipse at 50% 20%,#59228b 0%,#1b0c34 55%,#090512 100%);color:#fff;text-align:left;box-shadow:inset 0 0 18px #9e32ff36,0 0 12px #8c22ff28;cursor:pointer;touch-action:manipulation}
+    #cf-app .cf-game-tile:active{transform:scale(.98);filter:brightness(1.15)}
+    #cf-app .cf-game-tile-art{height:118px;display:flex;align-items:center;justify-content:center;font-size:76px;line-height:1;text-shadow:0 0 18px #b34aff;filter:drop-shadow(0 5px 9px #0009)}
+    #cf-app .cf-game-tile-info{display:flex;flex-direction:column;gap:3px;min-height:51px;justify-content:center;padding:8px 10px;background:linear-gradient(90deg,#0a0618f5,#1d0b35f5);border-top:1px solid #9d3cff}
+    #cf-app .cf-game-tile-info strong{font-size:clamp(12px,3.5vw,15px);font-weight:900;color:#ffe28c;text-transform:uppercase;overflow-wrap:anywhere}
+    #cf-app .cf-game-tile-info small{font-size:10px;line-height:1.25;color:#cbb7ef}
+    #cf-app .cf-game-tile-arrow{position:absolute;right:8px;top:8px;width:25px;height:25px;display:grid;place-items:center;border-radius:50%;border:1px solid #df8aff;color:#fff;font-size:20px;background:#160625a8}
+    @media(max-width:360px){#cf-app .cf-game-tile{min-height:155px}#cf-app .cf-game-tile-art{height:100px;font-size:64px}}
     #cf-app .cf-home-page{padding:0;margin:0;width:100%;height:100%;min-height:0}
     #cf-app .cf-home-static{overflow:hidden}
     #cf-app .cf-home-poster-wrap{position:absolute;inset:0;overflow:hidden;background:#080411;line-height:0;border:0;border-radius:0;box-shadow:none}
@@ -440,7 +457,7 @@
       </div>
     </section>`}
  
-function gameList(){return '<div class="section-title">ИГРЫ</div><div style="color:#c6b5e2;margin:0 2px 14px">ВЫБЕРИ СВОЮ УДАЧУ</div>'+games.map(g=>'<button class="widecard" data-go="'+g[0]+'"><div class="art" data-art="'+g[0]+'"><span>'+g[1]+'</span></div><div style="flex:1"><strong>'+g[2]+'</strong><small>'+g[3]+'</small></div>›</button>').join('')}
+function gameList(){return '<section class="cf-games-page"><div class="cf-games-banner"><img src="./cosmic-fortune-home-4k.webp" alt="" loading="eager"><div class="cf-games-banner-shade"></div><div class="cf-games-banner-title"><small>ТВОЯ ВСЕЛЕННАЯ · ТВОЯ УДАЧА</small><h1>ВСЕ ИГРЫ</h1><p>Выбирай игру и начинай играть</p></div></div><div class="cf-games-grid">'+games.map(g=>'<button type="button" class="cf-game-tile cf-game-'+g[0]+'" data-go="'+g[0]+'"><span class="cf-game-tile-art" aria-hidden="true">'+g[1]+'</span><span class="cf-game-tile-info"><strong>'+g[2]+'</strong><small>'+g[3]+'</small></span><span class="cf-game-tile-arrow">›</span></button>').join('')+'</div></section>'}
   function panel(title,body){return '<div class="section-title">'+title+'</div><section class="gamepanel">'+body+'</section>'}
   function gameAvatar(game){
     const views={
