@@ -366,10 +366,10 @@
     #cf-app .cf-hotspot-daily{left:4%;top:74%;width:52%;height:16%}
     #cf-app .cf-hotspot-wheel{right:3%;top:74%;width:43%;height:16%}
     #cf-app .cf-hotspot-profile{right:3%;bottom:1%;width:22%;height:7%}
-    #cf-app .cf-home-nav-home{left:1%;bottom:1%;width:24%;height:8%;z-index:50;pointer-events:auto}
-    #cf-app .cf-home-nav-games{left:25%;bottom:1%;width:25%;height:8%;z-index:50;pointer-events:auto}
-    #cf-app .cf-home-nav-bonuses{left:50%;bottom:1%;width:25%;height:8%;z-index:50;pointer-events:auto}
-    #cf-app .cf-home-nav-profile{right:0%;bottom:1%;width:25%;height:8%;z-index:50;pointer-events:auto}
+    #cf-app .cf-home-nav-home{left:0%;bottom:0%;width:25%;height:8%;z-index:60;pointer-events:auto}
+    #cf-app .cf-home-nav-games{left:25%;bottom:0%;width:25%;height:8%;z-index:60;pointer-events:auto}
+    #cf-app .cf-home-nav-bonuses{left:50%;bottom:0%;width:25%;height:8%;z-index:60;pointer-events:auto}
+    #cf-app .cf-home-nav-profile{right:0%;bottom:0%;width:25%;height:8%;z-index:60;pointer-events:auto}
     #cf-app .cf-hotspot-channel{left:4%;top:21%;width:22%;height:13%}
     #cf-app .cf-hotspot-chat{right:4%;top:21%;width:22%;height:13%}
     #cf-app .cf-home-balance{display:flex;align-items:center;gap:12px;width:100%;min-height:72px;padding:12px 15px;border:1px solid #d9ad54;border-radius:18px;background:linear-gradient(110deg,#28143e,#120b20 72%);color:#fff;text-align:left;cursor:pointer;box-sizing:border-box;touch-action:manipulation}
