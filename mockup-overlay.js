@@ -261,6 +261,14 @@
     #cf-app:has(.cf-home-art-full) #cf-content{width:100%;height:100%;margin:0;padding:0;overflow:hidden}
     #cf-app .cf-home-art-full{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100dvh;margin:0;padding:0;line-height:0;background:#070411;overflow:hidden}
     #cf-app .cf-home-art-full img{display:block;width:100%;height:100%;max-width:none;max-height:100dvh;margin:0;padding:0;object-fit:contain;object-position:center center;user-select:none;-webkit-user-drag:none}
+    #cf-app .cf-home-livebar{position:absolute;top:max(12px,env(safe-area-inset-top));left:12px;right:12px;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border:1px solid #f5cf75a8;border-radius:14px;background:#10071fdc;backdrop-filter:blur(10px);color:#ffe6a0;font-size:11px;font-weight:900;letter-spacing:.04em}
+    #cf-app .cf-home-livebar strong{font-size:17px;color:#fff;letter-spacing:0}
+    #cf-app .cf-home-liveactions{position:absolute;z-index:5;left:12px;right:12px;bottom:max(16px,env(safe-area-inset-bottom));display:grid;gap:9px}
+    #cf-app .cf-home-liveactions button,#cf-app .cf-home-social a{min-height:44px;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px 12px;border:1px solid #f5cf75;border-radius:13px;background:linear-gradient(180deg,#ffe68a,#ffb91e 54%,#e78605);color:#2b1300;font-size:12px;font-weight:1000;text-decoration:none;box-shadow:0 4px 14px #0008}
+    #cf-app .cf-home-liveactions .cf-home-play{min-height:54px;font-size:17px}
+    #cf-app .cf-home-social{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    #cf-app .cf-home-social a{background:#190d2beF;color:#fff0c6;border-color:#9a6bca;font-size:10px}
+    #cf-app .cf-home-liveactions button:active,#cf-app .cf-home-social a:active{transform:scale(.98);filter:brightness(1.15)}
 
     #cf-app .cf-home-hero{min-height:0;padding:22px 16px 18px;text-align:center;background:radial-gradient(ellipse at 50% 0%,#56219a 0%,#190b37 45%,#080611 82%);border-color:#a34dff;box-shadow:inset 0 0 45px #9a35ff20,0 0 24px #8d32ff25}
     #cf-app .cf-home-hero:before{width:220px;height:220px;right:50%;transform:translateX(50%);top:24px;background:radial-gradient(circle at 40% 30%,#a9a0ff,#5521a7 40%,#160a39 72%,transparent 74%);opacity:.52}
@@ -363,7 +371,7 @@
     try{
       const data=await api('/api/me');
       const balance=app.querySelector('#cf-balance');
-      if(balance) balance.textContent=formatBalance(data.player.balance);
+      if(balance) balance.textContent=formatBalance(data.player.balance);\n      const homeBalance=app.querySelector('#cf-home-balance');if(homeBalance)homeBalance.textContent=formatBalance(data.player.balance);
       const profileBalance=app.querySelector('#cf-profile-balance');
       if(profileBalance) profileBalance.textContent=formatBalance(data.player.balance);
       const title=app.querySelector('#cf-profile-name');if(title)title.textContent=data.player.firstName||data.player.username||'Игрок Cosmic Fortune';
@@ -381,7 +389,16 @@
   const primary=(text,act)=>'<button class="primary" data-action="'+act+'">'+text+'</button>';
   function home(){return `
     <section class="cf-home-art-full" aria-label="Cosmic Fortune — главный экран">
-      <img src="./cosmic-fortune-home-4k.webp?v=20261020b" alt="Главный экран Cosmic Fortune" decoding="async" fetchpriority="high">
+      <img src="./cosmic-fortune-home-4k.webp?v=20261020c" alt="Главный экран Cosmic Fortune" decoding="async" fetchpriority="high">
+      <div class="cf-home-livebar"><span>✦ МОЙ БАЛАНС</span><strong id="cf-home-balance">—</strong></div>
+      <div class="cf-home-liveactions">
+        <button type="button" class="cf-home-play" data-go="games">▶ ИГРАТЬ</button>
+        <button type="button" data-go="bonuses">🎁 ЕЖЕДНЕВНЫЕ ПРИЗЫ</button>
+        <div class="cf-home-social">
+          <a href="https://t.me/Cosmic_Fortune" data-cf-telegram="channel">✈️ ПОДПИСАТЬСЯ НА КАНАЛ</a>
+          <a href="https://t.me/CosmisFortunechat" data-cf-telegram="chat">💬 ОТКРЫТЬ ЧАТ</a>
+        </div>
+      </div>
     </section>`}
 
   function gameList(){return '<div class="section-title">ИГРЫ</div><div style="color:#c6b5e2;margin:0 2px 14px">ВЫБЕРИ СВОЮ УДАЧУ</div>'+games.map(g=>'<button class="widecard" data-go="'+g[0]+'"><div class="art" data-art="'+g[0]+'"><span>'+g[1]+'</span></div><div style="flex:1"><strong>'+g[2]+'</strong><small>'+g[3]+'</small></div>›</button>').join('')}
@@ -510,6 +527,13 @@
   window.cfNavigate=function(name){try{render(name)}catch(error){console.error('Navigation failed',error);say('Не удалось открыть раздел. Перезапусти приложение.')}};
   // Capture taps before Telegram WebView or underlying page handlers can swallow them.
   document.addEventListener('click', function cosmicNavigationCapture(e){
+    const social=e.target instanceof Element?e.target.closest('#cf-app [data-cf-telegram]'):null;
+    if(social){
+      e.preventDefault();e.stopPropagation();
+      const url=social.getAttribute('href');
+      try{if(telegram?.openTelegramLink)telegram.openTelegramLink(url);else window.open(url,'_blank','noopener,noreferrer')}catch{window.location.href=url}
+      return;
+    }
     const target=e.target instanceof Element?e.target:null;
     if(!target)return;
     const go=target.closest('#cf-app [data-go]');
@@ -544,7 +568,7 @@
     hit.dispatchEvent(click);
   },{capture:true,passive:false});
   let minerRound=null,jetRound=null,jetTimer=null;
-  function syncBalance(n){const b=app.querySelector('#cf-balance');if(b)b.textContent=formatBalance(n);const p=app.querySelector('#cf-profile-balance');if(p)p.textContent=formatBalance(n)}
+  function syncBalance(n){const b=app.querySelector('#cf-balance');if(b)b.textContent=formatBalance(n);const h=app.querySelector('#cf-home-balance');if(h)h.textContent=formatBalance(n);const p=app.querySelector('#cf-profile-balance');if(p)p.textContent=formatBalance(n)}
   async function minerStart(){const startButton=app.querySelector('[data-action="miner-start"]');if(startButton?.disabled)return;const bet=Number(app.querySelector('#cf-bet')?.value),size=Number(app.querySelector('#cf-miner-size')?.value),mines=Number(app.querySelector('#cf-miner-mines')?.value);if(!Number.isSafeInteger(bet)||bet<1||bet>100000)return say('Ставка должна быть от 1 до 100 000.');if(startButton){startButton.disabled=true;startButton.textContent='Запускаем…'}try{const d=await api('/api/miner/start',{method:'POST',body:JSON.stringify({bet,size,mines})});minerRound=d.round;const grid=app.querySelector('#cf-miner-grid');grid.style.gridTemplateColumns='repeat('+size+',minmax(0,1fr))';grid.innerHTML=Array.from({length:size*size},(_,i)=>'<button data-miner-tile="'+i+'" style="aspect-ratio:1;border:1px solid #7044a8;border-radius:10px;background:#180b30;color:#d9aaff;font-size:24px">✦</button>').join('');app.querySelector('[data-action="miner-start"]').style.display='none';app.querySelector('[data-action="miner-cashout"]').style.display='block';app.querySelector('#cf-miner-status').textContent='Раунд начат — открывай клетки';syncBalance(d.balance)}catch(e){say(e.message)}finally{if(startButton){startButton.disabled=false;startButton.textContent='Начать игру'}}}
   async function minerPick(i){if(!minerRound)return;try{const d=await api('/api/miner/pick',{method:'POST',body:JSON.stringify({roundId:minerRound.id,index:i})});minerRound=d.round;const tile=app.querySelector('[data-miner-tile="'+i+'"]');if(tile){tile.textContent=d.hit?'💣':'💎';tile.disabled=true}app.querySelector('#cf-miner-multiplier').textContent=Number(d.round.multiplier).toFixed(2)+'×';app.querySelector('#cf-miner-status').textContent=d.hit?'Мина! Раунд завершён':'Кристалл найден — забирай выигрыш или продолжай';if(d.finished){minerRound=null;app.querySelector('[data-action="miner-start"]').style.display='block';app.querySelector('[data-action="miner-cashout"]').style.display='none';syncBalance(d.balance)}}catch(e){say(e.message)}}
   async function minerCashout(){if(!minerRound)return;try{const d=await api('/api/miner/cashout',{method:'POST',body:JSON.stringify({roundId:minerRound.id})});minerRound=null;syncBalance(d.balance);app.querySelector('[data-action="miner-start"]').style.display='block';app.querySelector('[data-action="miner-cashout"]').style.display='none';app.querySelector('#cf-miner-status').textContent='Выплата: '+formatBalance(d.payout)+' ✦'}catch(e){say(e.message)}}
