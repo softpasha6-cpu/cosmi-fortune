@@ -446,7 +446,7 @@
     <section class="cf-home-page" aria-label="Главная Cosmic Fortune">
       <button type="button" class="cf-home-balance" data-go="profile" aria-label="Открыть профиль и баланс"><span class="cf-home-balance-icon">✦</span><span class="cf-home-balance-copy"><small>ТВОЙ БАЛАНС</small><strong><span id="cf-home-balance">—</span> ₽</strong></span><span class="cf-home-balance-plus">＋</span></button>
       <div class="cf-home-poster-wrap">
-        <img class="cf-home-uploaded-image" src="./2BC08113-29F3-41F0-BB11-9BC5074A9A7B.png" alt="Cosmic Fortune — выбери игру" loading="eager" fetchpriority="high">
+        <img class="cf-home-uploaded-image" src="./cosmic-fortune-home-4k.webp" alt="Cosmic Fortune — выбери игру" loading="eager" fetchpriority="high">
         <button class="cf-poster-hotspot cf-hotspot-slots" data-go="slots" aria-label="Открыть слоты"></button>
         <button class="cf-poster-hotspot cf-hotspot-roulette" data-go="roulette" aria-label="Открыть рулетку"></button>
         <button class="cf-poster-hotspot cf-hotspot-jet" data-go="luckyjet" aria-label="Открыть Lucky Jet"></button>
