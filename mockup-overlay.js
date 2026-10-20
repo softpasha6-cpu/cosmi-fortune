@@ -324,6 +324,7 @@
     #cf-app .cf-poster-live-balance{position:absolute;z-index:4;left:20.8%;top:5.15%;width:32.4%;height:3.05%;display:flex;align-items:center;justify-content:flex-end;overflow:hidden;white-space:nowrap;color:#fff;font-size:clamp(15px,4.2vw,30px);font-weight:900;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.035em;text-shadow:0 1px 4px #000;pointer-events:none}
     #cf-app .cf-poster-hotspot{position:absolute;z-index:3;display:block;padding:0;border:0;border-radius:12px;background:transparent;cursor:pointer;touch-action:manipulation}
     #cf-app .cf-poster-hotspot:focus-visible{outline:2px solid #ffe38b;background:#ffffff12}
+    #cf-app .cf-hotspot-topup{left:61%;top:5.1%;width:11%;height:6.5%}
     #cf-app .cf-hotspot-slots{left:7%;top:37%;width:27%;height:12%}
     #cf-app .cf-hotspot-roulette{left:36%;top:37%;width:28%;height:12%}
     #cf-app .cf-hotspot-jet{right:7%;top:37%;width:27%;height:12%}
@@ -423,6 +424,7 @@
       <div class="cf-home-poster-wrap">
         <img class="cf-home-uploaded-image" src="./a_vertical_high_gloss_neon_casino_game_ui_poster.png" alt="Cosmic Fortune — главная страница" loading="eager" fetchpriority="high">
         <span id="cf-home-balance" class="cf-poster-live-balance" aria-label="Текущий баланс">—</span>
+        <button class="cf-poster-hotspot cf-hotspot-topup" data-go="profile" aria-label="Открыть меню пополнения баланса"></button>
         <button class="cf-poster-hotspot cf-hotspot-slots" data-go="slots" aria-label="Открыть слоты"></button>
         <button class="cf-poster-hotspot cf-hotspot-roulette" data-go="roulette" aria-label="Открыть рулетку"></button>
         <button class="cf-poster-hotspot cf-hotspot-jet" data-go="luckyjet" aria-label="Открыть Lucky Jet"></button>
@@ -430,7 +432,7 @@
         <button class="cf-poster-hotspot cf-hotspot-blackjack" data-go="blackjack" aria-label="Открыть Blackjack"></button>
         <button class="cf-poster-hotspot cf-hotspot-miner" data-go="mines" aria-label="Открыть Miner"></button>
         <button class="cf-poster-hotspot cf-hotspot-play" data-go="games" aria-label="Играть"></button>
-        <button class="cf-poster-hotspot cf-hotspot-daily" data-go="bonuses" aria-label="Ежедневные призы"></button>
+        <button class="cf-poster-hotspot cf-hotspot-daily" data-action="open-daily-reward" aria-label="Открыть ежедневные награды"></button>
         <button class="cf-poster-hotspot cf-hotspot-wheel" data-action="open-bonus-wheel" aria-label="Колесо удачи"></button>
         <button class="cf-poster-hotspot cf-hotspot-profile" data-go="profile" aria-label="Профиль"></button>
         <button class="cf-poster-hotspot cf-hotspot-channel" data-cf-telegram="channel" href="https://t.me/Cosmic_Fortune" aria-label="Подписаться на канал"></button>
@@ -581,6 +583,8 @@ function gameList(){return '<div class="section-title">ИГРЫ</div><div style=
       if(renderers[destination]) render(destination);
       return;
     }
+    const openDaily=target.closest('#cf-app [data-action="open-daily-reward"]');
+    if(openDaily){e.preventDefault();e.stopPropagation();openDailyReward();return;}
     const openWheel=target.closest('#cf-app [data-action="open-bonus-wheel"]');
     if(openWheel){e.preventDefault();e.stopPropagation();openBonusWheel();}
   }, true);
