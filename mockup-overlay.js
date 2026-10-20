@@ -348,6 +348,8 @@
     #cf-app .cf-home-feature>b{font-size:25px;color:#cfa3ff}
     #cf-app .cf-home-community{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     #cf-app .cf-home-community a{display:flex;align-items:center;justify-content:center;min-height:42px;padding:8px;border:1px solid #59357e;border-radius:12px;background:#120b20;color:#e5d1ff;text-decoration:none;font-size:10px;font-weight:800;text-align:center}
+    #cf-app .cf-home-image-button{display:block;width:100%;padding:0;overflow:hidden;border:1px solid #a65ce4;border-radius:22px;background:#10081d;box-shadow:0 8px 24px #0007;cursor:pointer;touch-action:manipulation}
+    #cf-app .cf-home-uploaded-image{display:block;width:100%;height:auto;max-height:340px;object-fit:cover;object-position:center;border-radius:21px}
     #cf-app .cf-home-balance{display:flex;align-items:center;gap:12px;width:100%;min-height:72px;padding:12px 15px;border:1px solid #d9ad54;border-radius:18px;background:linear-gradient(110deg,#28143e,#120b20 72%);color:#fff;text-align:left;cursor:pointer;box-sizing:border-box;touch-action:manipulation}
     #cf-app .cf-home-balance-icon{width:43px;height:43px;flex:none;display:grid;place-items:center;border-radius:13px;background:linear-gradient(145deg,#ffe39a,#b87820);color:#341746;font-size:25px}
     #cf-app .cf-home-balance-copy{display:grid;gap:4px;min-width:0;flex:1}
@@ -433,6 +435,7 @@
   function home(){return `
     <section class="cf-home-page" aria-label="Главная Cosmic Fortune">
       <button type="button" class="cf-home-balance" data-go="profile" aria-label="Открыть профиль и баланс"><span class="cf-home-balance-icon">✦</span><span class="cf-home-balance-copy"><small>ТВОЙ БАЛАНС</small><strong><span id="cf-home-balance">—</span> ₽</strong></span><span class="cf-home-balance-plus">＋</span></button>
+      <button type="button" class="cf-home-image-button" data-go="games" aria-label="Открыть игры Cosmic Fortune"><img class="cf-home-uploaded-image" src="./2BC08113-29F3-41F0-BB11-9BC5074A9A7B.png" alt="Cosmic Fortune — игровые автоматы и космическая удача" loading="eager" fetchpriority="high"></button>
       <div class="cf-home-hero-card">
         <div class="cf-home-kicker">✦ ТВОЯ ВСЕЛЕННАЯ · ТВОЯ УДАЧА</div>
         <div class="cf-home-mascot" aria-hidden="true">👑</div>
