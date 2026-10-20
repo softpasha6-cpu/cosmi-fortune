@@ -317,49 +317,24 @@
     #cf-app .cf-home-wheel-art span{display:grid;place-items:center;width:55px;height:55px;border-radius:50%;border:3px solid #ffe58b;background:conic-gradient(#8b22d8,#1f60c8,#df9c1c,#b32c5b,#8b22d8);font-size:16px;color:#fff}
     @media(min-width:520px){#cf-app .cf-home-bonuses{grid-template-columns:1.2fr .8fr}#cf-app .cf-home-hero{padding-top:28px;padding-bottom:24px}}
     @media(max-width:360px){#cf-app .cf-home-membership{gap:6px}#cf-app .cf-home-subscription{padding:9px 6px;gap:6px}#cf-app .cf-home-subscription strong{font-size:10px}#cf-app .cf-home-game{min-height:100px}#cf-app .cf-home-game-art{height:56px;font-size:32px}}
-    #cf-app .cf-home-page{display:grid;gap:17px;padding:0 0 14px}
-    #cf-app .cf-home-hero-card{position:relative;overflow:hidden;text-align:center;padding:22px 17px 20px;border:1px solid #a95cff;border-radius:24px;background:radial-gradient(ellipse at 50% 0%,#6326a7 0%,#241044 44%,#0c0719 100%);box-shadow:inset 0 0 34px #a83dff20,0 8px 26px #0006}
-    #cf-app .cf-home-hero-card:before{content:"";position:absolute;width:210px;height:210px;left:50%;top:-105px;transform:translateX(-50%);border-radius:50%;background:#a45cff30;filter:blur(16px)}
-    #cf-app .cf-home-kicker{position:relative;color:#f9d985;font-size:10px;font-weight:900;letter-spacing:.14em}
-    #cf-app .cf-home-mascot{position:relative;margin:8px auto 2px;width:70px;height:70px;display:grid;place-items:center;border-radius:22px;border:1px solid #f6ce72;background:linear-gradient(145deg,#4a1c75,#12091f);font-size:42px;box-shadow:0 0 25px #a044ff55}
-    #cf-app .cf-home-hero-card h1{position:relative;margin:7px 0 5px;font-size:clamp(27px,8vw,39px);font-weight:1000;letter-spacing:-1px;line-height:1.08;color:#ffe18a;text-shadow:0 2px 0 #8b3d05,0 0 18px #ffbd3755}
-    #cf-app .cf-home-hero-card h1 span{color:#df9cff}
-    #cf-app .cf-home-hero-card p{position:relative;margin:0 auto 15px;max-width:300px;color:#d8c9ec;font-size:12px;line-height:1.45}
-    #cf-app .cf-home-main-cta{position:relative;width:min(100%,310px);min-height:52px;border:1px solid #fff0a3;border-radius:16px;background:linear-gradient(180deg,#ffe98d,#ffbf2b 60%,#e88a09);color:#311600;font-size:17px;font-weight:1000;box-shadow:0 5px 0 #8b4a05,0 0 20px #ffb72f35}
-    #cf-app .cf-home-section-head{display:flex;align-items:end;justify-content:space-between;gap:10px;padding:0 2px}
-    #cf-app .cf-home-section-head small{font-size:9px;font-weight:900;letter-spacing:.15em;color:#b68bff}
-    #cf-app .cf-home-section-head h2{margin:3px 0 0;font-size:19px;color:#fff1ce}
-    #cf-app .cf-home-section-head button{border:0;background:transparent;color:#e1b7ff;font-size:12px;font-weight:800;padding:8px 0}
-    #cf-app .cf-home-games-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    #cf-app .cf-home-game{min-width:0;min-height:122px;padding:12px 10px;border:1px solid #7544ad;border-radius:17px;background:linear-gradient(145deg,#24123f,#0c0919 78%);color:#fff;text-align:left;display:grid;grid-template-columns:54px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;column-gap:10px;box-shadow:inset 0 0 18px #963fff0c;cursor:pointer}
-    #cf-app .cf-home-game-art{grid-row:1/3;width:54px;height:58px;display:grid;place-items:center;border-radius:14px;border:1px solid #8b55c7;background:radial-gradient(circle at 35% 25%,#4e237a,#10091f 72%);font-size:31px}
-    #cf-app .cf-home-game strong{align-self:end;font-size:14px;color:#ffe7a3}
-    #cf-app .cf-home-game small{align-self:start;margin-top:3px;font-size:10px;color:#bfb0d6;line-height:1.3}
-    #cf-app .cf-home-slot .cf-home-game-art{border-color:#f4b54b}
-    #cf-app .cf-home-roulette .cf-home-game-art{border-color:#d68aff}
-    #cf-app .cf-home-dice .cf-home-game-art{border-color:#7d8bff}
-    #cf-app .cf-home-jet .cf-home-game-art{border-color:#4bd5ff}
-    #cf-app .cf-home-feature-row{display:grid;gap:9px}
-    #cf-app .cf-home-feature{display:flex;align-items:center;gap:12px;width:100%;min-height:68px;padding:11px 13px;border:1px solid #68409a;border-radius:16px;background:linear-gradient(110deg,#201034,#0d0918);color:#fff;text-align:left}
-    #cf-app .cf-home-feature-icon{width:42px;height:42px;flex:none;display:grid;place-items:center;border-radius:12px;background:#35185a;font-size:23px}
-    #cf-app .cf-home-feature>span:nth-child(2){display:grid;gap:4px;min-width:0;flex:1}
-    #cf-app .cf-home-feature strong{font-size:13px;color:#ffe8aa}
-    #cf-app .cf-home-feature small{font-size:10px;color:#b9a8d3}
-    #cf-app .cf-home-feature>b{font-size:25px;color:#cfa3ff}
-    #cf-app .cf-home-community{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    #cf-app .cf-home-community a{display:flex;align-items:center;justify-content:center;min-height:42px;padding:8px;border:1px solid #59357e;border-radius:12px;background:#120b20;color:#e5d1ff;text-decoration:none;font-size:10px;font-weight:800;text-align:center}
-    #cf-app .cf-home-page{display:grid;gap:14px;padding:0 0 12px}
-    #cf-app .cf-home-poster-wrap{position:relative;width:100%;overflow:hidden;border:1px solid #9d54e8;border-radius:22px;background:#090512;box-shadow:0 8px 24px #0007;line-height:0}
-    #cf-app .cf-home-uploaded-image{display:block;width:100%;height:auto;max-height:none;object-fit:contain;object-position:center}
-    #cf-app .cf-poster-hotspot{position:absolute;z-index:2;display:block;padding:0;border:0;border-radius:12px;background:transparent;cursor:pointer;touch-action:manipulation}
+    #cf-app .cf-home-page{padding:0;margin:0;width:100%;height:100%;min-height:0}
+    #cf-app .cf-home-static{overflow:hidden}
+    #cf-app .cf-home-poster-wrap{position:absolute;inset:0;overflow:hidden;background:#080411;line-height:0;border:0;border-radius:0;box-shadow:none}
+    #cf-app .cf-home-uploaded-image{display:block;width:100%;height:100%;object-fit:fill;object-position:center}
+    #cf-app .cf-poster-hotspot{position:absolute;z-index:3;display:block;padding:0;border:0;border-radius:12px;background:transparent;cursor:pointer;touch-action:manipulation}
     #cf-app .cf-poster-hotspot:focus-visible{outline:2px solid #ffe38b;background:#ffffff12}
-    #cf-app .cf-hotspot-slots{left:7%;top:29%;width:27%;height:16%}
-    #cf-app .cf-hotspot-roulette{left:36.5%;top:29%;width:27%;height:16%}
-    #cf-app .cf-hotspot-jet{right:7%;top:29%;width:27%;height:16%}
-    #cf-app .cf-hotspot-dice{left:7%;top:46%;width:27%;height:16%}
-    #cf-app .cf-hotspot-blackjack{left:36.5%;top:46%;width:27%;height:16%}
-    #cf-app .cf-hotspot-miner{right:7%;top:46%;width:27%;height:16%}
-    #cf-app .cf-hotspot-play{left:16%;top:67%;width:68%;height:12%}
+    #cf-app .cf-hotspot-slots{left:7%;top:37%;width:27%;height:12%}
+    #cf-app .cf-hotspot-roulette{left:36%;top:37%;width:28%;height:12%}
+    #cf-app .cf-hotspot-jet{right:7%;top:37%;width:27%;height:12%}
+    #cf-app .cf-hotspot-dice{left:7%;top:50%;width:27%;height:12%}
+    #cf-app .cf-hotspot-blackjack{left:36%;top:50%;width:28%;height:12%}
+    #cf-app .cf-hotspot-miner{right:7%;top:50%;width:27%;height:12%}
+    #cf-app .cf-hotspot-play{left:17%;top:65%;width:66%;height:9%}
+    #cf-app .cf-hotspot-daily{left:4%;top:74%;width:52%;height:16%}
+    #cf-app .cf-hotspot-wheel{right:3%;top:74%;width:43%;height:16%}
+    #cf-app .cf-hotspot-profile{right:3%;bottom:1%;width:22%;height:7%}
+    #cf-app .cf-hotspot-channel{left:4%;top:21%;width:22%;height:13%}
+    #cf-app .cf-hotspot-chat{right:4%;top:21%;width:22%;height:13%}
     #cf-app .cf-home-balance{display:flex;align-items:center;gap:12px;width:100%;min-height:72px;padding:12px 15px;border:1px solid #d9ad54;border-radius:18px;background:linear-gradient(110deg,#28143e,#120b20 72%);color:#fff;text-align:left;cursor:pointer;box-sizing:border-box;touch-action:manipulation}
     #cf-app .cf-home-balance-icon{width:43px;height:43px;flex:none;display:grid;place-items:center;border-radius:13px;background:linear-gradient(145deg,#ffe39a,#b87820);color:#341746;font-size:25px}
     #cf-app .cf-home-balance-copy{display:grid;gap:4px;min-width:0;flex:1}
@@ -443,21 +418,21 @@
   }
   const primary=(text,act)=>'<button class="primary" data-action="'+act+'">'+text+'</button>';
   function home(){return `
-    <section class="cf-home-page" aria-label="Главная Cosmic Fortune">
-      <button type="button" class="cf-home-balance" data-go="profile" aria-label="Открыть профиль и баланс"><span class="cf-home-balance-icon">✦</span><span class="cf-home-balance-copy"><small>ТВОЙ БАЛАНС</small><strong><span id="cf-home-balance">—</span> ₽</strong></span><span class="cf-home-balance-plus">＋</span></button>
+    <section class="cf-home-page cf-home-static" aria-label="Главная Cosmic Fortune">
       <div class="cf-home-poster-wrap">
-        <img class="cf-home-uploaded-image" src="./cosmic-fortune-home-4k.webp" alt="Cosmic Fortune — выбери игру" loading="eager" fetchpriority="high">
+        <img class="cf-home-uploaded-image" src="./a_vertical_high_gloss_neon_casino_game_ui_poster.png" alt="Cosmic Fortune — главная страница" loading="eager" fetchpriority="high">
         <button class="cf-poster-hotspot cf-hotspot-slots" data-go="slots" aria-label="Открыть слоты"></button>
         <button class="cf-poster-hotspot cf-hotspot-roulette" data-go="roulette" aria-label="Открыть рулетку"></button>
         <button class="cf-poster-hotspot cf-hotspot-jet" data-go="luckyjet" aria-label="Открыть Lucky Jet"></button>
         <button class="cf-poster-hotspot cf-hotspot-dice" data-go="dice" aria-label="Открыть Dice"></button>
         <button class="cf-poster-hotspot cf-hotspot-blackjack" data-go="blackjack" aria-label="Открыть Blackjack"></button>
         <button class="cf-poster-hotspot cf-hotspot-miner" data-go="mines" aria-label="Открыть Miner"></button>
-        <button class="cf-poster-hotspot cf-hotspot-play" data-go="games" aria-label="Открыть все игры"></button>
-      </div>
-      <div class="cf-home-feature-row">
-        <button class="cf-home-feature cf-home-daily" data-go="bonuses"><span class="cf-home-feature-icon">🎁</span><span><strong>Ежедневные награды</strong><small>8 дней бонусов · раз в 24 часа</small></span><b>›</b></button>
-        <button class="cf-home-feature cf-home-wheel" data-action="open-bonus-wheel"><span class="cf-home-feature-icon">✨</span><span><strong>Колесо удачи</strong><small>Бесплатное вращение по таймеру</small></span><b>›</b></button>
+        <button class="cf-poster-hotspot cf-hotspot-play" data-go="games" aria-label="Играть"></button>
+        <button class="cf-poster-hotspot cf-hotspot-daily" data-go="bonuses" aria-label="Ежедневные призы"></button>
+        <button class="cf-poster-hotspot cf-hotspot-wheel" data-action="open-bonus-wheel" aria-label="Колесо удачи"></button>
+        <button class="cf-poster-hotspot cf-hotspot-profile" data-go="profile" aria-label="Профиль"></button>
+        <button class="cf-poster-hotspot cf-hotspot-channel" data-cf-telegram="channel" href="https://t.me/Cosmic_Fortune" aria-label="Подписаться на канал"></button>
+        <button class="cf-poster-hotspot cf-hotspot-chat" data-cf-telegram="chat" href="https://t.me/CosmisFortunechat" aria-label="Открыть чат"></button>
       </div>
     </section>`}
  
@@ -583,7 +558,7 @@ function gameList(){return '<div class="section-title">ИГРЫ</div><div style=
   function luckyjet(){return panel('🚀 LUCKY JET','<style>@keyframes cfStars{to{background-position:80px 120px,40px 70px}}@keyframes cfBlast{0%{transform:scale(.1);opacity:0}30%{transform:scale(1.25);opacity:1}100%{transform:scale(1.8);opacity:0}}@keyframes cfGlow{50%{box-shadow:0 0 32px #b52cff}}.cf-flight{height:350px;position:relative;overflow:hidden;border:1px solid #7540ad;border-radius:20px;background:radial-gradient(ellipse at 70% 80%,#5b168b,#201039 45%,#070615);box-shadow:inset 0 0 36px #a02fff33}.cf-stars{position:absolute;inset:-120px;background-image:radial-gradient(#fff 1px,transparent 2px),radial-gradient(#db9cff 1px,transparent 2px);background-size:43px 51px,73px 81px;animation:cfStars 3s linear infinite;opacity:.65;will-change:background-position}.cf-flight.is-flying .cf-stars{animation:cfStars 1.05s linear infinite;opacity:.9}.cf-flight.is-flying .cf-trail-glow{opacity:1}.cf-trail-glow{position:absolute;left:calc(18% - 165px);bottom:calc(20% + 42px);width:230px;height:18px;border-radius:100%;transform:rotate(-35deg);transform-origin:right center;background:linear-gradient(90deg,transparent,#8b31ff55,#ffb9ff);filter:blur(7px);opacity:.8;transition:opacity .2s;z-index:1}.cf-rocket{position:absolute;left:18%;bottom:20%;font-size:128px;line-height:1;filter:drop-shadow(0 0 24px #c64dff);transform:rotate(0deg);transform-origin:50% 50%;transition:transform .18s linear;will-change:transform;z-index:3}.cf-trail{position:absolute;left:calc(18% - 165px);bottom:calc(20% + 45px);width:230px;height:8px;transform:rotate(-35deg);transform-origin:right center;transition:transform .18s linear;background:linear-gradient(90deg,transparent 0%,#a53cff 38%,#ffb4ff 78%,#fff 100%);border-radius:99px;box-shadow:0 0 10px #c64dff,0 0 22px #a020f088;will-change:transform;z-index:2}.cf-button{width:100%;min-height:58px;border:1px solid #f1b0ff;border-radius:15px;background:linear-gradient(105deg,#e32aff,#8b16ff 58%,#5d32ff);color:#fff;font-size:17px;font-weight:900;box-shadow:0 5px 0 #481276,0 0 20px #b52cff66}.cf-button:active{transform:translateY(3px);filter:brightness(1.2)}.cf-bet-input{box-sizing:border-box;width:100%;height:54px;margin-top:8px;padding:0 14px;border:1px solid #7540ad;border-radius:12px;background:#090714;color:white;font-size:20px}</style><div class="cf-flight" id="cf-jet-scene"><div class="cf-stars"></div><div class="cf-trail-glow"></div><div class="cf-trail" id="cf-jet-trail"></div><div id="cf-jet-rocket-wrap" class="cf-rocket">🚀</div><div id="cf-jet-explosion" style="display:none;position:absolute;left:42%;top:28%;font-size:90px;z-index:5">💥</div><div style="position:absolute;top:16px;left:16px;font-size:11px;letter-spacing:.15em;color:#e0b8ff;font-weight:900">COSMIC FLIGHT</div><div style="position:absolute;left:0;right:0;bottom:18px;text-align:center"><div id="cf-jet-multiplier" style="font-size:58px;font-weight:1000;color:#d56aff;text-shadow:0 0 22px #b52cff">1.00×</div><div id="cf-jet-status" style="margin-top:8px;color:#f0e1ff">Ракета готова к запуску</div></div></div><div style="padding:14px;margin-top:14px;border:1px solid #553080;border-radius:16px;background:linear-gradient(135deg,#1b1030,#0b0816)"><label for="cf-bet" style="display:block;color:#d3b2fa;font-size:12px;font-weight:900;letter-spacing:.12em">РАЗМЕР СТАВКИ · ✦</label><input class="cf-bet-input" id="cf-bet" type="number" min="1" max="100000" step="1" value="100"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0;color:#e9d9ff"><label><input id="cf-jet-auto" type="checkbox" style="accent-color:#bd37ff"> Авто-вывод</label><input class="cf-bet-input" id="cf-jet-auto-value" type="number" min="1.1" max="100" step="0.1" value="2.0" style="width:105px;margin:0"></div><div id="cf-jet-result" style="color:#ffe08a;font-weight:800;margin:8px 0"></div><button class="cf-button" data-action="jet-start">🚀 ЗАПУСТИТЬ РАКЕТУ</button><button class="cf-button" data-action="jet-cashout" style="display:none;margin-top:8px;background:linear-gradient(105deg,#12dba0,#07835e);border-color:#a0ffe2;box-shadow:0 5px 0 #075a46">✦ ЗАБРАТЬ ВЫИГРЫШ</button></div>');}
   const renderers={home,games:gameList,slots,dice,roulette,blackjack,miner,luckyjet,bonuses,profile,tournaments};
   let current='home',selected='Больше 7',opened=0;
-  function render(name){current=renderers[name]?name:'home';content.innerHTML=renderers[current]();const topBar=app.querySelector('.top');if(topBar)topBar.style.display=current==='home'?'none':'';if(current==='bonuses')refreshDailyRewardStatus();if(current==='profile'){renderTelegramProfileImmediately();refreshAccount();}app.querySelectorAll('.bottom button').forEach(b=>b.classList.toggle('active',b.dataset.go===current || (current==='mines'||current==='dice'||current==='wheel'||current==='crash')&&b.dataset.go==='games'));app.scrollTo({top:0,behavior:'instant'});}
+  function render(name){current=renderers[name]?name:'home';content.innerHTML=renderers[current]();const topBar=app.querySelector('.top');if(topBar)topBar.style.display=current==='home'?'none':'';const bottomNav=app.querySelector('.bottom');if(bottomNav)bottomNav.style.display=current==='home'?'none':'';if(current==='bonuses')refreshDailyRewardStatus();if(current==='profile'){renderTelegramProfileImmediately();refreshAccount();}app.querySelectorAll('.bottom button').forEach(b=>b.classList.toggle('active',b.dataset.go===current || (current==='mines'||current==='dice'||current==='wheel'||current==='crash')&&b.dataset.go==='games'));app.scrollTo({top:0,behavior:'instant'});}
   window.cfNavigate=function(name){try{render(name)}catch(error){console.error('Navigation failed',error);say('Не удалось открыть раздел. Перезапусти приложение.')}};
   // Capture taps before Telegram WebView or underlying page handlers can swallow them.
   document.addEventListener('click', function cosmicNavigationCapture(e){
