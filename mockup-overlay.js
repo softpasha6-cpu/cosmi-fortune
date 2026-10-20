@@ -338,8 +338,9 @@
     #cf-app .cf-game-tile-info strong{font-size:clamp(12px,3.5vw,15px);font-weight:900;color:#ffe28c;text-transform:uppercase;overflow-wrap:anywhere}
     #cf-app .cf-game-tile-info small{font-size:10px;line-height:1.25;color:#cbb7ef}
     #cf-app .cf-game-tile-arrow{position:absolute;right:8px;top:8px;width:25px;height:25px;display:grid;place-items:center;border-radius:50%;border:1px solid #df8aff;color:#fff;font-size:20px;background:#160625a8}
-    #cf-app .cf-image-nav{position:absolute;z-index:5;left:2%;right:2%;bottom:1.6%;height:8.2%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));pointer-events:none}
-    #cf-app .cf-image-nav button{pointer-events:auto;min-width:0;border:0;background:transparent;border-radius:12px;cursor:pointer;touch-action:manipulation}
+    #cf-app .cf-image-nav{position:absolute;z-index:20;left:3%;right:3%;bottom:1.2%;height:9.4%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));pointer-events:auto}
+    #cf-app .cf-image-nav button{pointer-events:auto;min-width:0;border:0;background:transparent;border-radius:12px;cursor:pointer;touch-action:manipulation;position:relative;z-index:21;-webkit-tap-highlight-color:#ffffff22}
+    #cf-app .cf-image-nav button:active{background:#ffffff22;outline:1px solid #d8a4ff}
     #cf-app .cf-image-nav button:active{background:#ffffff18}
     #cf-app .cf-games-topup{position:absolute;z-index:5;top:2%;right:5%;width:13%;height:5.5%;border:0;background:transparent;cursor:pointer;touch-action:manipulation}
     @media(max-width:360px){#cf-app .cf-game-tile{min-height:155px}#cf-app .cf-game-tile-art{height:100px;font-size:64px}#cf-app .cf-games-scroll{top:30%;}}
@@ -348,7 +349,7 @@
     #cf-app .cf-home-poster-wrap{position:absolute;inset:0;overflow:hidden;background:#080411;line-height:0;border:0;border-radius:0;box-shadow:none}
     #cf-app .cf-home-uploaded-image{display:block;width:100%;height:100%;object-fit:fill;object-position:center}
     #cf-app .cf-poster-live-balance{position:absolute;z-index:4;left:20.8%;top:5.15%;width:32.4%;height:3.05%;display:flex;align-items:center;justify-content:flex-end;overflow:hidden;white-space:nowrap;color:#fff;font-size:clamp(15px,4.2vw,30px);font-weight:900;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.035em;text-shadow:0 1px 4px #000;pointer-events:none}
-    #cf-app .cf-poster-hotspot{position:absolute;z-index:3;display:block;padding:0;border:0;border-radius:12px;background:transparent;cursor:pointer;touch-action:manipulation}
+    #cf-app .cf-poster-hotspot{position:absolute;z-index:10;display:block;padding:0;border:0;border-radius:12px;background:transparent;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:#ffffff22;pointer-events:auto}
     #cf-app .cf-poster-hotspot:focus-visible{outline:2px solid #ffe38b;background:#ffffff12}
     #cf-app .cf-hotspot-topup{left:61%;top:5.1%;width:11%;height:6.5%}
     #cf-app .cf-hotspot-slots{left:7%;top:37%;width:27%;height:12%}
