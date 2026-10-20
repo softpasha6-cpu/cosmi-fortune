@@ -325,7 +325,7 @@
     #cf-app.cf-games-active .shell{height:100%;width:100%;max-width:620px;margin:0 auto;padding:0!important;overflow:hidden}
     #cf-app.cf-games-active #cf-content{height:100%;min-height:0;overflow:hidden}
     #cf-app.cf-games-active .top{display:none!important}
-    #cf-app.cf-games-active .bottom{display:none!important}
+    #cf-app.cf-games-active .bottom{display:grid!important;position:absolute;z-index:1000;left:0;right:0;bottom:0;height:78px;padding-bottom:calc(8px + env(safe-area-inset-bottom));background:linear-gradient(180deg,#10091df2,#080512fa);border-top:1px solid #5b2c83;box-sizing:border-box}
     #cf-app .cf-games-page{position:relative;width:100%;height:100%;min-height:0;box-sizing:border-box;overflow:hidden;isolation:isolate;background:#080414}
     #cf-app .cf-games-wallpaper{position:absolute;z-index:0;inset:0 0 0 0;overflow:hidden;background:#080414;pointer-events:none}
     #cf-app .cf-games-wallpaper img{width:100%;height:100%;object-fit:fill;object-position:center top;display:block}\n    #cf-app .cf-games-wallpaper:after{content:"";position:absolute;left:0;right:0;top:35%;bottom:0;background:linear-gradient(180deg,#09041400 0%,#090414 7%,#090414 100%);pointer-events:none}
@@ -342,7 +342,7 @@
     #cf-app .cf-game-tile-info strong{font-size:clamp(12px,3.5vw,15px);font-weight:900;color:#ffe28c;text-transform:uppercase;overflow-wrap:anywhere}
     #cf-app .cf-game-tile-info small{font-size:10px;line-height:1.25;color:#cbb7ef}
     #cf-app .cf-game-tile-arrow{position:absolute;right:8px;top:8px;width:25px;height:25px;display:grid;place-items:center;border-radius:50%;border:1px solid #df8aff;color:#fff;font-size:20px;background:#160625a8}
-    #cf-app .cf-image-nav{position:absolute;z-index:20;left:3%;right:3%;bottom:1.2%;height:9.4%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));pointer-events:auto}
+    #cf-app .cf-image-nav{display:none!important}
     #cf-app .cf-image-nav button{pointer-events:auto;min-width:0;border:0;background:transparent;border-radius:12px;cursor:pointer;touch-action:manipulation;position:relative;z-index:21;-webkit-tap-highlight-color:#ffffff22}
     #cf-app .cf-image-nav button:active{background:#ffffff22;outline:1px solid #d8a4ff}
     #cf-app .cf-image-nav button:active{background:#ffffff18}
