@@ -435,7 +435,7 @@
   function home(){return `
     <section class="cf-home-page" aria-label="Главная Cosmic Fortune">
       <button type="button" class="cf-home-balance" data-go="profile" aria-label="Открыть профиль и баланс"><span class="cf-home-balance-icon">✦</span><span class="cf-home-balance-copy"><small>ТВОЙ БАЛАНС</small><strong><span id="cf-home-balance">—</span> ₽</strong></span><span class="cf-home-balance-plus">＋</span></button>
-      <button type="button" class="cf-home-image-button" data-go="games" aria-label="Открыть игры Cosmic Fortune"><img class="cf-home-uploaded-image" src="./2BC08113-29F3-41F0-BB11-9BC5074A9A7B.png" alt="Cosmic Fortune — игровые автоматы и космическая удача" loading="eager" fetchpriority="high"></button>
+      <button type="button" class="cf-home-image-button" data-go="games" aria-label="Открыть игры Cosmic Fortune"><img class="cf-home-uploaded-image" src="./a_vertical_high_gloss_neon_casino_game_ui_poster.png" alt="Cosmic Fortune — игровые автоматы и космическая удача" loading="eager" fetchpriority="high"></button>
       <div class="cf-home-hero-card">
         <div class="cf-home-kicker">✦ ТВОЯ ВСЕЛЕННАЯ · ТВОЯ УДАЧА</div>
         <div class="cf-home-mascot" aria-hidden="true">👑</div>
