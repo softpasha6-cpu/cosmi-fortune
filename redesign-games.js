@@ -34,7 +34,22 @@ const s=document.createElement('style');s.id='cf-redesign-style';s.textContent=`
 #cf-app .cf-game-tile-arrow{position:absolute!important;right:9px!important;bottom:10px!important;font-size:20px!important;color:#f4d47c!important}
 #cf-app .cf-game-tile:active{transform:scale(.985);filter:brightness(1.15)}
 @media(max-width:360px){#cf-app .cf-games-grid{gap:8px!important}#cf-app .cf-game-tile{min-height:170px!important}#cf-app .cf-game-tile-art{height:102px!important}#cf-app .cf-home-hero h1{font-size:28px}}
-`;document.head.appendChild(s);
+`
+/* Keep the bottom navigation visible and full-width on every screen. */
+#cf-app{padding-bottom:calc(92px + env(safe-area-inset-bottom))!important}
+#cf-app #cf-content{padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+#cf-app .bottom,#cf-app.cf-games-active .bottom{position:fixed!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;max-width:none!important;height:auto!important;min-height:68px!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:0!important;padding:8px 8px calc(8px + env(safe-area-inset-bottom))!important;margin:0!important;border-radius:16px 16px 0 0!important;border-left:0!important;border-right:0!important;box-sizing:border-box!important;background:linear-gradient(180deg,#160b28f7,#080512fd)!important}
+#cf-app .bottom button{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:4px!important;width:100%!important;min-width:0!important;min-height:50px!important;padding:4px 1px!important;margin:0!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#bca9d8!important;font-size:11px!important;line-height:1.15!important;white-space:nowrap!important;overflow:visible!important;box-sizing:border-box!important}
+#cf-app .bottom button.active{color:#ffe18a!important;background:#ffffff0d!important}
+#cf-app .bottom .navicon{display:block!important;font-size:21px!important;line-height:1!important}
+#cf-app .cf-home-page{height:auto!important;min-height:0!important;overflow:visible!important}
+#cf-app .cf-home-redesign{padding-bottom:16px!important}
+#cf-app.cf-games-active{overflow-y:auto!important;height:auto!important;min-height:100dvh!important;padding-bottom:calc(88px + env(safe-area-inset-bottom))!important}
+#cf-app.cf-games-active .shell{height:auto!important;min-height:100dvh!important;overflow:visible!important}
+#cf-app.cf-games-active #cf-content{height:auto!important;min-height:0!important;overflow:visible!important;padding:0 14px 90px!important}
+#cf-app .cf-games-page{padding-bottom:10px!important}
+@media(max-width:380px){#cf-app .bottom{padding-left:4px!important;padding-right:4px!important}#cf-app .bottom button{font-size:10px!important}}
+;document.head.appendChild(s);
 function paint(){const a=document.getElementById('cf-app');if(!a)return;const h=a.querySelector('.cf-home-page.cf-home-static');if(h&&!h.dataset.redesigned){h.dataset.redesigned='1';h.innerHTML='<div class="cf-home-redesign"><section class="cf-home-hero"><div class="cf-home-kicker">✦ COSMIC FORTUNE ✦</div><h1>Твоя удача<br>начинается здесь</h1><p>Выбирай игру, делай ставку и испытай удачу в космическом казино.</p><button class="primary" data-go="games">🎮 Все игры</button></section><div class="section-title">Быстрый доступ</div><div class="cf-home-shortcuts"><button class="cf-home-shortcut" data-action="open-daily-reward"><span class="shortcut-icon">🎁</span><span><strong>Ежедневный бонус</strong><small>Награда каждые 24 часа</small></span></button><button class="cf-home-shortcut" data-action="open-bonus-wheel"><span class="shortcut-icon">🎡</span><span><strong>Колесо удачи</strong><small>Бесплатный спин</small></span></button><button class="cf-home-shortcut" data-go="games"><span class="shortcut-icon">🎰</span><span><strong>Каталог игр</strong><small>Все игры в одном месте</small></span></button><button class="cf-home-shortcut" data-go="profile"><span class="shortcut-icon">👤</span><span><strong>Мой профиль</strong><small>Баланс и история</small></span></button></div></div>';}const g=a.querySelector('.cf-games-page');if(g){g.querySelector('.cf-games-wallpaper')?.remove();g.querySelector('.cf-games-live-balance')?.remove();g.querySelector('.cf-image-nav')?.remove();g.querySelector('.cf-games-topup')?.remove();}}
 new MutationObserver(paint).observe(document.documentElement,{childList:true,subtree:true});paint();
 })();
