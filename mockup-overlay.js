@@ -330,7 +330,8 @@
       slots:'<span class="game-tag">SLOTS</span><span class="game-emoji">🎰</span>',
       dice:'<span class="game-tag">DICE</span><span class="game-emoji">🎲</span>',
       roulette:'',
-      blackjack:'<span class="game-tag">BLACKJACK</span><div class="cards-art"><span>♥</span><span>♠</span></div>'
+      blackjack:'<span class="game-tag">BLACKJACK</span><div class="cards-art"><span>♥</span><span>♠</span></div>',
+      luckyjet:'<span class="game-tag">LUCKY JET</span><span class="game-emoji">🚀</span>'
     };
     return '<div class="game-avatar '+game+'">'+(views[game]||'<span class="game-emoji">🎮</span>')+'</div>';
   }
