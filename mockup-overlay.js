@@ -251,6 +251,54 @@
     #cf-app .cf-roulette-choices button.is-selected{border-color:#ffdb73;box-shadow:0 0 0 2px #ffdb7344,0 0 16px #ffca4d55}
     #cf-app .cf-roulette-number-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:2px;margin-top:4px;width:100%;box-sizing:border-box} #cf-app .cf-roulette-number-grid button{min-width:0;min-height:22px;height:22px;padding:0;border:1px solid #e4c57888;border-radius:4px;font-size:10px;line-height:1;font-weight:900} #cf-app .cf-roulette-number-grid button.is-selected{outline:2px solid #ffdf7c;box-shadow:0 0 12px #ffdf7c88;transform:scale(1.06)}
     #cf-app .cf-roulette-footnote{font-size:11px;color:#c8e6d4;margin-top:9px}
+
+    #cf-app .cf-home-art-banner{position:relative;overflow:hidden;width:100%;border:1px solid #a34dff;border-radius:18px;background:#0a0615;box-shadow:0 0 24px #8d32ff25;margin-bottom:12px;line-height:0}
+    #cf-app .cf-home-art-banner img{display:block;width:100%;height:auto;max-width:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
+    #cf-app .cf-home-hero{min-height:0;padding:22px 16px 18px;text-align:center;background:radial-gradient(ellipse at 50% 0%,#56219a 0%,#190b37 45%,#080611 82%);border-color:#a34dff;box-shadow:inset 0 0 45px #9a35ff20,0 0 24px #8d32ff25}
+    #cf-app .cf-home-hero:before{width:220px;height:220px;right:50%;transform:translateX(50%);top:24px;background:radial-gradient(circle at 40% 30%,#a9a0ff,#5521a7 40%,#160a39 72%,transparent 74%);opacity:.52}
+    #cf-app .cf-home-hero:after{letter-spacing:10px;opacity:.3}
+    #cf-app .cf-home-crown{position:relative;font-size:36px;line-height:1;color:#ffd56a;text-shadow:0 0 20px #ffb72e;margin:0 0 8px}
+    #cf-app .cf-home-hero h1{position:relative;margin:8px 0 10px;font-size:clamp(32px,9vw,48px);letter-spacing:-1.2px;text-shadow:0 0 18px #9c31ff66}
+    #cf-app .cf-home-hero h1 span{color:#dba0ff}
+    #cf-app .cf-home-hero p{position:relative;max-width:340px;margin:0 auto 14px}
+    #cf-app .cf-home-hero .primary{position:relative;min-width:190px;background:linear-gradient(180deg,#ffe68a,#ffb91e 54%,#e78605);border:1px solid #fff0a0;color:#2b1300;box-shadow:0 0 24px #ffb51c66,inset 0 1px #fff8}
+    #cf-app .cf-home-membership{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0 18px}
+    #cf-app .cf-home-subscription{display:flex;align-items:center;gap:8px;min-width:0;text-decoration:none;color:#fff;padding:11px 9px;border:1px solid #7144aa;border-radius:15px;background:linear-gradient(140deg,#211039,#0b0916);box-shadow:inset 0 1px #ffffff0a}
+    #cf-app .cf-home-subscription>span:nth-child(2){flex:1;min-width:0}
+    #cf-app .cf-home-subscription strong{display:block;font-size:11px;line-height:1.25}
+    #cf-app .cf-home-subscription small{display:block;color:#bba9d9;font-size:9px;margin-top:4px}
+    #cf-app .cf-home-subscription b{color:#ffd66c;font-size:15px}
+    #cf-app .cf-home-sub-icon{display:grid;place-items:center;width:31px;height:31px;flex:none;border-radius:10px;background:linear-gradient(145deg,#3e9fff,#1265cf);font-size:17px;font-weight:900}
+    #cf-app .cf-home-title{margin-top:18px}
+    #cf-app .cf-home-games{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+    #cf-app .cf-home-game{min-width:0;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:7px;padding:9px 5px 10px;border:1px solid #7b36c2;border-radius:15px;background:radial-gradient(ellipse at 50% 20%,#38205d,#100b1b 78%);box-shadow:inset 0 1px #ffffff12,0 0 12px #802aff12}
+    #cf-app .cf-home-game:active{transform:scale(.98)}
+    #cf-app .cf-home-game-art{display:grid;place-items:center;width:100%;height:64px;border-radius:10px;background:radial-gradient(circle at 50% 35%,#7630bd,#21103c 70%);font-size:38px;filter:drop-shadow(0 5px 8px #0007)}
+    #cf-app .cf-home-game strong{font-size:10px;letter-spacing:.2px;text-align:center}
+    #cf-app .cf-home-game.slots .cf-home-game-art{background:radial-gradient(circle,#f4a638,#8e2349 48%,#1b0d37)}
+    #cf-app .cf-home-game.roulette .cf-home-game-art{background:radial-gradient(circle,#f6cf65,#6b321d 48%,#170c29)}
+    #cf-app .cf-home-game.jet .cf-home-game-art{background:radial-gradient(circle,#c64dff,#35106b 60%,#0b0918)}
+    #cf-app .cf-home-game.dice .cf-home-game-art{background:radial-gradient(circle,#ffcb64,#7d3a15 48%,#1a0c31)}
+    #cf-app .cf-home-game.blackjack .cf-home-game-art{background:radial-gradient(circle,#4eaf85,#12513d 52%,#071b17)}
+    #cf-app .cf-home-game.miner .cf-home-game-art{background:radial-gradient(circle,#54e6ff,#234b9c 50%,#100a28)}
+    #cf-app .cf-home-play{display:flex;width:100%;justify-content:center;margin-top:12px;background:linear-gradient(180deg,#ffe68a,#ffb91e 54%,#e78605);border:1px solid #fff0a0;color:#2b1300;box-shadow:0 0 22px #ffb51c55,inset 0 1px #fff8;font-size:17px;min-height:54px}
+    #cf-app .cf-home-bonuses{display:grid;grid-template-columns:1fr;gap:11px;margin-top:16px}
+    #cf-app .cf-home-daily,#cf-app .cf-home-wheel{min-width:0;padding:13px;border:1px solid #8b42d4;border-radius:18px;background:linear-gradient(145deg,#1c1030,#090811);box-shadow:inset 0 1px #ffffff0a,0 0 16px #7e28ff16}
+    #cf-app .cf-home-section-heading{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+    #cf-app .cf-home-section-heading>span{font-size:27px;filter:drop-shadow(0 0 8px #f7bd45)}
+    #cf-app .cf-home-section-heading strong{display:block;font-size:13px;color:#ffdc79;letter-spacing:.3px}
+    #cf-app .cf-home-section-heading small{display:block;font-size:10px;color:#c0addc;margin-top:3px}
+    #cf-app .cf-home-rewards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:10px 0 12px}
+    #cf-app .cf-home-rewards>div{min-width:0;padding:9px 2px;border:1px solid #52336e;border-radius:10px;background:#100b1c;text-align:center}
+    #cf-app .cf-home-rewards small{display:block;font-size:8px;color:#c7b6df}
+    #cf-app .cf-home-rewards b{display:block;color:#fff0bb;font-size:11px;margin-top:6px}
+    #cf-app .cf-home-rewards span{display:block;font-size:10px;color:#ffd56a}
+    #cf-app .cf-home-daily .primary,#cf-app .cf-home-wheel .primary{width:100%;min-height:43px;background:linear-gradient(180deg,#ffe68a,#ffb91e 54%,#e78605);border:1px solid #fff0a0;color:#2b1300;box-shadow:0 0 18px #ffb51c33;font-size:13px}
+    #cf-app .cf-home-wheel-art{height:100px;display:flex;align-items:center;justify-content:center;gap:12px;margin:0 auto 10px;width:100%;border-radius:13px;background:radial-gradient(circle at 50% 50%,#4c2187,#130b2b 65%,#090811);border:1px solid #54357b;font-size:34px}
+    #cf-app .cf-home-wheel-art span{display:grid;place-items:center;width:55px;height:55px;border-radius:50%;border:3px solid #ffe58b;background:conic-gradient(#8b22d8,#1f60c8,#df9c1c,#b32c5b,#8b22d8);font-size:16px;color:#fff}
+    @media(min-width:520px){#cf-app .cf-home-bonuses{grid-template-columns:1.2fr .8fr}#cf-app .cf-home-hero{padding-top:28px;padding-bottom:24px}}
+    @media(max-width:360px){#cf-app .cf-home-membership{gap:6px}#cf-app .cf-home-subscription{padding:9px 6px;gap:6px}#cf-app .cf-home-subscription strong{font-size:10px}#cf-app .cf-home-game{min-height:100px}#cf-app .cf-home-game-art{height:56px;font-size:32px}}
+
   `;
   document.head.appendChild(style);
   document.body.classList.add('cf-code-app');
@@ -323,7 +371,44 @@
     }
   }
   const primary=(text,act)=>'<button class="primary" data-action="'+act+'">'+text+'</button>';
-  function home(){return '<section class="hero"><div class="eyebrow">ТВОЯ ВСЕЛЕННАЯ ВЫИГРЫШЕЙ</div><h1>COSMIC<br><span>FORTUNE</span></h1><p>Играй в космические игры, получай виртуальные кредиты и забирай ежедневные бонусы.</p><button type="button" class="primary" data-go="games" onclick="window.cfNavigate(this.dataset.go)">✦ Играть　›</button></section><div class="home-actions"><div><button type="button" class="bonus-icon" data-action="open-bonus-wheel" aria-label="Открыть бонусную рулетку">🎡</button><div class="bonus-icon-label">Рулетка дня</div></div><button type="button" class="widecard" data-go="bonuses" style="margin:0;flex:1;min-height:72px"><div class="art">🎁</div><div><strong>Бонусы и награды</strong><small>Ежедневная награда</small></div> ›</button></div>'}
+  function home(){return `
+    <section class="cf-home-art-banner" aria-label="Cosmic Fortune — главный экран">
+      <img src="./cosmic-fortune-home-4k.webp" alt="Cosmic Fortune: космическое казино с играми и золотым оформлением" decoding="async" fetchpriority="high">
+    </section>
+    <button type="button" class="primary cf-home-play" data-go="games" onclick="window.cfNavigate('games')">✦ ИГРАТЬ　›</button>
+    <section class="cf-home-membership">
+      <a href="https://t.me/Cosmic_Fortune" target="_blank" rel="noopener" class="cf-home-subscription">
+        <span class="cf-home-sub-icon">➤</span><span><strong>Подписаться на канал</strong><small>Новости и розыгрыши</small></span><b>↗</b>
+      </a>
+      <a href="https://t.me/CosmisFortunechat" target="_blank" rel="noopener" class="cf-home-subscription">
+        <span class="cf-home-sub-icon">☏</span><span><strong>Вступить в чат</strong><small>Общайся с игроками</small></span><b>↗</b>
+      </a>
+    </section>
+    <div class="section-title cf-home-title">✦ ВЫБЕРИ ИГРУ</div>
+    <section class="cf-home-games">
+      <button class="cf-home-game slots" data-go="slots"><span class="cf-home-game-art">🎰</span><strong>СЛОТЫ</strong></button>
+      <button class="cf-home-game roulette" data-go="roulette"><span class="cf-home-game-art">🎡</span><strong>РУЛЕТКА</strong></button>
+      <button class="cf-home-game jet" data-go="luckyjet"><span class="cf-home-game-art">🚀</span><strong>LUCKY JET</strong></button>
+      <button class="cf-home-game dice" data-go="dice"><span class="cf-home-game-art">🎲</span><strong>КОСТИ</strong></button>
+      <button class="cf-home-game blackjack" data-go="blackjack"><span class="cf-home-game-art">🃏</span><strong>БЛЭКДЖЕК</strong></button>
+      <button class="cf-home-game miner" data-go="miner"><span class="cf-home-game-art">💎</span><strong>MINER</strong></button>
+    </section>
+    <button type="button" class="primary cf-home-play" data-go="games" onclick="window.cfNavigate('games')">ИГРАТЬ　›</button>
+    <section class="cf-home-bonuses">
+      <div class="cf-home-daily">
+        <div class="cf-home-section-heading"><span>🎁</span><div><strong>ЕЖЕДНЕВНЫЕ ПРИЗЫ</strong><small>8 дней наград · обновление каждые 24 часа</small></div></div>
+        <div class="cf-home-rewards">
+          <div><small>ДЕНЬ 1</small><b>500</b><span>✦</span></div><div><small>ДЕНЬ 2</small><b>1 000</b><span>✦</span></div><div><small>ДЕНЬ 3</small><b>1 500</b><span>✦</span></div><div><small>ДЕНЬ 4</small><b>2 500</b><span>✦</span></div>
+        </div>
+        <button class="primary" data-action="open-daily-reward">ЗАБРАТЬ НАГРАДУ</button>
+      </div>
+      <div class="cf-home-wheel">
+        <div class="cf-home-section-heading"><span>🎡</span><div><strong>КОЛЕСО УДАЧИ</strong><small>Бесплатная попытка раз в 24 часа</small></div></div>
+        <div class="cf-home-wheel-art">⭐<span>✦</span>💎</div>
+        <button class="primary" data-action="open-bonus-wheel">КРУТИТЬ</button>
+      </div>
+    </section>`}
+
   function gameList(){return '<div class="section-title">ИГРЫ</div><div style="color:#c6b5e2;margin:0 2px 14px">ВЫБЕРИ СВОЮ УДАЧУ</div>'+games.map(g=>'<button class="widecard" data-go="'+g[0]+'"><div class="art" data-art="'+g[0]+'"><span>'+g[1]+'</span></div><div style="flex:1"><strong>'+g[2]+'</strong><small>'+g[3]+'</small></div>›</button>').join('')}
   function panel(title,body){return '<div class="section-title">'+title+'</div><section class="gamepanel">'+body+'</section>'}
   function gameAvatar(game){
@@ -779,8 +864,6 @@
     button.textContent='Проверяем подписку…';
     checkAccessAndStart(true);
   },{capture:true,passive:false});
-  // Open the Mini App directly; subscription prompts belong to the Telegram bot only.
-  app.querySelector('.bottom')?.style.removeProperty('display');
-  render('home');
-  refreshAccount();
+  // Require verified membership in both the channel and chat before opening the app.
+  checkAccessAndStart(false);
 })();
