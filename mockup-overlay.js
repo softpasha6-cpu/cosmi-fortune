@@ -342,8 +342,8 @@
     #cf-app .cf-game-tile-info strong{font-size:clamp(12px,3.5vw,15px);font-weight:900;color:#ffe28c;text-transform:uppercase;overflow-wrap:anywhere}
     #cf-app .cf-game-tile-info small{font-size:10px;line-height:1.25;color:#cbb7ef}
     #cf-app .cf-game-tile-arrow{position:absolute;right:8px;top:8px;width:25px;height:25px;display:grid;place-items:center;border-radius:50%;border:1px solid #df8aff;color:#fff;font-size:20px;background:#160625a8}
-    #cf-app .cf-image-nav{display:none!important}
-    #cf-app .cf-image-nav button{pointer-events:auto;min-width:0;border:0;background:transparent;border-radius:12px;cursor:pointer;touch-action:manipulation;position:relative;z-index:21;-webkit-tap-highlight-color:#ffffff22}
+    #cf-app .cf-image-nav{position:absolute;z-index:40;left:0;right:0;bottom:0;height:10.5%;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));pointer-events:auto;background:transparent;padding:0 1%;box-sizing:border-box}
+    #cf-app .cf-image-nav button{pointer-events:auto;min-width:0;width:100%;height:100%;border:0;background:transparent;border-radius:12px;cursor:pointer;touch-action:manipulation;position:relative;z-index:41;-webkit-tap-highlight-color:#ffffff22}
     #cf-app .cf-image-nav button:active{background:#ffffff22;outline:1px solid #d8a4ff}
     #cf-app .cf-image-nav button:active{background:#ffffff18}
     #cf-app .cf-games-topup{position:absolute;z-index:5;top:2%;right:5%;width:13%;height:5.5%;border:0;background:transparent;cursor:pointer;touch-action:manipulation}
