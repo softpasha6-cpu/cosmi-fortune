@@ -2,152 +2,16 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#10071f">
 <title>Cosmic Fortune</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root{color-scheme:dark;--gold:#ffd36a;--muted:#bdb0d8;--panel:#100b1c;--violet:#8b20ff;--blue:#386bff}
-*{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:#05040b;color:#fff;font:15px system-ui,-apple-system,Segoe UI,sans-serif;padding-bottom:env(safe-area-inset-bottom);overflow-x:hidden}
-body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(ellipse at 12% 16%,#5522c955,transparent 36%),radial-gradient(ellipse at 90% 30%,#6420ff44,transparent 32%),radial-gradient(ellipse at 50% 100%,#24106a55,transparent 45%)}
-header{max-width:680px;margin:auto;text-align:center;padding:calc(12px + env(safe-area-inset-top)) 18px 8px;background:#080610ee;border-bottom:1px solid #7e3dff55}
-.brandrow{display:flex;align-items:center;justify-content:center;gap:10px}
-.logo{width:38px;height:38px;border:1px solid #e4b7ff;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,#b84dff,#5311c8);color:#fff;font-size:24px;box-shadow:0 0 25px #a020ff66}
-.brand{font-weight:950;letter-spacing:2px;color:#fff;font-size:19px;text-shadow:0 0 20px #a82dff88}
-.sub{color:#bca1e8;font-size:8px;letter-spacing:2px;margin-top:2px}
-.profile{margin:12px auto 0;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--muted);font-size:12px;min-height:24px}
-.avatar{width:26px;height:26px;border-radius:50%;object-fit:cover;border:1px solid var(--gold)}
-main{max-width:680px;margin:auto;padding:10px 12px 90px}
-.hero{position:relative;overflow:hidden;min-height:410px;border:1px solid #8538ff99;border-radius:24px;background:radial-gradient(ellipse at 70% 35%,#482080 0%,#170b35 42%,#070610 78%);box-shadow:0 12px 42px #0009,0 0 28px #711cff22,inset 0 0 45px #a24fff18}
-.hero:before{content:"";position:absolute;inset:0;background-image:radial-gradient(#ffe6a4 1px,transparent 1.6px),radial-gradient(#a77cff 1px,transparent 1.8px);background-size:39px 39px,61px 61px;background-position:0 0,16px 20px;opacity:.6}
-.hero:after{content:"✦  ·  ✧      ✦       ·   ✧";position:absolute;right:6px;top:12px;color:#ffda7a;letter-spacing:14px;font-size:20px;opacity:.7}
-.hero-copy{position:relative;z-index:2;padding:25px 18px 22px;max-width:72%}
-.eyebrow{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#d6b9ff;font-weight:800;text-shadow:0 0 12px #a53cff}
-.hero h1{font-size:clamp(30px,7vw,43px);line-height:1.02;margin:12px 0;letter-spacing:-1px;text-shadow:0 2px 22px #7e24ff66}
-.hero h1 span{color:#9d7cff;text-shadow:0 0 22px #8c45ff88}
-.hero p{font-size:12px;line-height:1.55;color:#d3c7e7;margin:0 0 16px}
-.goldbtn,.ghostbtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;padding:12px 14px;font-size:12px;font-weight:900;cursor:pointer}
-.goldbtn{border:1px solid #c87dff;background:linear-gradient(110deg,#a524ff,#6d08f4 55%,#4e12cb);color:#fff;box-shadow:0 5px 25px #891cff66}
-.ghostbtn{border:1px solid #b985ff77;background:#140c22;color:#e3c8ff}
-.mascot{position:absolute;right:-8px;bottom:-2px;width:68%;max-width:365px;height:auto;z-index:1;filter:drop-shadow(0 0 25px #9b35ff66)}
-.balance{margin-top:12px;background:linear-gradient(120deg,#211436,#120d20);border:1px solid #8538ff88;border-radius:18px;padding:15px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:inset 0 0 22px #9e63ff0b}
-.label{color:var(--muted);font-size:11px}.amount{font-size:25px;font-weight:900;color:#fff;margin-top:3px}.pill{border:1px solid #a854ff99;color:#fff;padding:8px 10px;border-radius:11px;font-weight:800;background:#7920e822;font-size:12px;white-space:nowrap}
-h2{font-size:17px;margin:23px 2px 11px;display:flex;align-items:center;gap:8px}h2 .spark{color:var(--gold)}
-.games{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.game{position:relative;overflow:hidden;border:1px solid #7542b877;border-radius:17px;padding:14px;background:linear-gradient(145deg,#1b1230,#0b0914);min-height:123px;text-align:left;color:white;cursor:pointer;font:inherit;transition:transform .15s,border-color .15s}
-.game:after{content:"✦";position:absolute;right:10px;top:7px;color:#ffda7a;font-size:16px;opacity:.65}.game:active{transform:scale(.98)}.emoji{font-size:30px;filter:drop-shadow(0 0 10px #b77aff44)}.game strong{display:block;margin:8px 0 3px;font-size:13px}.game small{color:var(--muted);font-size:11px}
-.exchange{border:1px solid #9f76d655;border-radius:17px;padding:15px;background:linear-gradient(110deg,#24123d,#130d22);display:flex;align-items:center;justify-content:space-between;gap:12px}.exchange strong{display:block;color:var(--gold);font-size:13px}.exchange small{display:block;color:var(--muted);font-size:11px;margin-top:4px;line-height:1.4}.starcoin{font-size:30px;filter:drop-shadow(0 0 10px #ffce53)}
-.rates{border:1px solid #8d68cf55;border-radius:15px;overflow:hidden;background:#130d20}.rate{display:flex;justify-content:space-between;padding:11px 13px;border-bottom:1px solid #ffffff10;font-size:13px}.rate:last-child{border:0}.rate span:last-child{color:var(--gold);font-weight:850}
-.notice{color:#a99abf;font-size:11px;line-height:1.5;margin-top:13px}footer{text-align:center;color:#85769f;font-size:10px;letter-spacing:1.4px;padding:18px}.bottom-nav{position:fixed;z-index:20;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(4,1fr);padding:9px 6px calc(9px + env(safe-area-inset-bottom));background:#090711f5;border-top:1px solid #7132b688;backdrop-filter:blur(18px);max-width:680px;margin:auto}.bottom-nav a{color:#857a9e;text-decoration:none;text-align:center;font-size:10px;display:flex;flex-direction:column;gap:3px;align-items:center}.bottom-nav a span{font-size:19px}.bottom-nav a.active{color:#d27bff;text-shadow:0 0 12px #a32aff}
-@media(max-width:380px){.hero-copy{max-width:69%;padding:20px 13px}.hero h1{font-size:24px}.mascot{right:-25px;width:62%;opacity:.92}.hero p{font-size:11px}.goldbtn,.ghostbtn{padding:10px;font-size:11px}.amount{font-size:22px}}
-
-/* Native casino-app finish */
-body{background:#05050b;background-image:radial-gradient(ellipse at 50% -12%,#27104b 0,transparent 42%)}
-header{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;min-height:66px;padding:calc(8px + env(safe-area-inset-top)) 14px 8px;background:linear-gradient(180deg,#080711 0%,#080711f2 100%);border-bottom:1px solid #29213b}
-.brandrow{gap:9px}.brand{font-size:16px;letter-spacing:1.2px}.sub{font-size:7px;letter-spacing:1.5px}
-.logo{width:32px;height:32px;border-radius:10px;font-size:19px}
-.profile{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:0;min-height:0;gap:0}
-.profile:after{content:"⋯";font-size:20px;color:#d7c9f0;border:1px solid #514565;border-radius:50%;width:27px;height:27px;display:grid;place-items:center}
-main{padding:10px 10px calc(100px + env(safe-area-inset-bottom))}
-.hero{min-height:440px;border-radius:22px;border:1px solid #4e347b;background:radial-gradient(ellipse at 65% 38%,#32125f 0%,#130c28 46%,#080711 82%);box-shadow:0 10px 28px #0009,inset 0 0 32px #5c24a31a}
-.hero:before{background-image:radial-gradient(#f3e5ff 1px,transparent 1.6px),radial-gradient(#8c62ff 1px,transparent 1.8px);background-size:47px 47px,71px 71px;opacity:.34}
-.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,#090612 100%);pointer-events:none}
-.hero-copy{padding:26px 16px 18px;max-width:100%;width:100%;text-align:center}
-.eyebrow{font-size:9px;letter-spacing:1.8px}
-.hero h1{font-size:clamp(34px,9vw,45px);margin:235px 0 8px;line-height:.98;letter-spacing:-1.4px}
-.hero p{font-size:11px;margin:0 auto 13px;max-width:250px}
-.mascot{width:82%;max-width:310px;right:9%;bottom:auto;top:18px;filter:drop-shadow(0 0 24px #8a3dff4d)}
-.goldbtn{border:1px solid #c9a2ff;background:linear-gradient(180deg,#a62bff 0%,#7c16ef 55%,#650ce0 100%);border-radius:15px;min-height:48px;font-size:14px;box-shadow:0 5px 22px #7900ff44,inset 0 1px #ffffff35}
-.balance{border-color:#33284b;background:linear-gradient(120deg,#171324,#0d0b15);border-radius:16px;padding:13px}
-.label{font-size:10px;letter-spacing:.3px}.amount{font-size:23px}
-h2{font-size:18px;margin:22px 2px 10px}
-.games{gap:9px}
-.game{border-color:#302744;border-radius:15px;background:linear-gradient(145deg,#171322,#0b0a12);min-height:120px;padding:13px;box-shadow:inset 0 1px #ffffff06}
-.game:after{content:"›";font-size:21px;top:10px;right:12px;color:#b9a5dc}
-.emoji{font-size:28px}
-.exchange,.rates{border-color:#302744;background:#100d18;border-radius:15px}
-.rate{border-color:#ffffff0b}
-.bottom-nav{max-width:680px;padding:8px 7px calc(8px + env(safe-area-inset-bottom));background:#080710f7;border-top:1px solid #34244f;box-shadow:0 -8px 28px #0008}
-.bottom-nav a{font-size:10px;gap:2px;min-height:42px;justify-content:center}
-.bottom-nav a span{font-size:20px}
-.bottom-nav a.active{color:#d46aff;text-shadow:0 0 12px #a32aff55}
-@media(min-width:560px){.hero{min-height:500px}.mascot{max-width:340px}.hero h1{margin-top:270px}}
-@media(max-width:380px){.hero{min-height:410px}.mascot{width:83%;right:8%;top:12px}.hero-copy{padding:18px 12px}.hero h1{margin-top:218px;font-size:32px}.hero p{font-size:10px}}
-
+html,body{margin:0;min-height:100%;background:#05040b;color:#fff}
+body{font:15px system-ui,-apple-system,Segoe UI,sans-serif;overflow-x:hidden}
 </style>
 </head>
 <body>
-<header>
-  <div class="brandrow"><div class="logo">♛</div><div><div class="brand">COSMIC FORTUNE</div><div class="sub">YOUR LUCK IS WRITTEN IN THE STARS</div></div></div>
-  <div class="profile" id="profile">✦ Добро пожаловать в Cosmic Fortune</div>
-</header>
-<main>
-<section class="hero">
- <div class="hero-copy">
-  <div class="eyebrow">✦ Твоя космическая удача</div>
-  <h1>ИГРАЙ.<br><span>МЕЧТАЙ.</span><br>ПОКОРЯЙ.</h1>
-  <p>Открой свою вселенную развлечений в стиле золота и космоса.</p>
-  <button class="goldbtn" onclick="document.getElementById('games-title').scrollIntoView({behavior:'smooth'})">✦ Начать игру&nbsp; ›</button>
- </div>
- <svg class="mascot" viewBox="0 0 330 340" role="img" aria-label="Человек-бизнесмен в тёмном костюме и очках на фоне звёзд">
-  <defs>
-   <linearGradient id="suit" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#493052"/><stop offset=".45" stop-color="#171320"/><stop offset="1" stop-color="#07070f"/></linearGradient>
-   <linearGradient id="gold" x1="0" y1="0" x2="0.9" y2="1"><stop stop-color="#fff0a5"/><stop offset=".45" stop-color="#ffca54"/><stop offset="1" stop-color="#a85d1b"/></linearGradient>
-   <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f7c49a"/><stop offset="1" stop-color="#a96143"/></linearGradient>
-   <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#34251f"/><stop offset="1" stop-color="#080910"/></linearGradient>
-  </defs>
-  <circle cx="208" cy="142" r="116" fill="#8a42d0" opacity=".12"/>
-  <circle cx="236" cy="84" r="45" fill="#9a63ff" opacity=".14"/>
-  <path d="M55 337 Q45 282 81 241 Q104 218 135 216 L210 218 Q267 229 288 282 L308 340Z" fill="url(#suit)" stroke="#b77a3f" stroke-width="2"/>
-  <path d="M127 220 L164 269 L195 220 L219 238 L202 340 L113 340 L101 239Z" fill="#f2e5d1"/>
-  <path d="M157 246 L176 246 L188 340 L143 340Z" fill="#191020"/>
-  <path d="M163 244 L175 244 L183 257 L169 277 L155 257Z" fill="url(#gold)"/>
-  <path d="M117 222 L91 238 L119 287 L143 263Z M205 222 L234 237 L215 290 L189 264Z" fill="#2a1b31" stroke="#9a683c" stroke-width="1.5"/>
-  <path d="M110 106 Q105 61 142 44 Q183 22 216 56 Q233 77 221 126 L213 165 L120 158Z" fill="url(#hair)"/>
-  <path d="M119 92 Q121 54 155 47 Q188 37 210 63 Q221 78 215 120 L210 158 Q197 184 170 185 Q139 181 126 157Z" fill="url(#skin)"/>
-  <path d="M116 97 Q112 65 142 48 Q174 28 204 53 L221 76 L212 90 L197 67 L166 75 L135 70 L127 101Z" fill="url(#hair)"/>
-  <path d="M128 107 Q143 97 157 106 M178 106 Q194 97 205 106" fill="none" stroke="#633c31" stroke-width="4" stroke-linecap="round"/>
-  <path d="M130 111 L158 111 L155 133 Q141 137 133 127Z M175 111 L202 111 L198 127 Q188 136 178 132Z" fill="#090b13" stroke="#e5b55d" stroke-width="2"/>
-  <path d="M158 117 L175 117" stroke="#e5b55d" stroke-width="3"/>
-  <path d="M167 119 L161 143 L171 147" fill="none" stroke="#a65d43" stroke-width="3" stroke-linecap="round"/>
-  <path d="M146 158 Q169 169 190 155 Q181 179 164 176 Q151 173 146 158Z" fill="#59332b"/>
-  <path d="M147 159 Q168 166 190 156" fill="none" stroke="#f4c7a0" stroke-width="2" stroke-linecap="round"/>
-  <path d="M120 80 Q153 54 190 64" fill="none" stroke="#74513b" stroke-width="5" stroke-linecap="round"/>
-  <path d="M94 237 Q70 246 62 276 L82 300 L121 268Z" fill="url(#suit)" stroke="#9d6a3c" stroke-width="2"/>
-  <path d="M218 237 Q250 247 264 272 L245 294 L207 265Z" fill="url(#suit)" stroke="#9d6a3c" stroke-width="2"/>
-  <path d="M61 275 Q51 287 64 298 L88 304 Q100 301 97 290 L80 276Z" fill="url(#skin)"/>
-  <path d="M245 274 Q258 270 266 283 L265 298 Q255 308 241 297 L230 286Z" fill="url(#skin)"/>
-  <path d="M240 286 L264 288" stroke="url(#gold)" stroke-width="5" stroke-linecap="round"/>
-  <circle cx="252" cy="287" r="6" fill="url(#gold)" stroke="#ffeab0" stroke-width="1.5"/>
-  <path d="M110 222 L130 212 L163 246 L143 263Z M198 212 L219 222 L190 263 L172 246Z" fill="#33203a" stroke="#bc8749" stroke-width="1.5"/>
-  <path d="M160 248 L174 248 L179 261 L167 274 L154 261Z" fill="url(#gold)"/>
-  <path d="M224 39 L229 51 L242 53 L232 61 L235 74 L224 67 L213 74 L216 61 L206 53 L219 51Z" fill="url(#gold)"/>
-  <path d="M69 104 L73 114 L84 116 L76 123 L78 134 L69 128 L60 134 L63 123 L55 116 L66 114Z" fill="url(#gold)"/>
-  <circle cx="270" cy="158" r="3" fill="#ffe8a0"/><circle cx="94" cy="65" r="2.5" fill="#ffe8a0"/><circle cx="282" cy="213" r="2" fill="#c7a1ff"/>
- </svg>
-</section>
-<section class="balance"><div><div class="label">ТВОЙ ВИРТУАЛЬНЫЙ БАЛАНС</div><div class="amount" id="balance">—</div><div class="label" id="api-status">Сервер не подключён</div></div><button class="pill" onclick="configureApi()">⚙ Сервер</button></section>
-<section style="margin-top:10px;border:1px solid #9e70c855;border-radius:15px;padding:13px;background:#130d20"><label for="bet">Ставка виртуальными кредитами (1–100 000)</label><input id="bet" type="number" min="1" max="100000" value="1000" style="display:block;width:100%;padding:12px;margin-top:8px;background:#090612;color:white;border:1px solid #8d68cf77;border-radius:10px"><div id="game-result" aria-live="polite" style="margin-top:10px;color:#ffe19a">Сервер не подключён</div></section><h2 id="games-title"><span class="spark">✦</span> Популярные игры</h2>
-<section class="games">
-<button class="game" onclick="play('slots')"><span class="emoji">🎰</span><strong>Космические слоты</strong><small>Испытай удачу</small></button>
-<button class="game" onclick="play('roulette')"><span class="emoji">🎡</span><strong>Рулетка</strong><small>Красное или чёрное?</small></button>
-<button class="game" onclick="play('blackjack')"><span class="emoji">🃏</span><strong>Блэкджек</strong><small>Стратегия и стиль</small></button>
-<button class="game" onclick="play('dice')"><span class="emoji">🎲</span><strong>Кости</strong><small>Брось вызов удаче</small></button>
-</section>
-<h2><span class="spark">✦</span> Обмен на Telegram Stars</h2>
-<section class="exchange" id="exchange"><div><strong>Космический обмен</strong><small>Демо-курсы обмена · реальные выплаты отключены</small></div><div class="starcoin">⭐</div></section>
-<section class="rates" style="margin-top:10px">
-<div class="rate"><span>100 000 ₽</span><span>15 ⭐</span></div>
-<div class="rate"><span>250 000 ₽</span><span>25 ⭐</span></div>
-<div class="rate"><span>500 000 ₽</span><span>50 ⭐</span></div>
-<div class="rate"><span>1 000 000 ₽</span><span>100 ⭐</span></div>
-</section>
-<button class="goldbtn" style="width:100%;margin-top:10px" onclick="exchangeDemo()">Обменять на ⭐ Stars</button>
-<p class="notice">Демо-версия: баланс и игры условные. Профиль Telegram показывается только для приветствия. Для настоящих аккаунтов, баланса и платежей необходима серверная проверка Telegram initData. Обмен на Stars пока не подключён.</p>
-</main>
-<footer>✦ COSMIC FORTUNE · YOUR LUCK IS WRITTEN IN THE STARS ✦</footer><nav class="bottom-nav" aria-label="Основная навигация"><a class="active" href="#"><span>⌂</span>Главная</a><a href="#games-title"><span>🎮</span>Игры</a><a href="#exchange"><span>🎁</span>Бонусы</a><a href="#profile"><span>♙</span>Профиль</a></nav>
-<script src="app.js"></script>
-<script src="mockup-overlay.js?v=classic-ui-20261020-restore"></script>
+<script src="./mockup-overlay.js?v=classic-ui-miner-history-20261020-36"></script>
 </body>
 </html>
