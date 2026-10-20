@@ -262,9 +262,9 @@
     #cf-app .cf-home-art-full{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100dvh;margin:0;padding:0;line-height:0;background:#070411;overflow:hidden}
     #cf-app .cf-home-art-full img{display:block;width:100%;height:100%;max-width:none;max-height:100dvh;margin:0;padding:0;object-fit:contain;object-position:center center;user-select:none;-webkit-user-drag:none}
     /* Update the printed balance number in the artwork; do not add a new panel. */
-    #cf-app .cf-home-balance-cover{position:absolute;z-index:4;left:19.5%;top:4.55%;width:16.6%;height:2.55%;border-radius:3px;background:#170d25;pointer-events:none}
-    #cf-app .cf-home-balance-value{position:absolute;z-index:5;left:19.8%;top:4.55%;width:16%;height:2.55%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:clamp(11px,2.9vw,19px);font-weight:1000;letter-spacing:-.45px;text-shadow:0 1px 3px #000;white-space:nowrap;pointer-events:none}
-    #cf-app .cf-home-stars-cover{position:absolute;z-index:5;right:3.9%;top:2.05%;width:26.1%;height:4.45%;border:0;border-radius:7px;background:#0c0717;pointer-events:none}
+    #cf-app .cf-home-balance-cover{position:absolute;z-index:5;left:18.4%;top:3.35%;width:20.6%;height:4.1%;border:0;border-radius:4px;background:#170d25;pointer-events:none}
+    #cf-app .cf-home-balance-value{position:absolute;z-index:6;left:19.1%;top:3.65%;width:19.2%;height:3.5%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:clamp(11px,2.8vw,19px);font-weight:1000;letter-spacing:-.45px;text-shadow:0 1px 3px #000;white-space:nowrap;pointer-events:none}
+    #cf-app .cf-home-stars-cover{position:absolute;z-index:6;right:2.2%;top:1.8%;width:28.4%;height:5.8%;border:0;border-radius:9px;background:#0c0717;pointer-events:none}
     #cf-app .cf-art-hotspot{position:absolute;z-index:6;display:block;padding:0;margin:0;border:0;background:transparent;opacity:0;min-height:0;min-width:0;cursor:pointer}
     #cf-app .cf-hotspot-games{left:17%;right:17%;top:63%;height:9%}
     #cf-app .cf-hotspot-bonuses{left:3%;width:55%;top:79%;height:15%}
