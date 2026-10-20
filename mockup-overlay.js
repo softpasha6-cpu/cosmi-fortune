@@ -252,10 +252,15 @@
     #cf-app .cf-roulette-number-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:2px;margin-top:4px;width:100%;box-sizing:border-box} #cf-app .cf-roulette-number-grid button{min-width:0;min-height:22px;height:22px;padding:0;border:1px solid #e4c57888;border-radius:4px;font-size:10px;line-height:1;font-weight:900} #cf-app .cf-roulette-number-grid button.is-selected{outline:2px solid #ffdf7c;box-shadow:0 0 12px #ffdf7c88;transform:scale(1.06)}
     #cf-app .cf-roulette-footnote{font-size:11px;color:#c8e6d4;margin-top:9px}
 
-    #cf-app .cf-home-art-full{position:relative;width:100%;margin:0;padding:0;line-height:0;background:#070411;overflow:hidden}
-    #cf-app .cf-home-art-full img{display:block;width:100%;height:auto;max-width:100%;margin:0;padding:0;object-fit:contain;user-select:none;-webkit-user-drag:none}
-    #cf-app:has(.cf-home-art-full) .bottom{display:none!important}
-    #cf-app:has(.cf-home-art-full){padding-bottom:env(safe-area-inset-bottom)}
+    /* Artwork is the entire home screen: hide the overlay chrome and old navigation. */
+    #cf-app:has(.cf-home-art-full){padding:0!important;overflow:hidden!important;background:#070411!important}
+    #cf-app:has(.cf-home-art-full) .shell{width:100%!important;height:100dvh!important;max-width:none!important;margin:0!important;padding:0!important}
+    #cf-app:has(.cf-home-art-full) .shell>.top,
+    #cf-app:has(.cf-home-art-full) nav.bottom,
+    #cf-app:has(.cf-home-art-full) .toast{display:none!important}
+    #cf-app:has(.cf-home-art-full) #cf-content{width:100%;height:100%;margin:0;padding:0;overflow:hidden}
+    #cf-app .cf-home-art-full{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100dvh;margin:0;padding:0;line-height:0;background:#070411;overflow:hidden}
+    #cf-app .cf-home-art-full img{display:block;width:100%;height:100%;max-width:none;max-height:100dvh;margin:0;padding:0;object-fit:contain;object-position:center center;user-select:none;-webkit-user-drag:none}
 
     #cf-app .cf-home-hero{min-height:0;padding:22px 16px 18px;text-align:center;background:radial-gradient(ellipse at 50% 0%,#56219a 0%,#190b37 45%,#080611 82%);border-color:#a34dff;box-shadow:inset 0 0 45px #9a35ff20,0 0 24px #8d32ff25}
     #cf-app .cf-home-hero:before{width:220px;height:220px;right:50%;transform:translateX(50%);top:24px;background:radial-gradient(circle at 40% 30%,#a9a0ff,#5521a7 40%,#160a39 72%,transparent 74%);opacity:.52}
