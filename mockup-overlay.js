@@ -104,6 +104,23 @@
     #cf-app .art[data-art="bonuses"]{background-image:url("https://images.unsplash.com/photo-1606167668584-78701c57f13d?auto=format&fit=crop&w=900&q=85")}
     #cf-app .hero{background-image:linear-gradient(90deg,#090611ee 0%,#10071cbb 52%,#10071c44 100%),url("https://images.unsplash.com/photo-1708919166614-60f3d21b4284?auto=format&fit=crop&w=1400&q=85");background-size:cover;background-position:center}
     #cf-app .card strong{display:block;font-size:13px;margin-top:8px} #cf-app .card small{display:block;font-size:11px;color:#bdb0d7;margin-top:4px;line-height:1.35}
+    #cf-app .cf-games-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:10px 0 22px}
+    #cf-app .cf-game-tile{display:block;min-width:0;width:100%;padding:0;aspect-ratio:1/1;border:2px solid #f6bd54;border-radius:22px;overflow:hidden;background:#10091f;box-shadow:0 0 10px #9e3cff66, inset 0 0 0 1px #fff3;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+    #cf-app .cf-game-art{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%;overflow:hidden;background-color:#130b2a;background-size:cover;background-position:center}
+    #cf-app .cf-game-art:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#09051300 25%,#08030de8 100%)}
+    #cf-app .cf-game-emoji{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(56px,17vw,104px);filter:drop-shadow(0 4px 12px #000b);transform:translateY(-5%)}
+    #cf-app .cf-game-title{position:absolute;z-index:1;bottom:10px;left:4px;right:4px;text-align:center;color:#ffe8a0;font-weight:1000;font-size:clamp(13px,3.5vw,20px);letter-spacing:.3px;text-shadow:0 2px 0 #9a3900,0 0 10px #ff8c00;background:linear-gradient(90deg,#ffd56b,#fff4c0,#ffb52e);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    #cf-app .cf-game-tile:active{transform:scale(.98);filter:brightness(1.15)}
+    #cf-app .art-luckyjet{background-image:radial-gradient(ellipse at 75% 25%,#a64aff 0,transparent 28%),linear-gradient(145deg,#140a40,#42117a 55%,#09071c)}
+    #cf-app .art-miner{background-image:radial-gradient(circle at 50% 42%,#27b9ff 0,transparent 24%),linear-gradient(145deg,#06152d,#064d8b 55%,#080d25)}
+    #cf-app .art-slots{background-image:radial-gradient(ellipse at 50% 35%,#ffbe32 0,transparent 35%),linear-gradient(145deg,#4b1207,#a53609 52%,#16051a)}
+    #cf-app .art-roulette{background-image:radial-gradient(circle at 50% 45%,#ffce52 0,transparent 27%),linear-gradient(145deg,#270633,#73104b 55%,#09061d)}
+    #cf-app .art-blackjack{background-image:radial-gradient(ellipse at 50% 38%,#d5a54c 0,transparent 27%),linear-gradient(145deg,#03291d,#07533b 55%,#070e18)}
+    #cf-app .art-dice{background-image:radial-gradient(circle at 50% 40%,#9c45ff 0,transparent 32%),linear-gradient(145deg,#190b47,#4b1684 55%,#08051b)}
+    #cf-app .cf-game-tile.luckyjet{border-color:#d98bff}
+    #cf-app .cf-game-tile.miner{border-color:#54cfff}
+    #cf-app .cf-game-tile.slots{border-color:#ffb83f}
+    #cf-app .cf-game-tile.roulette{border-color:#ff70cb}
     #cf-app .widecard{display:flex;align-items:center;gap:12px;text-align:left;border:1px solid #7545ba;border-radius:16px;padding:13px;background:linear-gradient(110deg,#241044,#0b0a19);width:100%;margin:9px 0}
     #cf-app .widecard .art{width:80px;flex:none;font-size:43px;height:70px}
     #cf-app .widecard strong{display:block;font-size:14px} #cf-app .widecard small{display:block;color:#c5b5e2;font-size:12px;margin-top:4px}
@@ -324,7 +341,7 @@
   }
   const primary=(text,act)=>'<button class="primary" data-action="'+act+'">'+text+'</button>';
   function home(){return '<section class="hero"><div class="eyebrow">ТВОЯ ВСЕЛЕННАЯ ВЫИГРЫШЕЙ</div><h1>COSMIC<br><span>FORTUNE</span></h1><p>Играй в космические игры, получай виртуальные кредиты и забирай ежедневные бонусы.</p><button type="button" class="primary" data-go="games" onclick="window.cfNavigate(this.dataset.go)">✦ Играть　›</button></section><div class="home-actions"><div><button type="button" class="bonus-icon" data-action="open-bonus-wheel" aria-label="Открыть бонусную рулетку">🎡</button><div class="bonus-icon-label">Рулетка дня</div></div><button type="button" class="widecard" data-go="bonuses" style="margin:0;flex:1;min-height:72px"><div class="art">🎁</div><div><strong>Бонусы и награды</strong><small>Ежедневная награда</small></div> ›</button></div>'}
-  function gameList(){return '<div class="section-title">ИГРЫ</div><div style="color:#c6b5e2;margin:0 2px 14px">ВЫБЕРИ СВОЮ УДАЧУ</div>'+games.map(g=>'<button class="widecard" data-go="'+g[0]+'"><div class="art" data-art="'+g[0]+'"><span>'+g[1]+'</span></div><div style="flex:1"><strong>'+g[2]+'</strong><small>'+g[3]+'</small></div>›</button>').join('')}
+  function gameList(){return '<div class="section-title">ИГРЫ</div><div style="color:#c6b5e2;margin:0 2px 14px">ВЫБЕРИ СВОЮ УДАЧУ</div><div class="cf-games-grid">'+games.map(g=>'<button class="cf-game-tile '+g[0]+'" data-go="'+g[0]+'"><div class="cf-game-art art-'+g[0]+'"><span class="cf-game-emoji">'+g[1]+'</span><span class="cf-game-title">'+(g[0]==='slots'?'СЛОТЫ':g[0]==='dice'?'КОСТИ':g[0]==='roulette'?'РУЛЕТКА':g[0]==='blackjack'?'БЛЭКДЖЕК':g[0]==='miner'?'МИНЕР':'LUCKY JET')+'</span></div></button>').join('')+'</div>'}
   function panel(title,body){return '<div class="section-title">'+title+'</div><section class="gamepanel">'+body+'</section>'}
   function gameAvatar(game){
     const views={
