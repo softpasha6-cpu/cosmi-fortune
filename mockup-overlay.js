@@ -321,7 +321,7 @@
     #cf-app .cf-home-static{overflow:hidden}
     #cf-app .cf-home-poster-wrap{position:absolute;inset:0;overflow:hidden;background:#080411;line-height:0;border:0;border-radius:0;box-shadow:none}
     #cf-app .cf-home-uploaded-image{display:block;width:100%;height:100%;object-fit:fill;object-position:center}
-    #cf-app .cf-poster-live-balance{position:absolute;z-index:4;left:20.8%;top:6.05%;width:32.4%;height:3.05%;display:flex;align-items:center;justify-content:flex-end;overflow:hidden;white-space:nowrap;color:#fff;font-size:clamp(15px,4.2vw,30px);font-weight:900;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.035em;text-shadow:0 1px 4px #000;pointer-events:none}
+    #cf-app .cf-poster-live-balance{position:absolute;z-index:4;left:20.8%;top:5.15%;width:32.4%;height:3.05%;display:flex;align-items:center;justify-content:flex-end;overflow:hidden;white-space:nowrap;color:#fff;font-size:clamp(15px,4.2vw,30px);font-weight:900;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.035em;text-shadow:0 1px 4px #000;pointer-events:none}
     #cf-app .cf-poster-hotspot{position:absolute;z-index:3;display:block;padding:0;border:0;border-radius:12px;background:transparent;cursor:pointer;touch-action:manipulation}
     #cf-app .cf-poster-hotspot:focus-visible{outline:2px solid #ffe38b;background:#ffffff12}
     #cf-app .cf-hotspot-slots{left:7%;top:37%;width:27%;height:12%}
