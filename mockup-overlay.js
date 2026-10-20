@@ -393,7 +393,7 @@
       <button type="button" class="cf-art-hotspot cf-hotspot-bonuses" data-go="bonuses" aria-label="Открыть ежедневные призы"></button>
       <a class="cf-art-hotspot cf-hotspot-channel" href="https://t.me/Cosmic_Fortune" data-cf-telegram="channel" aria-label="Открыть канал"></a>
       <a class="cf-art-hotspot cf-hotspot-chat" href="https://t.me/CosmisFortunechat" data-cf-telegram="chat" aria-label="Открыть чат"></a>
-    </section>`
+    </section>`}
 
   function gameList(){return '<div class="section-title">ИГРЫ</div><div style="color:#c6b5e2;margin:0 2px 14px">ВЫБЕРИ СВОЮ УДАЧУ</div>'+games.map(g=>'<button class="widecard" data-go="'+g[0]+'"><div class="art" data-art="'+g[0]+'"><span>'+g[1]+'</span></div><div style="flex:1"><strong>'+g[2]+'</strong><small>'+g[3]+'</small></div>›</button>').join('')}
   function panel(title,body){return '<div class="section-title">'+title+'</div><section class="gamepanel">'+body+'</section>'}
