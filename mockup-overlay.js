@@ -865,8 +865,6 @@
     button.textContent='Проверяем подписку…';
     checkAccessAndStart(true);
   },{capture:true,passive:false});
-  // Open the Mini App directly; subscription prompts belong to the Telegram bot only.
-  app.querySelector('.bottom')?.style.removeProperty('display');
-  render('home');
-  refreshAccount();
+  // Require verified membership in both the channel and chat before opening the app.
+  checkAccessAndStart(false);
 })();
