@@ -454,32 +454,9 @@
     }
   }
   const primary=(text,act)=>'<button class="primary" data-action="'+act+'">'+text+'</button>';
-  function home(){return `
-    <section class="cf-home-page cf-home-static" aria-label="Главная Cosmic Fortune">
-      <div class="cf-home-poster-wrap">
-        <img class="cf-home-uploaded-image" src="./a_vertical_high_gloss_neon_casino_game_ui_poster.png" alt="Cosmic Fortune — главная страница" loading="eager" fetchpriority="high">
-        <span id="cf-home-balance" class="cf-poster-live-balance" aria-label="Текущий баланс">—</span>
-        <button class="cf-poster-hotspot cf-hotspot-topup" data-go="profile" aria-label="Открыть меню пополнения баланса"></button>
-        <button class="cf-poster-hotspot cf-hotspot-slots" data-go="slots" aria-label="Открыть слоты"></button>
-        <button class="cf-poster-hotspot cf-hotspot-roulette" data-go="roulette" aria-label="Открыть рулетку"></button>
-        <button class="cf-poster-hotspot cf-hotspot-jet" data-go="luckyjet" aria-label="Открыть Lucky Jet"></button>
-        <button class="cf-poster-hotspot cf-hotspot-dice" data-go="dice" aria-label="Открыть Dice"></button>
-        <button class="cf-poster-hotspot cf-hotspot-blackjack" data-go="blackjack" aria-label="Открыть Blackjack"></button>
-        <button class="cf-poster-hotspot cf-hotspot-miner" data-go="miner" aria-label="Открыть Miner"></button>
-        <button class="cf-poster-hotspot cf-hotspot-play" data-go="games" aria-label="Играть"></button>
-        <button class="cf-poster-hotspot cf-hotspot-daily" data-action="open-daily-reward" aria-label="Открыть ежедневные награды"></button>
-        <button class="cf-poster-hotspot cf-hotspot-wheel" data-action="open-bonus-wheel" aria-label="Колесо удачи"></button>
-        <button class="cf-poster-hotspot cf-hotspot-profile" data-go="profile" aria-label="Профиль"></button>
-        <button class="cf-poster-hotspot cf-home-nav-home" data-go="home" aria-label="Главная"></button>
-        <button class="cf-poster-hotspot cf-home-nav-games" data-go="games" aria-label="Игры"></button>
-        <button class="cf-poster-hotspot cf-home-nav-bonuses" data-go="bonuses" aria-label="Бонусы"></button>
-        <button class="cf-poster-hotspot cf-home-nav-profile" data-go="profile" aria-label="Профиль"></button>
-        <button class="cf-poster-hotspot cf-hotspot-channel" data-cf-telegram="channel" href="https://t.me/Cosmic_Fortune" aria-label="Подписаться на канал"></button>
-        <button class="cf-poster-hotspot cf-hotspot-chat" data-cf-telegram="chat" href="https://t.me/CosmisFortunechat" aria-label="Открыть чат"></button>
-      </div>
-    </section>`}
+  function home(){return '<section class="cf-home-page cf-home-static" aria-label="Главная Cosmic Fortune"><div class="cf-home-redesign"><section class="cf-home-hero"><div class="cf-home-kicker">✦ COSMIC FORTUNE ✦</div><h1>Твоя удача<br>начинается здесь</h1><p>Выбирай игру, делай ставку и испытай удачу в космическом казино.</p><button class="primary" data-go="games">🎮 Все игры</button></section><div class="section-title">Быстрый доступ</div><div class="cf-home-shortcuts"><button class="cf-home-shortcut" data-action="open-daily-reward"><span class="shortcut-icon">🎁</span><span><strong>Ежедневный бонус</strong><small>Награда каждые 24 часа</small></span></button><button class="cf-home-shortcut" data-action="open-bonus-wheel"><span class="shortcut-icon">🎡</span><span><strong>Колесо удачи</strong><small>Бесплатный спин</small></span></button><button class="cf-home-shortcut" data-go="games"><span class="shortcut-icon">🎰</span><span><strong>Каталог игр</strong><small>Все игры в одном месте</small></span></button><button class="cf-home-shortcut" data-go="profile"><span class="shortcut-icon">👤</span><span><strong>Мой профиль</strong><small>Баланс и история</small></span></button></div></div></section>'}
  
-function gameList(){return '<section class="cf-games-page"><div class="cf-games-wallpaper"><img src="./a_vibrant_neon_futuristic_high_resolution_mobile.png" alt="" loading="eager"></div><div class="cf-games-live-balance" aria-label="Текущий баланс"><span id="cf-home-balance">—</span></div><div class="cf-games-scroll"><div class="cf-games-section-title">✦ ВСЕ ИГРЫ ✦<small>Выбери игру и начинай играть</small></div><div class="cf-games-grid">'+games.map(g=>'<button type="button" class="cf-game-tile cf-game-'+g[0]+'" data-go="'+g[0]+'"><span class="cf-game-tile-art" aria-hidden="true">'+g[1]+'</span><span class="cf-game-tile-info"><strong>'+g[2]+'</strong><small>'+g[3]+'</small></span><span class="cf-game-tile-arrow">›</span></button>').join('')+'</div></div><nav class="cf-image-nav" aria-label="Навигация по изображению"><button data-go="home" aria-label="Главная"></button><button data-go="games" aria-label="Игры"></button><button data-go="bonuses" aria-label="Бонусы"></button><button data-go="profile" aria-label="Профиль"></button></nav><button class="cf-games-topup" data-go="profile" aria-label="Пополнить баланс"></button></section>'}
+function gameList(){return '<section class="cf-games-page"><div class="cf-games-scroll"><div class="cf-games-section-title">✦ ВСЕ ИГРЫ ✦<small>Выбери игру и начинай играть</small></div><div class="cf-games-grid">'+games.map(g=>'<button type="button" class="cf-game-tile cf-game-'+g[0]+'" data-go="'+g[0]+'"><span class="cf-game-tile-art" aria-hidden="true">'+g[1]+'</span><span class="cf-game-tile-info"><strong>'+g[2]+'</strong><small>'+g[3]+'</small></span><span class="cf-game-tile-arrow">›</span></button>').join('')+'</div></div></section>'}
   function panel(title,body){return '<div class="section-title">'+title+'</div><section class="gamepanel">'+body+'</section>'}
   function gameAvatar(game){
     const views={
