@@ -348,6 +348,12 @@
     #cf-app .cf-home-feature>b{font-size:25px;color:#cfa3ff}
     #cf-app .cf-home-community{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     #cf-app .cf-home-community a{display:flex;align-items:center;justify-content:center;min-height:42px;padding:8px;border:1px solid #59357e;border-radius:12px;background:#120b20;color:#e5d1ff;text-decoration:none;font-size:10px;font-weight:800;text-align:center}
+    #cf-app .cf-home-balance{display:flex;align-items:center;gap:12px;width:100%;min-height:72px;padding:12px 15px;border:1px solid #d9ad54;border-radius:18px;background:linear-gradient(110deg,#28143e,#120b20 72%);color:#fff;text-align:left;cursor:pointer;box-sizing:border-box;touch-action:manipulation}
+    #cf-app .cf-home-balance-icon{width:43px;height:43px;flex:none;display:grid;place-items:center;border-radius:13px;background:linear-gradient(145deg,#ffe39a,#b87820);color:#341746;font-size:25px}
+    #cf-app .cf-home-balance-copy{display:grid;gap:4px;min-width:0;flex:1}
+    #cf-app .cf-home-balance-copy small{font-size:9px;font-weight:900;letter-spacing:.15em;color:#d6b9f7}
+    #cf-app .cf-home-balance-copy strong{font-size:clamp(19px,5vw,25px);line-height:1.1;color:#ffe39a;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+    #cf-app .cf-home-balance-plus{width:32px;height:32px;flex:none;display:grid;place-items:center;border-radius:10px;background:#593078;color:#fff0b2;font-size:24px}
     #cf-app .cf-home-page button:active{transform:scale(.985);filter:brightness(1.1)}
 
 
@@ -426,6 +432,7 @@
   const primary=(text,act)=>'<button class="primary" data-action="'+act+'">'+text+'</button>';
   function home(){return `
     <section class="cf-home-page" aria-label="Главная Cosmic Fortune">
+      <button type="button" class="cf-home-balance" data-go="profile" aria-label="Открыть профиль и баланс"><span class="cf-home-balance-icon">✦</span><span class="cf-home-balance-copy"><small>ТВОЙ БАЛАНС</small><strong><span id="cf-home-balance">—</span> ₽</strong></span><span class="cf-home-balance-plus">＋</span></button>
       <div class="cf-home-hero-card">
         <div class="cf-home-kicker">✦ ТВОЯ ВСЕЛЕННАЯ · ТВОЯ УДАЧА</div>
         <div class="cf-home-mascot" aria-hidden="true">👑</div>
