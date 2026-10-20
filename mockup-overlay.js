@@ -348,8 +348,18 @@
     #cf-app .cf-home-feature>b{font-size:25px;color:#cfa3ff}
     #cf-app .cf-home-community{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     #cf-app .cf-home-community a{display:flex;align-items:center;justify-content:center;min-height:42px;padding:8px;border:1px solid #59357e;border-radius:12px;background:#120b20;color:#e5d1ff;text-decoration:none;font-size:10px;font-weight:800;text-align:center}
-    #cf-app .cf-home-image-button{display:block;width:100%;padding:0;overflow:hidden;border:1px solid #a65ce4;border-radius:22px;background:#10081d;box-shadow:0 8px 24px #0007;cursor:pointer;touch-action:manipulation}
-    #cf-app .cf-home-uploaded-image{display:block;width:100%;height:auto;max-height:340px;object-fit:cover;object-position:center;border-radius:21px}
+    #cf-app .cf-home-page{display:grid;gap:14px;padding:0 0 12px}
+    #cf-app .cf-home-poster-wrap{position:relative;width:100%;overflow:hidden;border:1px solid #9d54e8;border-radius:22px;background:#090512;box-shadow:0 8px 24px #0007;line-height:0}
+    #cf-app .cf-home-uploaded-image{display:block;width:100%;height:auto;max-height:none;object-fit:contain;object-position:center}
+    #cf-app .cf-poster-hotspot{position:absolute;z-index:2;display:block;padding:0;border:0;border-radius:12px;background:transparent;cursor:pointer;touch-action:manipulation}
+    #cf-app .cf-poster-hotspot:focus-visible{outline:2px solid #ffe38b;background:#ffffff12}
+    #cf-app .cf-hotspot-slots{left:7%;top:29%;width:27%;height:16%}
+    #cf-app .cf-hotspot-roulette{left:36.5%;top:29%;width:27%;height:16%}
+    #cf-app .cf-hotspot-jet{right:7%;top:29%;width:27%;height:16%}
+    #cf-app .cf-hotspot-dice{left:7%;top:46%;width:27%;height:16%}
+    #cf-app .cf-hotspot-blackjack{left:36.5%;top:46%;width:27%;height:16%}
+    #cf-app .cf-hotspot-miner{right:7%;top:46%;width:27%;height:16%}
+    #cf-app .cf-hotspot-play{left:16%;top:67%;width:68%;height:12%}
     #cf-app .cf-home-balance{display:flex;align-items:center;gap:12px;width:100%;min-height:72px;padding:12px 15px;border:1px solid #d9ad54;border-radius:18px;background:linear-gradient(110deg,#28143e,#120b20 72%);color:#fff;text-align:left;cursor:pointer;box-sizing:border-box;touch-action:manipulation}
     #cf-app .cf-home-balance-icon{width:43px;height:43px;flex:none;display:grid;place-items:center;border-radius:13px;background:linear-gradient(145deg,#ffe39a,#b87820);color:#341746;font-size:25px}
     #cf-app .cf-home-balance-copy{display:grid;gap:4px;min-width:0;flex:1}
@@ -435,32 +445,23 @@
   function home(){return `
     <section class="cf-home-page" aria-label="Главная Cosmic Fortune">
       <button type="button" class="cf-home-balance" data-go="profile" aria-label="Открыть профиль и баланс"><span class="cf-home-balance-icon">✦</span><span class="cf-home-balance-copy"><small>ТВОЙ БАЛАНС</small><strong><span id="cf-home-balance">—</span> ₽</strong></span><span class="cf-home-balance-plus">＋</span></button>
-      <button type="button" class="cf-home-image-button" data-go="games" aria-label="Открыть игры Cosmic Fortune"><img class="cf-home-uploaded-image" src="./a_vertical_high_gloss_neon_casino_game_ui_poster.png" alt="Cosmic Fortune — игровые автоматы и космическая удача" loading="eager" fetchpriority="high"></button>
-      <div class="cf-home-hero-card">
-        <div class="cf-home-kicker">✦ ТВОЯ ВСЕЛЕННАЯ · ТВОЯ УДАЧА</div>
-        <div class="cf-home-mascot" aria-hidden="true">👑</div>
-        <h1>COSMIC <span>FORTUNE</span></h1>
-        <p>Выбирай игру, делай ход и забирай виртуальные игровые кредиты.</p>
-        <button type="button" class="cf-home-main-cta" data-go="games">▶ ИГРАТЬ</button>
-      </div>
-      <div class="cf-home-section-head"><div><small>НАЧНИ СЕЙЧАС</small><h2>Популярные игры</h2></div><button type="button" data-go="games">Все игры <span>›</span></button></div>
-      <div class="cf-home-games-grid">
-        <button class="cf-home-game cf-home-slot" data-go="slots"><span class="cf-home-game-art">🎰</span><strong>Слоты</strong><small>Крути барабаны</small></button>
-        <button class="cf-home-game cf-home-roulette" data-go="roulette"><span class="cf-home-game-art">🎡</span><strong>Рулетка</strong><small>Выбери ставку</small></button>
-        <button class="cf-home-game cf-home-dice" data-go="dice"><span class="cf-home-game-art">🎲</span><strong>Dice</strong><small>Бросай кости</small></button>
-        <button class="cf-home-game cf-home-jet" data-go="luckyjet"><span class="cf-home-game-art">🚀</span><strong>Lucky Jet</strong><small>Лови множитель</small></button>
+      <div class="cf-home-poster-wrap">
+        <img class="cf-home-uploaded-image" src="./a_vertical_high_gloss_neon_casino_game_ui_poster.png" alt="Cosmic Fortune — выбери игру" loading="eager" fetchpriority="high">
+        <button class="cf-poster-hotspot cf-hotspot-slots" data-go="slots" aria-label="Открыть слоты"></button>
+        <button class="cf-poster-hotspot cf-hotspot-roulette" data-go="roulette" aria-label="Открыть рулетку"></button>
+        <button class="cf-poster-hotspot cf-hotspot-jet" data-go="luckyjet" aria-label="Открыть Lucky Jet"></button>
+        <button class="cf-poster-hotspot cf-hotspot-dice" data-go="dice" aria-label="Открыть Dice"></button>
+        <button class="cf-poster-hotspot cf-hotspot-blackjack" data-go="blackjack" aria-label="Открыть Blackjack"></button>
+        <button class="cf-poster-hotspot cf-hotspot-miner" data-go="mines" aria-label="Открыть Miner"></button>
+        <button class="cf-poster-hotspot cf-hotspot-play" data-go="games" aria-label="Открыть все игры"></button>
       </div>
       <div class="cf-home-feature-row">
-        <button class="cf-home-feature cf-home-daily" data-action="open-daily-reward"><span class="cf-home-feature-icon">🎁</span><span><strong>Ежедневные награды</strong><small>8 дней бонусов · раз в 24 часа</small></span><b>›</b></button>
-        <button class="cf-home-feature cf-home-wheel" data-action="open-bonus-wheel"><span class="cf-home-feature-icon">✨</span><span><strong>Колесо удачи</strong><small>Бесплатный вращение по таймеру</small></span><b>›</b></button>
-      </div>
-      <div class="cf-home-community">
-        <a href="https://t.me/Cosmic_Fortune" data-cf-telegram="channel">✈️ Канал Cosmic Fortune</a>
-        <a href="https://t.me/CosmisFortunechat" data-cf-telegram="chat">💬 Чат игроков</a>
+        <button class="cf-home-feature cf-home-daily" data-go="bonuses"><span class="cf-home-feature-icon">🎁</span><span><strong>Ежедневные награды</strong><small>8 дней бонусов · раз в 24 часа</small></span><b>›</b></button>
+        <button class="cf-home-feature cf-home-wheel" data-action="open-bonus-wheel"><span class="cf-home-feature-icon">✨</span><span><strong>Колесо удачи</strong><small>Бесплатное вращение по таймеру</small></span><b>›</b></button>
       </div>
     </section>`}
-
-  function gameList(){return '<div class="section-title">ИГРЫ</div><div style="color:#c6b5e2;margin:0 2px 14px">ВЫБЕРИ СВОЮ УДАЧУ</div>'+games.map(g=>'<button class="widecard" data-go="'+g[0]+'"><div class="art" data-art="'+g[0]+'"><span>'+g[1]+'</span></div><div style="flex:1"><strong>'+g[2]+'</strong><small>'+g[3]+'</small></div>›</button>').join('')}
+ 
+function gameList(){return '<div class="section-title">ИГРЫ</div><div style="color:#c6b5e2;margin:0 2px 14px">ВЫБЕРИ СВОЮ УДАЧУ</div>'+games.map(g=>'<button class="widecard" data-go="'+g[0]+'"><div class="art" data-art="'+g[0]+'"><span>'+g[1]+'</span></div><div style="flex:1"><strong>'+g[2]+'</strong><small>'+g[3]+'</small></div>›</button>').join('')}
   function panel(title,body){return '<div class="section-title">'+title+'</div><section class="gamepanel">'+body+'</section>'}
   function gameAvatar(game){
     const views={
