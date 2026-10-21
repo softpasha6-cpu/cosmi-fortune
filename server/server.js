@@ -797,7 +797,7 @@ app.post('/api/miner/cashout',requireUser,async(req,res,next)=>{
 });
 app.get('/api/luckyjet/live',requireUser,async(req,res,next)=>{
  try{
-  let q=await pool.query("SELECT id,started_at,crash_at FROM luckyjet_rounds WHERE status='active' ORDER BY started_at DESC LIMIT 1");
+  let q=await pool.query("SELECT id,started_at,crash_at FROM luckyjet_rounds WHERE started_at>NOW()-INTERVAL '3 minutes' ORDER BY started_at DESC LIMIT 1");
   let flight=null,bets=[];
   if(q.rowCount){
    const startedAt=q.rows[0].started_at,crashAt=Number(q.rows[0].crash_at);
@@ -826,9 +826,8 @@ app.post('/api/luckyjet/start',requireUser,async(req,res,next)=>{
   await client.query('SELECT pg_advisory_xact_lock($1)',[74190261]);
   const p=await client.query('SELECT balance FROM players WHERE telegram_id=$1 FOR UPDATE',[req.player.telegram_id]);
   if(!p.rowCount||Number(p.rows[0].balance)<bet){await client.query('ROLLBACK');return res.status(400).json({error:'Недостаточно виртуальных кредитов.'})}
-  const own=await client.query("SELECT id FROM luckyjet_rounds WHERE telegram_id=$1 AND status='active' FOR UPDATE",[req.player.telegram_id]);
-  if(own.rowCount){await client.query('ROLLBACK');return res.status(409).json({error:'Сначала заверши предыдущий Lucky Jet.'})}
-  let shared=await client.query("SELECT started_at,crash_at FROM luckyjet_rounds WHERE status='active' ORDER BY started_at DESC LIMIT 1");
+  // Multiple independent bets from the same player are allowed in the same shared flight.
+  let shared=await client.query("SELECT started_at,crash_at FROM luckyjet_rounds WHERE started_at>NOW()-INTERVAL '3 minutes' ORDER BY started_at DESC LIMIT 1");
   if(shared.rowCount){
    const flight=shared.rows[0],elapsed=(Date.now()-new Date(flight.started_at).getTime())/1000;
    const current=1+Math.pow(Math.max(0,elapsed),1.35)*0.23;
