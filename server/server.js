@@ -244,9 +244,9 @@ function playSlotRound(bet, activeFeature){
     const previous=new Set(grid.map((v,i)=>v==='rhino'?i:-1).filter(i=>i>=0));
     for(let i=0;i<15;i++)if(!previous.has(i)){
       const col=Math.floor(i/3);
-      // Every landed rhino locks in place during Super Respins.
+      // Only rhinos and empty positions can land during Super Respins.
       if(randInt(col===0||col===4?18:12)===0)grid[i]='rhino';
-      else grid[i]=slotRandomSymbol();
+      else grid[i]=null;
     }
     const newRhinos=grid.filter(v=>v==='rhino').length;
     const landed=newRhinos>previous.size;
@@ -257,10 +257,12 @@ function playSlotRound(bet, activeFeature){
     else if(newRhinos>=14){payout=Math.max(payout,Math.floor((Number(feature.bet)||bet)*375));remaining=0;message='MAJOR JACKPOT · 375×';}
     else if(remaining===0)message='Super Respin завершён';
     const next=remaining?{...feature,grid,remaining}:null;
-    return {payout,outcome:{reels:grid.map(v=>v||'J'),feature:'super-respin',rhinoCount:newRhinos,respinsLeft:remaining,featureState:next,chargedBet:0,message},chargeBet:false};
+    return {payout,outcome:{reels:grid,feature:'super-respin',rhinoCount:newRhinos,respinsLeft:remaining,featureState:next,chargedBet:0,message},chargeBet:false};
   }
   const grid=Array.from({length:15},()=>slotRandomSymbol());
-  // Bonus scatters only land on reels 2, 3 and 4; one on each starts 10 free spins.
+  // Great Rhino uses stacked rhino reels; two or more full stacks trigger Super Respin.
+  for(let col=0;col<5;col++)if(randInt(22)===0)for(let row=0;row<3;row++)grid[col*3+row]='rhino';
+  // Bonus scatters are restricted to reels 2, 3 and 4.
   for(let col=1;col<=3;col++)if(randInt(24)===0)grid[col*3+randInt(3)]='sun';
   const pay=slotPaylineWin(grid,bet,false);
   const scatterReels=[1,2,3].filter(col=>grid.slice(col*3,col*3+3).includes('sun'));
