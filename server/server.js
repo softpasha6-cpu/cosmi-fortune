@@ -206,13 +206,14 @@ function slotRandomSymbol(){
 function slotGridHasRhinoStacks(grid){
   const blocks=[];
   for(let col=0;col<4;col++)for(let row=0;row<2;row++){
-    const cells=[row*5+col,(row+1)*5+col,row*5+col+1,(row+1)*5+col+1];
+    const cells=[col*3+row,col*3+row+1,(col+1)*3+row,(col+1)*3+row+1];
     if(cells.every(i=>grid[i]==='rhino'))blocks.push({col,row,cells});
   }
   return blocks;
 }
-function slotPaylineWin(grid, bet, wildRhino=false){
+function slotPaylineWin(grid, totalBet, wildRhino=false){
   let total=0;const wins=[];
+  const betPerLine=Number(totalBet)/SLOT_PAYLINES.length;
   for(let li=0;li<SLOT_PAYLINES.length;li++){
     const rows=SLOT_PAYLINES[li],line=rows.map((row,col)=>grid[col*3+row]);
     let best={symbol:null,count:0,multiplier:0};
@@ -224,7 +225,7 @@ function slotPaylineWin(grid, bet, wildRhino=false){
       const multiplier=SLOT_PAYTABLE[symbol][count]||0;
       if(multiplier>best.multiplier)best={symbol,count,multiplier};
     }
-    if(best.multiplier>0){const win=Math.floor(bet*best.multiplier);total+=win;wins.push({payline:li+1,symbol:best.symbol,count:best.count,payout:win});}
+    if(best.multiplier>0){const win=Math.floor(betPerLine*best.multiplier);total+=win;wins.push({payline:li+1,symbol:best.symbol,count:best.count,payout:win});}
   }
   return {total,wins};
 }
