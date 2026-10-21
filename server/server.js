@@ -799,15 +799,33 @@ app.post('/api/luckyjet/start',requireUser,async(req,res,next)=>{
  const bet=Number(req.body?.bet),autoAt=req.body?.autoAt==null?null:Number(req.body.autoAt);
  if(!Number.isSafeInteger(bet)||bet<1||bet>MAX_BET)return res.status(400).json({error:'Ставка от 1 до 100 000.'});
  if(autoAt!==null&&(!Number.isFinite(autoAt)||autoAt<1.1||autoAt>100))return res.status(400).json({error:'Авто-вывод должен быть от 1.1× до 100×.'});
- const client=await pool.connect();try{await client.query('BEGIN');const p=await client.query('SELECT balance FROM players WHERE telegram_id=$1 FOR UPDATE',[req.player.telegram_id]);
- if(!p.rowCount||Number(p.rows[0].balance)<bet){await client.query('ROLLBACK');return res.status(400).json({error:'Недостаточно виртуальных кредитов.'})}
- const active=await client.query("SELECT id FROM luckyjet_rounds WHERE telegram_id=$1 AND status='active' FOR UPDATE",[req.player.telegram_id]);
- if(active.rowCount){await client.query('ROLLBACK');return res.status(409).json({error:'Сначала заверши предыдущий Lucky Jet.'})}
- const id=crypto.randomUUID(),roll=Math.max(1.01,Math.min(50,Number((1/(1-Math.random()*0.98)).toFixed(2))));
- const balance=Number(p.rows[0].balance)-bet;
- await client.query('UPDATE players SET balance=$2,updated_at=NOW() WHERE telegram_id=$1',[req.player.telegram_id,balance]);
- await client.query('INSERT INTO luckyjet_rounds(id,telegram_id,bet,crash_at,auto_at) VALUES($1,$2,$3,$4,$5)',[id,req.player.telegram_id,bet,roll,autoAt]);
- await client.query('COMMIT');res.json({round:{id,startedAt:Date.now(),autoAt},balance});
+ const client=await pool.connect();try{
+  await client.query('BEGIN');
+  // Serialize starts so every player joins the same live flight instead of getting an independent crash point.
+  await client.query('SELECT pg_advisory_xact_lock($1)',[74190261]);
+  const p=await client.query('SELECT balance FROM players WHERE telegram_id=$1 FOR UPDATE',[req.player.telegram_id]);
+  if(!p.rowCount||Number(p.rows[0].balance)<bet){await client.query('ROLLBACK');return res.status(400).json({error:'Недостаточно виртуальных кредитов.'})}
+  const own=await client.query("SELECT id FROM luckyjet_rounds WHERE telegram_id=$1 AND status='active' FOR UPDATE",[req.player.telegram_id]);
+  if(own.rowCount){await client.query('ROLLBACK');return res.status(409).json({error:'Сначала заверши предыдущий Lucky Jet.'})}
+  let shared=await client.query("SELECT started_at,crash_at FROM luckyjet_rounds WHERE status='active' ORDER BY started_at DESC LIMIT 1");
+  if(shared.rowCount){
+   const flight=shared.rows[0],elapsed=(Date.now()-new Date(flight.started_at).getTime())/1000;
+   const current=1+Math.pow(Math.max(0,elapsed),1.35)*0.23;
+   if(current>=Number(flight.crash_at)){
+    await client.query("UPDATE luckyjet_rounds SET status='crashed',finished_at=COALESCE(finished_at,NOW()) WHERE status='active' AND started_at=$1",[flight.started_at]);
+    shared={rowCount:0,rows:[]};
+   }
+  }
+  if(!shared.rowCount){
+   const roll=Math.max(1.01,Math.min(50,Number((1/(1-Math.random()*0.98)).toFixed(2))));
+   shared=await client.query("SELECT NOW() AS started_at,$1::numeric AS crash_at",[roll]);
+  }
+  const id=crypto.randomUUID(),flightStart=shared.rows[0].started_at,roll=Number(shared.rows[0].crash_at);
+  const balance=Number(p.rows[0].balance)-bet;
+  await client.query('UPDATE players SET balance=$2,updated_at=NOW() WHERE telegram_id=$1',[req.player.telegram_id,balance]);
+  const inserted=await client.query('INSERT INTO luckyjet_rounds(id,telegram_id,bet,crash_at,started_at,auto_at) VALUES($1,$2,$3,$4,$5,$6) RETURNING started_at',[id,req.player.telegram_id,bet,roll,flightStart,autoAt]);
+  await client.query('COMMIT');
+  res.json({round:{id,startedAt:new Date(inserted.rows[0].started_at).getTime(),autoAt},balance});
  }catch(e){await client.query('ROLLBACK').catch(()=>{});next(e)}finally{client.release()}
 });
 app.post('/api/luckyjet/status',requireUser,async(req,res,next)=>{
