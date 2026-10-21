@@ -186,23 +186,98 @@ function cardValue(c) { return Math.min(c, 10); }
 function blackjackHand() { return [card(), card()]; }
 function handTotal(hand) { return hand.reduce((sum, c) => sum + cardValue(c), 0); }
 
-function playRound(game, bet, choice) {
-  if (game === 'slots') {
-    // Five reels, three visible symbols per reel (15 symbols total).
-    const reels = Array.from({ length: 15 }, () => SYMBOLS[randInt(SYMBOLS.length)]);
-    // The middle row is the initial active payline; keep the existing multiplier scale.
-    const line = [reels[1], reels[4], reels[7], reels[10], reels[13]];
-    let multiplier = 0;
-    let longestRun = 1;
-    let run = 1;
-    for (let i = 1; i < line.length; i++) {
-      if (line[i] === line[i - 1]) { run++; longestRun = Math.max(longestRun, run); }
-      else run = 1;
-    }
-    if (line.every(symbol => symbol === line[0])) multiplier = line[0] === 'golden-rhino' ? 10 : line[0] === 'rhino' ? 8 : 5;
-    else if (longestRun >= 4) multiplier = 1.5;
-    return { payout: Math.floor(bet * multiplier), outcome: { reels, multiplier, line, message: multiplier >= 5 ? 'Джекпот!' : multiplier > 0 ? 'Есть выигрыш!' : 'Попробуй ещё раз' } };
+const SLOT_SYMBOLS = ['rhino', 'golden-rhino', 'eagle', 'flamingo', 'crocodile', 'hyena', 'A', 'K', 'Q', 'J', 'sun'];
+const SLOT_PAYLINES = [
+  [1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],
+  [0,0,1,0,0],[2,2,1,2,2],[1,0,0,0,1],[1,2,2,2,1],[0,1,1,1,0],
+  [2,1,1,1,2],[1,0,1,2,1],[1,2,1,0,1],[0,1,0,1,0],[2,1,2,1,2],
+  [0,2,0,2,0],[2,0,2,0,2],[0,2,2,2,0],[2,0,0,0,2],[1,1,0,1,1]
+];
+const SLOT_PAYTABLE = {
+  'golden-rhino': {3:4,4:12,5:40}, eagle:{3:3,4:8,5:25},
+  flamingo:{3:2.5,4:6,5:18}, crocodile:{3:2,4:5,5:15},
+  hyena:{3:1.5,4:4,5:12}, A:{3:1,4:2.5,5:8}, K:{3:0.8,4:2,5:6},
+  Q:{3:0.6,4:1.5,5:5}, J:{3:0.5,4:1.2,5:4}
+};
+function slotRandomSymbol(){
+  const pool=['J','J','J','Q','Q','Q','K','K','A','A','hyena','hyena','crocodile','flamingo','eagle','golden-rhino','rhino','sun'];
+  return pool[randInt(pool.length)];
+}
+function slotGridHasRhinoStacks(grid){
+  const blocks=[];
+  for(let col=0;col<4;col++)for(let row=0;row<2;row++){
+    const cells=[row*5+col,(row+1)*5+col,row*5+col+1,(row+1)*5+col+1];
+    if(cells.every(i=>grid[i]==='rhino'))blocks.push({col,row,cells});
   }
+  return blocks;
+}
+function slotPaylineWin(grid, bet, wildRhino=false){
+  let total=0;const wins=[];
+  for(let li=0;li<SLOT_PAYLINES.length;li++){
+    const rows=SLOT_PAYLINES[li],line=rows.map((row,col)=>grid[col*3+row]);
+    let best={symbol:null,count:0,multiplier:0};
+    for(const symbol of Object.keys(SLOT_PAYTABLE)){
+      let count=0;
+      for(const value of line){
+        if(value===symbol||(wildRhino&&value==='rhino'))count++;else break;
+      }
+      const multiplier=SLOT_PAYTABLE[symbol][count]||0;
+      if(multiplier>best.multiplier)best={symbol,count,multiplier};
+    }
+    if(best.multiplier>0){const win=Math.floor(bet*best.multiplier);total+=win;wins.push({payline:li+1,symbol:best.symbol,count:best.count,payout:win});}
+  }
+  return {total,wins};
+}
+function playSlotRound(bet, activeFeature){
+  const feature=activeFeature&&typeof activeFeature==='object'?activeFeature:null;
+  if(feature?.mode==='free-spins'){
+    const grid=Array.from({length:15},()=>slotRandomSymbol());
+    // In the original Great Rhino free-spin round, every rhino acts as a Wild.
+    const pay=slotPaylineWin(grid,Number(feature.bet)||bet,true);
+    const remaining=Math.max(0,Number(feature.remaining||0)-1);
+    const next=remaining?{...feature,remaining}:null;
+    return {payout:pay.total,outcome:{reels:grid,feature:'free-spins',freeSpinsLeft:remaining,featureState:next,chargedBet:0,wins:pay.wins,multiplier:pay.total/(Number(feature.bet)||bet||1),message:remaining?'Бесплатные вращения · носорог работает как Wild':'Бесплатные вращения завершены'} ,chargeBet:false};
+  }
+  if(feature?.mode==='super-respin'){
+    const grid=Array.isArray(feature.grid)&&feature.grid.length===15?feature.grid.slice():Array(15).fill(null);
+    const previous=new Set(grid.map((v,i)=>v==='rhino'?i:-1).filter(i=>i>=0));
+    for(let i=0;i<15;i++)if(!previous.has(i)){
+      const col=Math.floor(i/3);
+      // Rhino stacks are sticky during Super Respins; new rhinos award another respin.
+      if(randInt(col===0||col===4?18:12)===0)grid[i]='rhino';
+      else grid[i]=randInt(5)===0?null:slotRandomSymbol();
+    }
+    const newRhinos=grid.filter(v=>v==='rhino').length;
+    const landed=newRhinos>previous.size;
+    let payout=slotPaylineWin(grid.map(v=>v||'J'),Number(feature.bet)||bet,false).total;
+    let remaining=landed?3:Math.max(0,Number(feature.remaining||1)-1);
+    let message=landed?'Носорог закреплён — дополнительный респин!':'Super Respin';
+    if(newRhinos>=15){payout=Math.max(payout,Math.floor((Number(feature.bet)||bet)*500));remaining=0;message='GRAND JACKPOT · 500×';}
+    else if(newRhinos>=14){payout=Math.max(payout,Math.floor((Number(feature.bet)||bet)*375));remaining=0;message='MAJOR JACKPOT · 375×';}
+    else if(remaining===0)message='Super Respin завершён';
+    const next=remaining?{...feature,grid,remaining}:null;
+    return {payout,outcome:{reels:grid.map(v=>v||'J'),feature:'super-respin',rhinoCount:newRhinos,respinsLeft:remaining,featureState:next,chargedBet:0,message},chargeBet:false};
+  }
+  const grid=Array.from({length:15},()=>slotRandomSymbol());
+  // Bonus scatters only land on reels 2, 3 and 4; one on each starts 10 free spins.
+  for(let col=1;col<=3;col++)if(randInt(24)===0)grid[col*3+randInt(3)]='sun';
+  const pay=slotPaylineWin(grid,bet,false);
+  const scatterReels=[1,2,3].filter(col=>grid.slice(col*3,col*3+3).includes('sun'));
+  const scatterTriggered=scatterReels.length===3;
+  const stacks=slotGridHasRhinoStacks(grid);
+  const respinTriggered=stacks.length>=2;
+  let featureState=null,feature=null,message=pay.total?'Выигрыш по линиям!':'Попробуй ещё раз';
+  if(scatterTriggered){feature='free-spins';featureState={mode:'free-spins',remaining:10,bet};message='БОНУС! 10 бесплатных вращений · носорог — Wild';}
+  else if(respinTriggered){
+    feature='super-respin';
+    // Keep the two triggering 2x2 stacks locked in place for the feature.
+    featureState={mode:'super-respin',grid,remaining:3,bet};
+    message='SUPER RESPIN! Носороги закреплены · 3 респина';
+  }
+  return {payout:pay.total,outcome:{reels:grid,feature,featureState,freeSpinsLeft:feature==='free-spins'?10:undefined,respinsLeft:feature==='super-respin'?3:undefined,wins:pay.wins,chargedBet:bet,multiplier:pay.total/(bet||1),message,scatterCount:scatterReels.length,rhinoStacks:stacks.length},chargeBet:true};
+}
+function playRound(game, bet, choice, activeSlotFeature=null) {
+  if (game === 'slots') return playSlotRound(bet, activeSlotFeature);
   if (game === 'dice') {
     const dice = [randInt(6) + 1, randInt(6) + 1];
     const roll = dice[0] + dice[1];
@@ -610,16 +685,28 @@ app.post('/api/game', requireUser, async (req, res, next) => {
       });
     }
     const balance = Number(locked.rows[0].balance);
-    if (balance < bet) {
+    let activeSlotFeature = null;
+    if (game === 'slots') {
+      const lastSlot = await client.query(
+        "SELECT outcome FROM game_transactions WHERE telegram_id=$1 AND game='slots' ORDER BY id DESC LIMIT 1",
+        [req.player.telegram_id]
+      );
+      const lastOutcome = lastSlot.rows[0]?.outcome;
+      const parsedOutcome = typeof lastOutcome === 'string' ? (() => { try { return JSON.parse(lastOutcome); } catch { return null; } })() : lastOutcome;
+      const candidate = parsedOutcome?.featureState;
+      if (candidate && ['free-spins','super-respin'].includes(candidate.mode) && Number(candidate.remaining) > 0) activeSlotFeature = candidate;
+    }
+    const round = playRound(game, bet, choice, activeSlotFeature);
+    const chargedBet = round.chargeBet === false ? 0 : bet;
+    if (balance < chargedBet) {
       await client.query('ROLLBACK');
       return res.status(400).json({ error: 'Недостаточно виртуальных кредитов.' });
     }
-    const round = playRound(game, bet, choice);
-    const balanceAfter = balance - bet + round.payout;
+    const balanceAfter = balance - chargedBet + round.payout;
     await client.query('UPDATE players SET balance=$2, updated_at=NOW() WHERE telegram_id=$1', [req.player.telegram_id, balanceAfter]);
     const inserted = await client.query(
       'INSERT INTO game_transactions (telegram_id, game, bet, payout, balance_after, outcome, idempotency_key) VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7) RETURNING id, created_at',
-      [req.player.telegram_id, game, bet, round.payout, balanceAfter, JSON.stringify(round.outcome), requestId]
+      [req.player.telegram_id, game, Math.max(1, chargedBet), round.payout, balanceAfter, JSON.stringify(round.outcome), requestId]
     );
     await client.query('COMMIT');
     if(!round.replayed && Number(round.payout)>=BIG_WIN_THRESHOLD){
@@ -627,7 +714,7 @@ app.post('/api/game', requireUser, async (req, res, next) => {
       await notifyUser(req.player.telegram_id,'🎉 КРУПНЫЙ ВЫИГРЫШ в Cosmic Fortune!\n\n🎮 Игра: '+(gameNames[game]||game)+'\n✦ Выплата: '+Number(round.payout).toLocaleString('ru-RU')+' кредитов\n💰 Текущий баланс: '+balanceAfter.toLocaleString('ru-RU')+' кредитов');void notifyOwner('🏆 КРУПНЫЙ ВЫИГРЫШ\n\nИгрок: '+(req.player.username?'@'+req.player.username:req.player.telegram_id)+'\nTelegram ID: '+req.player.telegram_id+'\nИгра: '+(gameNames[game]||game)+'\nСтавка: '+Number(bet).toLocaleString('ru-RU')+' кредитов\nВыплата: '+Number(round.payout).toLocaleString('ru-RU')+' кредитов\nБаланс: '+balanceAfter.toLocaleString('ru-RU')+' кредитов');
     }
     res.json({
-      transactionId: String(inserted.rows[0].id), game, bet, payout: round.payout,
+      transactionId: String(inserted.rows[0].id), game, bet: chargedBet, payout: round.payout,
       balance: balanceAfter, outcome: round.outcome, createdAt: inserted.rows[0].created_at
     });
   } catch (error) {
