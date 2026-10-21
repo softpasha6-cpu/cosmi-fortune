@@ -412,10 +412,10 @@
     return panel(title,'<div class="game-stage '+game+'" id="cf-game-stage">'+gameAvatar(game)+'<p style="color:#c5b6df;margin:8px 0 0">'+description+'</p></div>'+extra+'<div class="fieldrow"><label class="field">Ставка <input id="cf-bet" type="number" min="1" max="100000" value="100" style="width:100%;margin-top:8px;background:#0b0918;color:white;border:1px solid #6c3a9e;border-radius:8px;padding:8px;text-align:center"></label></div><div id="cf-game-result" style="text-align:center;color:#e6d8ff;min-height:24px;margin:10px 0"></div><button class="primary" data-action="play-game" data-game="'+game+'">Играть</button>');
   }
   const cfSlotImageMap = {
-    'A':['a.png','a.webp'],'K':['k.png','k.webp'],'Q':['q.png','q.webp'],'J':['j.png','j.webp'],
-    'rhino':['rhino.png','rhino.webp'],'golden-rhino':['golden-rhino.png','golden_rhino.png','golden rhino.png'],
-    'eagle':['eagle.png','eagle.webp'],'flamingo':['flamingo.png','flamingo.webp'],
-    'crocodile':['crocodile.png','crocodile.webp'],'hyena':['hyena.png','hyena.webp']
+    'A':['A.png'],'K':['K.png'],'Q':['Q.png'],'J':['J.png'],
+    'rhino':['rhino.png'],'golden-rhino':['golden_rhino.png'],
+    'eagle':['eagle.png'],'flamingo':['flamingo.png'],
+    'crocodile':['crocodile.png'],'hyena':['hyena.png']
   };
   window.__cfSlotImages = window.__cfSlotImages || {};
   function cfSlotKey(raw){
@@ -466,7 +466,7 @@
           window.__cfSlotImages[key]=URL.createObjectURL(await zip.files[entry].async('blob'));
         }
       }
-      document.querySelectorAll('#cf-app .cf-slot-symbol[data-symbol]').forEach(el=>setCfSlotSymbol(el,el.dataset.symbol));
+      document.querySelectorAll('.cf-slot-symbol[data-symbol]').forEach(el=>setCfSlotSymbol(el,el.dataset.symbol));
     }catch(error){console.warn('Cosmic Fortune slot images not loaded; using vector fallback.',error);}
   }
   function rhinoSymbol(k){
