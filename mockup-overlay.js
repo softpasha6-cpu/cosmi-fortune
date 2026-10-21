@@ -422,8 +422,10 @@
     const v=String(raw??'');
     const map={'🦏':'golden-rhino','🦅':'eagle','🦩':'flamingo','🐊':'crocodile','🐕':'hyena','🐆':'hyena','🌅':'golden-rhino'};
     if(map[v])return map[v];
+    if(['A','K','Q','J'].includes(v.trim()))return v.trim();
     const low=v.toLowerCase().replace(/_/g,'-').trim();
-    if(['a','k','q','j','rhino','golden-rhino','eagle','flamingo','crocodile','hyena'].includes(low))return low;
+    if(['a','k','q','j'].includes(low))return low.toUpperCase();
+    if(['rhino','golden-rhino','eagle','flamingo','crocodile','hyena'].includes(low))return low;
     return 'A';
   }
   function setCfSlotSymbol(el, raw){
@@ -442,7 +444,7 @@
           script.onload=resolve;script.onerror=reject;document.head.appendChild(script);
         });
       }
-      const response=await fetch('./cosmic_slot_symbols_cropped.zip',{cache:'force-cache'});
+      const response=await fetch('./cosmic_slot_symbols_cropped.zip?v=20261021-2',{cache:'no-store'});
       if(!response.ok)throw new Error('slot image archive unavailable');
       const zip=await JSZip.loadAsync(await response.arrayBuffer());
       const files=Object.keys(zip.files).filter(path=>!zip.files[path].dir && /\.(png|webp|jpe?g)$/i.test(path)).sort();
@@ -470,6 +472,7 @@
     }catch(error){console.warn('Cosmic Fortune slot images not loaded; using vector fallback.',error);}
   }
   function rhinoSymbol(k){
+    if(window.__cfSlotImages && window.__cfSlotImages[k])return '<img class="cf-slot-symbol-image" alt="" draggable="false" src="'+window.__cfSlotImages[k]+'">';
     const animals={
       rhino:'<path d="M15 48 7 35l24 6 10-17 21 4 14 17 14 8-8 16-18 6-26-5-10-10z" fill="#b7a17b" stroke="#493522" stroke-width="3"/><path d="M17 47 8 38l17 4 22-14-5-13 17 12" fill="#f2e2c1" stroke="#493522" stroke-width="3"/><path d="M30 66 28 85h10l5-17m22-1 2 18h10l-1-21" fill="#817052" stroke="#493522" stroke-width="3"/><circle cx="70" cy="42" r="3"/>',
       leopard:'<path d="M20 69 25 42l15-16 20 4 17 18 4 22-13 8-13-9-15 8z" fill="#d7a442" stroke="#52351b" stroke-width="3"/><path d="M31 35 26 20l17 9m18 0 13-12-1 21M29 66 23 86h10l9-16m19-1 4 17h10l-3-22" fill="#b17a35" stroke="#52351b" stroke-width="3"/><g fill="#442817"><circle cx="38" cy="43" r="3"/><circle cx="52" cy="36" r="3"/><circle cx="64" cy="47" r="3.5"/><circle cx="43" cy="56" r="3.5"/><circle cx="61" cy="63" r="3"/></g>',
