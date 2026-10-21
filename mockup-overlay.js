@@ -327,6 +327,24 @@
     #cf-app .cf-rhino-screen .cf-rhino-bottom{grid-template-columns:minmax(0,1fr) 82px minmax(0,1fr)!important;gap:5px!important}
     #cf-app .cf-rhino-screen .cf-rhino-spin{width:78px!important;height:78px!important;font-size:54px!important}
     #cf-app .cf-rhino-screen .cf-rhino-credit b,#cf-app .cf-rhino-screen .cf-rhino-win b{font-variant-numeric:tabular-nums}
+    #cf-app #cf-jet-history{display:flex!important;flex-wrap:nowrap!important;gap:5px!important;overflow:hidden!important;margin:0 0 7px!important;padding:2px 0!important}
+    #cf-app #cf-jet-history>span{flex:0 0 auto!important;padding:5px 8px!important;border-radius:7px!important;font-size:10px!important}
+    #cf-app #cf-jet-scene{height:220px!important;min-height:220px!important;max-height:220px!important;width:100%!important;flex:none!important;border-radius:13px!important;overflow:hidden!important}
+    #cf-app #cf-jet-scene>svg{inset:0!important;width:100%!important;height:100%!important}
+    #cf-app #cf-jet-rocket-wrap{width:52px!important;height:52px!important;left:14px!important;bottom:48px!important;transition:transform .12s linear!important;z-index:4!important}
+    #cf-app #cf-jet-trail{left:20px!important;bottom:73px!important;width:72%!important;height:2px!important;transition:transform .12s linear!important}
+    #cf-app #cf-jet-scene .cf-trail-glow{left:20px!important;bottom:73px!important;width:72%!important;height:3px!important;transition:transform .12s linear!important}
+    #cf-app #cf-jet-scene #cf-jet-multiplier{font-size:clamp(38px,11vw,52px)!important;line-height:1!important;text-shadow:0 0 16px #b52cff!important}
+    #cf-app #cf-jet-scene #cf-jet-status{font-size:12px!important;margin-top:5px!important}
+    #cf-app #cf-jet-scene>div[style*="bottom:18px"],#cf-app #cf-jet-scene>div[style*="bottom:10px"]{bottom:8px!important;z-index:5!important}
+    #cf-app #cf-jet-scene>div[style*="COSMIC FLIGHT"]{top:10px!important;left:11px!important;font-size:9px!important;z-index:4!important}
+    #cf-app #cf-jet-scene>div[style*="height:105px"]{height:60px!important;bottom:-22px!important}
+    #cf-app #cf-jet-bets{display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-auto-rows:42px!important;gap:5px!important;max-height:89px!important;overflow:auto!important;margin:6px 0 10px!important}
+    #cf-app #cf-jet-bets>div{min-height:40px!important;height:42px!important;padding:5px 8px!important;grid-template-columns:minmax(0,1fr) auto auto!important;gap:6px!important;border-radius:8px!important;font-size:11px!important;overflow:hidden!important}
+    #cf-app #cf-jet-bets>div:nth-child(n+3){display:none!important}
+    #cf-app #cf-jet-bets>div>span:first-child{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+    #cf-app #cf-jet-bet-count{font-variant-numeric:tabular-nums}
+    @media(max-width:390px){#cf-app #cf-jet-scene{height:205px!important;min-height:205px!important;max-height:205px!important}#cf-app #cf-jet-rocket-wrap{width:46px!important;height:46px!important}#cf-app #cf-jet-scene #cf-jet-multiplier{font-size:40px!important}}
   `;
   document.head.appendChild(style);
   document.body.classList.add('cf-code-app');
