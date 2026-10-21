@@ -194,6 +194,7 @@ const SLOT_PAYLINES = [
   [0,2,0,2,0],[2,0,2,0,2],[0,2,2,2,0],[2,0,0,0,2],[1,1,0,1,1]
 ];
 const SLOT_PAYTABLE = {
+  rhino:{2:4,3:50,4:150,5:500},
   'golden-rhino': {3:4,4:12,5:40}, eagle:{3:3,4:8,5:25},
   flamingo:{3:2.5,4:6,5:18}, crocodile:{3:2,4:5,5:15},
   hyena:{3:1.5,4:4,5:12}, A:{3:1,4:2.5,5:8}, K:{3:0.8,4:2,5:6},
@@ -250,12 +251,12 @@ function playSlotRound(bet, activeFeature){
     }
     const newRhinos=grid.filter(v=>v==='rhino').length;
     const landed=newRhinos>previous.size;
-    let payout=slotPaylineWin(grid.map(v=>v||'J'),Number(feature.bet)||bet,false).total;
     let remaining=landed?3:Math.max(0,Number(feature.remaining||1)-1);
+    let payout=0;
     let message=landed?'Носорог закреплён — дополнительный респин!':'Super Respin';
-    if(newRhinos>=15){payout=Math.max(payout,Math.floor((Number(feature.bet)||bet)*500));remaining=0;message='GRAND JACKPOT · 500×';}
-    else if(newRhinos>=14){payout=Math.max(payout,Math.floor((Number(feature.bet)||bet)*375));remaining=0;message='MAJOR JACKPOT · 375×';}
-    else if(remaining===0)message='Super Respin завершён';
+    if(newRhinos>=15){payout=Math.floor((Number(feature.bet)||bet)*500);remaining=0;message='GRAND JACKPOT · 500×';}
+    else if(newRhinos>=14){payout=Math.floor((Number(feature.bet)||bet)*375);remaining=0;message='MAJOR JACKPOT · 375×';}
+    else if(remaining===0){payout=slotPaylineWin(grid,Number(feature.bet)||bet,false).total;message='Super Respin завершён';}
     const next=remaining?{...feature,grid,remaining}:null;
     return {payout,outcome:{reels:grid,feature:'super-respin',rhinoCount:newRhinos,respinsLeft:remaining,featureState:next,chargedBet:0,message},chargeBet:false};
   }
