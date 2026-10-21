@@ -668,7 +668,7 @@
         if(!['red','black','green'].includes(selected)&&!(Number.isInteger(selected)&&selected>=0&&selected<=36)){say('Выбери цвет или номер от 0 до 36.');return}
         body.choice=selected;
       }
-      action.disabled=true;action.textContent='Раунд…';
+      action.disabled=true;action.setAttribute('aria-busy','true');if(game==='slots'&&result)result.textContent='Барабаны вращаются…';
       const rouletteWheel=game==='roulette'?app.querySelector('#cf-roulette-wheel'):null;
       const rouletteBall=game==='roulette'?app.querySelector('#cf-roulette-ball'):null;
       if(rouletteWheel){rouletteWheel.style.transition='none';rouletteWheel.style.transform='rotate(0deg)';}if(rouletteBall){rouletteBall.style.setProperty('--ball-angle','0deg');rouletteBall.classList.remove('is-falling');rouletteBall.classList.add('is-spinning');}
@@ -689,7 +689,7 @@
         const me=await api('/api/me');
         if(current==='profile')renderHistoryInProfile(me.history||[]);
       }catch(error){if(result)result.textContent=error.message;say(error.message)}
-      finally{app.querySelector('#cf-game-stage')?.classList.remove('is-playing');if(game==='dice'){[diceOne,diceTwo].forEach(d=>d?.classList.remove('is-rolling'));}if(game==='slots'){slotReels.forEach(el=>el?.classList.remove('is-spinning'));}action.disabled=false;action.textContent=game==='dice'?'Бросить':game==='slots'?'Крутить':'Играть'}
+      finally{app.querySelector('#cf-game-stage')?.classList.remove('is-playing');if(game==='dice'){[diceOne,diceTwo].forEach(d=>d?.classList.remove('is-rolling'));}if(game==='slots'){slotReels.forEach(el=>el?.classList.remove('is-spinning'));}action.disabled=false;action.removeAttribute('aria-busy')}
       return
     }
     if(action.dataset.action==='roll'){say('Открой раздел «Кости» для игры.');return}
