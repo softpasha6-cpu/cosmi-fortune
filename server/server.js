@@ -178,7 +178,7 @@ app.get('/api/me', requireUser, async (req, res) => {
 });
 
 const MAX_BET = 100000;
-const SYMBOLS = ['🦏', '🐆', '🦅', '🦩', '🐊', '🐕', 'A', 'K', 'Q', 'J', '🌅'];
+const SYMBOLS = ['rhino', 'golden-rhino', 'eagle', 'flamingo', 'crocodile', 'hyena', 'A', 'K', 'Q', 'J'];
 const RED_NUMBERS = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
 const randInt = (max) => crypto.randomInt(0, max);
 function card() { return randInt(13) + 1; }
@@ -199,7 +199,7 @@ function playRound(game, bet, choice) {
       if (line[i] === line[i - 1]) { run++; longestRun = Math.max(longestRun, run); }
       else run = 1;
     }
-    if (line.every(symbol => symbol === line[0])) multiplier = line[0] === '🦏' ? 10 : line[0] === '🌅' ? 8 : 5;
+    if (line.every(symbol => symbol === line[0])) multiplier = line[0] === 'golden-rhino' ? 10 : line[0] === 'rhino' ? 8 : 5;
     else if (longestRun >= 4) multiplier = 1.5;
     return { payout: Math.floor(bet * multiplier), outcome: { reels, multiplier, line, message: multiplier >= 5 ? 'Джекпот!' : multiplier > 0 ? 'Есть выигрыш!' : 'Попробуй ещё раз' } };
   }
