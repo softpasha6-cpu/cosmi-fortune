@@ -673,7 +673,7 @@
       const result=app.querySelector('#cf-game-result');
       if(!Number.isSafeInteger(bet)||bet<1||bet>100000){say('Ставка должна быть от 1 до 100 000.');return}
       const body={game,bet,requestId:crypto.randomUUID()};
-      const slotReels=game==='slots'?[0,1,2,3,4].map(i=>app.querySelector('#cf-slot-reel-'+i)):[];if(game==='slots'){slotReels.forEach(el=>{if(el){el.classList.add('is-spinning');el.querySelectorAll('.cf-slot-symbol').forEach((symbol,j)=>symbol.textContent=['🦏','🐆','🦅','🦩','🐊','A','K','Q','J'][Math.floor(Math.random()*9)]);}})}const diceOne=game==='dice'?app.querySelector('#cf-die-one'):null;const diceTwo=game==='dice'?app.querySelector('#cf-die-two'):null;const diceTotal=game==='dice'?app.querySelector('#cf-dice-total'):null;if(game==='dice'){[diceOne,diceTwo].forEach(d=>{if(d){d.classList.remove('face-1','face-2','face-3','face-4','face-5','face-6');d.classList.add('face-6','is-rolling');}});if(diceTotal)diceTotal.textContent='КОСТИ БРОШЕНЫ…';}const stage=app.querySelector('#cf-game-stage');
+      const slotReels=game==='slots'?[0,1,2,3,4].map(i=>app.querySelector('#cf-slot-reel-'+i)):[];let slotSpinFailsafe=null;if(game==='slots'){slotReels.forEach(el=>{if(el){el.classList.add('is-spinning');el.querySelectorAll('.cf-slot-symbol').forEach((symbol,j)=>symbol.textContent=['🦏','🐆','🦅','🦩','🐊','A','K','Q','J'][Math.floor(Math.random()*9)]);}});slotSpinFailsafe=setTimeout(()=>{slotReels.forEach(el=>el?.classList.remove('is-spinning'));action.classList.remove('cf-spinning')},8000)}const diceOne=game==='dice'?app.querySelector('#cf-die-one'):null;const diceTwo=game==='dice'?app.querySelector('#cf-die-two'):null;const diceTotal=game==='dice'?app.querySelector('#cf-dice-total'):null;if(game==='dice'){[diceOne,diceTwo].forEach(d=>{if(d){d.classList.remove('face-1','face-2','face-3','face-4','face-5','face-6');d.classList.add('face-6','is-rolling');}});if(diceTotal)diceTotal.textContent='КОСТИ БРОШЕНЫ…';}const stage=app.querySelector('#cf-game-stage');
       if(stage){stage.classList.add('is-playing');}
       const art=app.querySelector('.bigart');
       if(art){art.classList.remove('anim-dice','anim-slots','anim-cards','anim-wheel');void art.offsetWidth;art.classList.add(game==='dice'?'anim-dice':game==='slots'?'anim-slots':game==='roulette'?'anim-wheel':'anim-cards');}
@@ -702,7 +702,7 @@
         const me=await api('/api/me');
         if(current==='profile')renderHistoryInProfile(me.history||[]);
       }catch(error){if(result)result.textContent=error.message;say(error.message)}
-      finally{app.querySelector('#cf-game-stage')?.classList.remove('is-playing');if(game==='dice'){[diceOne,diceTwo].forEach(d=>d?.classList.remove('is-rolling'));}if(game==='slots'){slotReels.forEach(el=>el?.classList.remove('is-spinning'));action.classList.remove('cf-spinning')}action.disabled=false;action.removeAttribute('aria-busy')}
+      finally{if(slotSpinFailsafe)clearTimeout(slotSpinFailsafe);app.querySelector('#cf-game-stage')?.classList.remove('is-playing');if(game==='dice'){[diceOne,diceTwo].forEach(d=>d?.classList.remove('is-rolling'));}if(game==='slots'){slotReels.forEach(el=>el?.classList.remove('is-spinning'));action.classList.remove('cf-spinning')}action.disabled=false;action.removeAttribute('aria-busy')}
       return
     }
     if(action.dataset.action==='roll'){say('Открой раздел «Кости» для игры.');return}
