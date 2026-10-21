@@ -232,17 +232,17 @@ function slotPaylineWin(grid, totalBet, wildRhino=false){
   return {total,wins};
 }
 function playSlotRound(bet, activeFeature){
-  const feature=activeFeature&&typeof activeFeature==='object'?activeFeature:null;
-  if(feature?.mode==='free-spins'){
+  const activeFeatureData=activeFeature&&typeof activeFeature==='object'?activeFeature:null;
+  if(activeFeatureData?.mode==='free-spins'){
     const grid=Array.from({length:15},()=>slotRandomSymbol(false));
     // In the original Great Rhino free-spin round, every rhino acts as a Wild and Bonus symbols are absent.
-    const pay=slotPaylineWin(grid,Number(feature.bet)||bet,true);
-    const remaining=Math.max(0,Number(feature.remaining||0)-1);
-    const next=remaining?{...feature,remaining}:null;
-    return {payout:pay.total,outcome:{reels:grid,feature:'free-spins',freeSpinsLeft:remaining,featureState:next,chargedBet:0,wins:pay.wins,multiplier:pay.total/(Number(feature.bet)||bet||1),message:remaining?'Бесплатные вращения · носорог работает как Wild':'Бесплатные вращения завершены'} ,chargeBet:false};
+    const pay=slotPaylineWin(grid,Number(activeFeatureData.bet)||bet,true);
+    const remaining=Math.max(0,Number(activeFeatureData.remaining||0)-1);
+    const next=remaining?{...activeFeatureData,remaining}:null;
+    return {payout:pay.total,outcome:{reels:grid,feature:'free-spins',freeSpinsLeft:remaining,featureState:next,chargedBet:0,wins:pay.wins,multiplier:pay.total/(Number(activeFeatureData.bet)||bet||1),message:remaining?'Бесплатные вращения · носорог работает как Wild':'Бесплатные вращения завершены'} ,chargeBet:false};
   }
-  if(feature?.mode==='super-respin'){
-    const grid=Array.isArray(feature.grid)&&feature.grid.length===15?feature.grid.slice():Array(15).fill(null);
+  if(activeFeatureData?.mode==='super-respin'){
+    const grid=Array.isArray(activeFeatureData.grid)&&activeFeatureData.grid.length===15?activeFeatureData.grid.slice():Array(15).fill(null);
     const previous=new Set(grid.map((v,i)=>v==='rhino'?i:-1).filter(i=>i>=0));
     for(let i=0;i<15;i++)if(!previous.has(i)){
       const col=Math.floor(i/3);
@@ -252,13 +252,13 @@ function playSlotRound(bet, activeFeature){
     }
     const newRhinos=grid.filter(v=>v==='rhino').length;
     const landed=newRhinos>previous.size;
-    let remaining=landed?3:Math.max(0,Number(feature.remaining||1)-1);
+    let remaining=landed?3:Math.max(0,Number(activeFeatureData.remaining||1)-1);
     let payout=0;
     let message=landed?'Носорог закреплён — дополнительный респин!':'Super Respin';
-    if(newRhinos>=15){payout=Math.floor((Number(feature.bet)||bet)*500);remaining=0;message='GRAND JACKPOT · 500×';}
-    else if(newRhinos>=14&&remaining===0){payout=Math.floor((Number(feature.bet)||bet)*375);remaining=0;message='MAJOR JACKPOT · 375×';}
-    else if(remaining===0){payout=slotPaylineWin(grid,Number(feature.bet)||bet,false).total;message='Super Respin завершён';}
-    const next=remaining?{...feature,grid,remaining}:null;
+    if(newRhinos>=15){payout=Math.floor((Number(activeFeatureData.bet)||bet)*500);remaining=0;message='GRAND JACKPOT · 500×';}
+    else if(newRhinos>=14&&remaining===0){payout=Math.floor((Number(activeFeatureData.bet)||bet)*375);remaining=0;message='MAJOR JACKPOT · 375×';}
+    else if(remaining===0){payout=slotPaylineWin(grid,Number(activeFeatureData.bet)||bet,false).total;message='Super Respin завершён';}
+    const next=remaining?{...activeFeatureData,grid,remaining}:null;
     return {payout,outcome:{reels:grid,feature:'super-respin',rhinoCount:newRhinos,respinsLeft:remaining,featureState:next,chargedBet:0,message},chargeBet:false};
   }
   const grid=Array.from({length:15},()=>slotRandomSymbol());
