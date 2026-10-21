@@ -193,12 +193,20 @@ const SLOT_PAYLINES = [
   [2,1,1,1,2],[1,0,1,2,1],[1,2,1,0,1],[0,1,0,1,0],[2,1,2,1,2],
   [0,2,0,2,0],[2,0,2,0,2],[0,2,2,2,0],[2,0,0,0,2],[1,1,0,1,1]
 ];
+// Published Great Rhino paytable multipliers. The supplied "golden-rhino" artwork
+// represents the high-value rhino-chip/Wild symbol; "eagle" is the closest supplied
+// artwork for the original game's high-value cheetah symbol.
 const SLOT_PAYTABLE = {
-  rhino:{2:4,3:50,4:150,5:500},
-  'golden-rhino': {3:4,4:12,5:40}, eagle:{3:3,4:8,5:25},
-  flamingo:{3:2.5,4:6,5:18}, crocodile:{3:2,4:5,5:15},
-  hyena:{3:1.5,4:4,5:12}, A:{3:1,4:2.5,5:8}, K:{3:0.8,4:2,5:6},
-  Q:{3:0.6,4:1.5,5:5}, J:{3:0.5,4:1.2,5:4}
+  rhino:{2:0.1,3:2.5,4:7.5,5:20},
+  'golden-rhino':{2:0.2,3:2.5,4:7.5,5:25},
+  eagle:{3:0.75,4:2.5,5:10},
+  crocodile:{3:0.5,4:2,5:7.5},
+  hyena:{3:0.5,4:1.5,5:5},
+  flamingo:{3:0.5,4:1.25,5:2.5},
+  A:{3:0.25,4:0.5,5:1.25},
+  K:{3:0.25,4:0.5,5:1},
+  Q:{3:0.25,4:0.5,5:1},
+  J:{3:0.25,4:0.5,5:1}
 };
 function slotRandomSymbol(allowBonus=true){
   const pool=['J','J','J','Q','Q','Q','K','K','A','A','hyena','hyena','crocodile','flamingo','eagle','golden-rhino','rhino'];
