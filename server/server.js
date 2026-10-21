@@ -197,18 +197,17 @@ const SLOT_PAYLINES = [
 // represents the high-value rhino-chip/Wild symbol; "eagle" is the closest supplied
 // artwork for the original game's high-value cheetah symbol.
 const SLOT_PAYTABLE = {
-  // Multipliers are applied to the stake on each of the 20 fixed paylines.
-  // Tuned for a more noticeable high-volatility slot experience at small virtual bets.
-  rhino:{2:1,3:8,4:40,5:200},
-  'golden-rhino':{2:2,3:10,4:50,5:250},
-  eagle:{3:4,4:15,5:75},
-  crocodile:{3:3,4:10,5:40},
-  hyena:{3:2,4:7,5:25},
-  flamingo:{3:1.5,4:5,5:15},
-  A:{3:1,4:3,5:8},
-  K:{3:1,4:3,5:7},
-  Q:{3:0.8,4:2.5,5:6},
-  J:{3:0.8,4:2.5,5:6}
+  // Published original Great Rhino multipliers; applied to each fixed payline stake.
+  rhino:{2:0.1,3:2.5,4:7.5,5:20},
+  'golden-rhino':{2:0.2,3:2.5,4:7.5,5:25},
+  eagle:{3:0.75,4:2.5,5:10},
+  crocodile:{3:0.5,4:2,5:7.5},
+  hyena:{3:0.5,4:1.5,5:5},
+  flamingo:{3:0.5,4:1.25,5:2.5},
+  A:{3:0.25,4:0.5,5:1.25},
+  K:{3:0.25,4:0.5,5:1},
+  Q:{3:0.25,4:0.5,5:1},
+  J:{3:0.25,4:0.5,5:1}
 };
 function slotRandomSymbol(allowBonus=true){
   const pool=['J','J','J','Q','Q','Q','K','K','A','A','hyena','hyena','crocodile','flamingo','eagle','golden-rhino','rhino'];
