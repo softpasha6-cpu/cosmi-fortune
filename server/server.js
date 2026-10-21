@@ -204,12 +204,12 @@ function slotRandomSymbol(){
   return pool[randInt(pool.length)];
 }
 function slotGridHasRhinoStacks(grid){
-  const blocks=[];
-  for(let col=0;col<4;col++)for(let row=0;row<2;row++){
-    const cells=[col*3+row,col*3+row+1,(col+1)*3+row,(col+1)*3+row+1];
-    if(cells.every(i=>grid[i]==='rhino'))blocks.push({col,row,cells});
+  const fullReels=[];
+  for(let col=0;col<5;col++){
+    const cells=[col*3,col*3+1,col*3+2];
+    if(cells.every(i=>grid[i]==='rhino'))fullReels.push({col,cells});
   }
-  return blocks;
+  return fullReels;
 }
 function slotPaylineWin(grid, totalBet, wildRhino=false){
   let total=0;const wins=[];
@@ -244,9 +244,9 @@ function playSlotRound(bet, activeFeature){
     const previous=new Set(grid.map((v,i)=>v==='rhino'?i:-1).filter(i=>i>=0));
     for(let i=0;i<15;i++)if(!previous.has(i)){
       const col=Math.floor(i/3);
-      // Rhino stacks are sticky during Super Respins; new rhinos award another respin.
+      // Every landed rhino locks in place during Super Respins.
       if(randInt(col===0||col===4?18:12)===0)grid[i]='rhino';
-      else grid[i]=randInt(5)===0?null:slotRandomSymbol();
+      else grid[i]=slotRandomSymbol();
     }
     const newRhinos=grid.filter(v=>v==='rhino').length;
     const landed=newRhinos>previous.size;
