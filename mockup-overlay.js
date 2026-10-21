@@ -383,6 +383,8 @@
       if(balance) balance.textContent=formatBalance(data.player.balance);
       const profileBalance=app.querySelector('#cf-profile-balance');
       if(profileBalance) profileBalance.textContent=formatBalance(data.player.balance);
+      const slotBalance=app.querySelector('#cf-rhino-credit');
+      if(slotBalance) slotBalance.textContent=formatBalance(data.player.balance);
       const title=app.querySelector('#cf-profile-name');if(title)title.textContent=data.player.firstName||data.player.username||'Игрок Cosmic Fortune';
       const uname=app.querySelector('#cf-profile-username');if(uname)uname.textContent=data.player.username?'@'+data.player.username:'Имя пользователя Telegram не задано';
       const tag=app.querySelector('#cf-profile-tag');if(tag)tag.textContent=data.player.username?'@'+data.player.username:'Не задан';
@@ -733,7 +735,9 @@
         }
         if(result)result.textContent='🎉 '+(data.outcome?.label||'Результат')+' · баланс '+formatBalance(data.balance)+' ✦';
         const balance=app.querySelector('#cf-balance');if(balance)balance.textContent=formatBalance(data.balance);
-        const profileBalance=app.querySelector('#cf-profile-balance');if(profileBalance)profileBalance.textContent=formatBalance(data.balance);if(game==='slots'){const credit=app.querySelector('#cf-rhino-credit'),win=app.querySelector('#cf-rhino-win');if(credit)credit.textContent=formatBalance(data.balance??0);if(win)win.textContent=formatBalance(data.payout??0)}
+        const profileBalance=app.querySelector('#cf-profile-balance');if(profileBalance)profileBalance.textContent=formatBalance(data.balance);
+        const slotBalance=app.querySelector('#cf-rhino-credit');if(slotBalance)slotBalance.textContent=formatBalance(data.balance);
+        if(game==='slots'){const slotWin=app.querySelector('#cf-rhino-win');if(slotWin)slotWin.textContent=formatBalance(data.payout);}if(game==='slots'){const credit=app.querySelector('#cf-rhino-credit'),win=app.querySelector('#cf-rhino-win');if(credit)credit.textContent=formatBalance(data.balance??0);if(win)win.textContent=formatBalance(data.payout??0)}
         say(data.outcome?.label||'Бонус получен');
       }catch(error){if(result)result.textContent=error.message;say(error.message)}
       finally{button.disabled=false;button.textContent='🎡 Крутить бесплатно'}
