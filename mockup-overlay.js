@@ -749,7 +749,7 @@
       const result=app.querySelector('#cf-game-result');
       if(!Number.isSafeInteger(bet)||bet<1||bet>100000){say('Ставка должна быть от 1 до 100 000.');return}
       const body={game,bet,requestId:crypto.randomUUID()};
-      const slotReels=game==='slots'?[0,1,2,3,4].map(i=>app.querySelector('#cf-slot-reel-'+i)):[];let slotSpinFailsafe=null;if(game==='slots'){slotReels.forEach(el=>{if(el){el.classList.add('is-spinning');el.querySelectorAll('.cf-slot-symbol').forEach((symbol,j)=>{const keys=['rhino','leopard','eagle','flamingo','crocodile','hyena','A','K','Q','J','sun'];symbol.innerHTML=rhinoSymbol(keys[Math.floor(Math.random()*keys.length)]);});}});slotSpinFailsafe=setTimeout(()=>{slotReels.forEach(el=>el?.classList.remove('is-spinning'));action.classList.remove('cf-spinning')},8000)}const diceOne=game==='dice'?app.querySelector('#cf-die-one'):null;const diceTwo=game==='dice'?app.querySelector('#cf-die-two'):null;const diceTotal=game==='dice'?app.querySelector('#cf-dice-total'):null;if(game==='dice'){[diceOne,diceTwo].forEach(d=>{if(d){d.classList.remove('face-1','face-2','face-3','face-4','face-5','face-6');d.classList.add('face-6','is-rolling');}});if(diceTotal)diceTotal.textContent='КОСТИ БРОШЕНЫ…';}const stage=app.querySelector('#cf-game-stage');
+      const slotReels=game==='slots'?[0,1,2,3,4].map(i=>app.querySelector('#cf-slot-reel-'+i)):[];let slotSpinFailsafe=null;if(game==='slots'){slotReels.forEach(el=>{if(el){el.classList.add('is-spinning');el.querySelectorAll('.cf-slot-symbol').forEach((symbol,j)=>{const keys=['rhino','golden-rhino','eagle','flamingo','crocodile','hyena','A','K','Q','J','sun'];symbol.innerHTML=rhinoSymbol(keys[Math.floor(Math.random()*keys.length)]);});}});slotSpinFailsafe=setTimeout(()=>{slotReels.forEach(el=>el?.classList.remove('is-spinning'));action.classList.remove('cf-spinning')},8000)}const diceOne=game==='dice'?app.querySelector('#cf-die-one'):null;const diceTwo=game==='dice'?app.querySelector('#cf-die-two'):null;const diceTotal=game==='dice'?app.querySelector('#cf-dice-total'):null;if(game==='dice'){[diceOne,diceTwo].forEach(d=>{if(d){d.classList.remove('face-1','face-2','face-3','face-4','face-5','face-6');d.classList.add('face-6','is-rolling');}});if(diceTotal)diceTotal.textContent='КОСТИ БРОШЕНЫ…';}const stage=app.querySelector('#cf-game-stage');
       if(stage){stage.classList.add('is-playing');}
       const art=app.querySelector('.bigart');
       if(art){art.classList.remove('anim-dice','anim-slots','anim-cards','anim-wheel');void art.offsetWidth;art.classList.add(game==='dice'?'anim-dice':game==='slots'?'anim-slots':game==='roulette'?'anim-wheel':'anim-cards');}
@@ -773,7 +773,16 @@
         if(out.roll)message+=' · выпало '+out.roll;
         if(out.number!==undefined)message+=' · номер '+out.number+' ('+out.color+')';
         if(out.playerTotal!==undefined)message+=' · ты '+out.playerTotal+' / дилер '+out.dealerTotal;
-        if(result){if(game==='slots'){result.textContent='';result.classList.remove('cf-show-result')}else result.textContent=message+' Ставка: '+formatBalance(data.bet)+' · выплата: '+formatBalance(data.payout)+' ✦';}
+        if(result){if(game==='slots'){
+          const details=[];
+          if(out.feature==='free-spins')details.push('🎁 Бесплатные вращения: '+(out.freeSpinsLeft||0));
+          if(out.feature==='super-respin')details.push('🦏 Super Respin · носорогов: '+(out.rhinoCount||0)+' · осталось: '+(out.respinsLeft||0));
+          if(out.featureState?.mode==='free-spins')details.push('Бонус продолжается');
+          if(out.featureState?.mode==='super-respin')details.push('Респин продолжается');
+          if(out.wins?.length)details.push('Выигрышных линий: '+out.wins.length);
+          result.textContent=(out.message||'Раунд завершён')+(details.length?' · '+details.join(' · '):'')+' · выплата: '+formatBalance(data.payout)+' ✦';
+          result.classList.add('cf-show-result');
+        }else result.textContent=message+' Ставка: '+formatBalance(data.bet)+' · выплата: '+formatBalance(data.payout)+' ✦';}
         await refreshAccount();
         const me=await api('/api/me');
         if(current==='profile')renderHistoryInProfile(me.history||[]);
