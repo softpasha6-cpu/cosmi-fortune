@@ -824,6 +824,11 @@ app.post('/api/luckyjet/start',requireUser,async(req,res,next)=>{
   await client.query('BEGIN');
   // Serialize starts so every player joins the same live flight instead of getting an independent crash point.
   await client.query('SELECT pg_advisory_xact_lock($1)',[74190261]);
+  const recent=await client.query("SELECT status,finished_at,started_at FROM luckyjet_rounds ORDER BY started_at DESC LIMIT 1");
+  if(recent.rowCount&&recent.rows[0].status==='crashed'&&recent.rows[0].finished_at){
+   const waitMs=5000-(Date.now()-new Date(recent.rows[0].finished_at).getTime());
+   if(waitMs>0){await client.query('ROLLBACK');return res.status(409).json({error:'Следующий раунд скоро начнётся.',waitSeconds:Math.ceil(waitMs/1000)})}
+  }
   const p=await client.query('SELECT balance FROM players WHERE telegram_id=$1 FOR UPDATE',[req.player.telegram_id]);
   if(!p.rowCount||Number(p.rows[0].balance)<bet){await client.query('ROLLBACK');return res.status(400).json({error:'Недостаточно виртуальных кредитов.'})}
   // Multiple independent bets from the same player are allowed in the same shared flight.
