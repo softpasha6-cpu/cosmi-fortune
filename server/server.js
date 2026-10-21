@@ -178,7 +178,7 @@ app.get('/api/me', requireUser, async (req, res) => {
 });
 
 const MAX_BET = 100000;
-const SYMBOLS = ['⭐', '7️⃣', '💎', '🚀', '🌙', '👑'];
+const SYMBOLS = ['🦏', '🐆', '🦅', '🦩', '🐊', '🐕', 'A', 'K', 'Q', 'J', '🌅'];
 const RED_NUMBERS = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
 const randInt = (max) => crypto.randomInt(0, max);
 function card() { return randInt(13) + 1; }
@@ -188,11 +188,20 @@ function handTotal(hand) { return hand.reduce((sum, c) => sum + cardValue(c), 0)
 
 function playRound(game, bet, choice) {
   if (game === 'slots') {
-    const reels = [SYMBOLS[randInt(SYMBOLS.length)], SYMBOLS[randInt(SYMBOLS.length)], SYMBOLS[randInt(SYMBOLS.length)]];
+    // Five reels, three visible symbols per reel (15 symbols total).
+    const reels = Array.from({ length: 15 }, () => SYMBOLS[randInt(SYMBOLS.length)]);
+    // The middle row is the initial active payline; keep the existing multiplier scale.
+    const line = [reels[1], reels[4], reels[7], reels[10], reels[13]];
     let multiplier = 0;
-    if (reels.every(s => s === reels[0])) multiplier = reels[0] === '7️⃣' ? 10 : reels[0] === '👑' ? 8 : 5;
-    else if (reels[0] === reels[1] || reels[1] === reels[2] || reels[0] === reels[2]) multiplier = 1.5;
-    return { payout: Math.floor(bet * multiplier), outcome: { reels, multiplier, message: multiplier >= 5 ? 'Джекпот!' : multiplier > 0 ? 'Есть выигрыш!' : 'Попробуй ещё раз' } };
+    let longestRun = 1;
+    let run = 1;
+    for (let i = 1; i < line.length; i++) {
+      if (line[i] === line[i - 1]) { run++; longestRun = Math.max(longestRun, run); }
+      else run = 1;
+    }
+    if (line.every(symbol => symbol === line[0])) multiplier = line[0] === '🦏' ? 10 : line[0] === '🌅' ? 8 : 5;
+    else if (longestRun >= 4) multiplier = 1.5;
+    return { payout: Math.floor(bet * multiplier), outcome: { reels, multiplier, line, message: multiplier >= 5 ? 'Джекпот!' : multiplier > 0 ? 'Есть выигрыш!' : 'Попробуй ещё раз' } };
   }
   if (game === 'dice') {
     const dice = [randInt(6) + 1, randInt(6) + 1];
