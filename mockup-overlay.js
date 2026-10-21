@@ -438,7 +438,7 @@
     }
     // Super Respin wins are paid as a feature/jackpot, not as ordinary paylines.
     // Illuminate the rhino symbols that make up that feature result.
-    if(winningIndexes.size===0&&Number(payout)>0&&feature==='super-respin'&&Array.isArray(reels)){
+    if(winningIndexes.size===0&&feature==='super-respin'&&Array.isArray(reels)){
       reels.forEach((symbol,index)=>{if(symbol==='rhino')winningIndexes.add(index);});
     }
     for(const index of winningIndexes){
