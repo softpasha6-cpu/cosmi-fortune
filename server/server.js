@@ -258,7 +258,8 @@ function playSlotRound(bet, activeFeature){
     if(newRhinos>=15){payout=Math.floor((Number(activeFeatureData.bet)||bet)*500);remaining=0;message='GRAND JACKPOT · 500×';}
     else if(newRhinos>=14&&remaining===0){payout=Math.floor((Number(activeFeatureData.bet)||bet)*375);remaining=0;message='MAJOR JACKPOT · 375×';}
     else if(remaining===0){payout=slotPaylineWin(grid,Number(activeFeatureData.bet)||bet,false).total;message='Super Respin завершён';}
-    const next=remaining?{...activeFeatureData,grid,remaining}:null;
+    const next=remaining?{...activeFeatureData,grid,remaining}:(activeFeatureData.afterFeature||null);
+    if(!remaining&&next?.mode==='free-spins')message='Super Respin завершён · далее 10 бесплатных вращений';
     return {payout,outcome:{reels:grid,feature:'super-respin',rhinoCount:newRhinos,respinsLeft:remaining,featureState:next,chargedBet:0,message},chargeBet:false};
   }
   const grid=Array.from({length:15},()=>slotRandomSymbol());
@@ -272,14 +273,13 @@ function playSlotRound(bet, activeFeature){
   const stacks=slotGridHasRhinoStacks(grid);
   const respinTriggered=stacks.length>=2;
   let featureState=null,feature=null,message=pay.total?'Выигрыш по линиям!':'Попробуй ещё раз';
-  if(scatterTriggered){feature='free-spins';featureState={mode:'free-spins',remaining:10,bet};message='БОНУС! 10 бесплатных вращений · носорог — Wild';}
-  else if(respinTriggered){
+  if(respinTriggered){
     feature='super-respin';
     // Keep only the full rhino stacks; all other positions become blank during Super Respin.
     const respinGrid=grid.map(symbol=>symbol==='rhino'?'rhino':null);
-    featureState={mode:'super-respin',grid:respinGrid,remaining:3,bet};
-    message='SUPER RESPIN! Носороги закреплены · 3 респина';
-  }
+    featureState={mode:'super-respin',grid:respinGrid,remaining:3,bet,afterFeature:scatterTriggered?{mode:'free-spins',remaining:10,bet}:null};
+    message=scatterTriggered?'SUPER RESPIN! Затем 10 бесплатных вращений':'SUPER RESPIN! Носороги закреплены · 3 респина';
+  }else if(scatterTriggered){feature='free-spins';featureState={mode:'free-spins',remaining:10,bet};message='БОНУС! 10 бесплатных вращений · носорог — Wild';}
   return {payout:pay.total,outcome:{reels:feature==='super-respin'?featureState.grid:grid,feature,featureState,freeSpinsLeft:feature==='free-spins'?10:undefined,respinsLeft:feature==='super-respin'?3:undefined,wins:pay.wins,chargedBet:bet,multiplier:pay.total/(bet||1),message,scatterCount:scatterReels.length,rhinoStacks:stacks.length},chargeBet:true};
 }
 function playRound(game, bet, choice, activeSlotFeature=null) {
