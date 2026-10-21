@@ -430,6 +430,11 @@
   }
   function setCfSlotSymbol(el, raw){
     if(!el)return;
+    if(raw===null||raw===undefined||raw===''){
+      el.dataset.symbol='blank';
+      el.innerHTML='';
+      return;
+    }
     const key=cfSlotKey(raw);
     el.dataset.symbol=key;
     const src=window.__cfSlotImages[key];
