@@ -298,6 +298,18 @@
     #cf-app .cf-roulette-choices button.is-selected{border-color:#ffdb73;box-shadow:0 0 0 2px #ffdb7344,0 0 16px #ffca4d55}
     #cf-app .cf-roulette-number-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:2px;margin-top:4px;width:100%;box-sizing:border-box} #cf-app .cf-roulette-number-grid button{min-width:0;min-height:22px;height:22px;padding:0;border:1px solid #e4c57888;border-radius:4px;font-size:10px;line-height:1;font-weight:900} #cf-app .cf-roulette-number-grid button.is-selected{outline:2px solid #ffdf7c;box-shadow:0 0 12px #ffdf7c88;transform:scale(1.06)}
     #cf-app .cf-roulette-footnote{font-size:11px;color:#c8e6d4;margin-top:9px}
+
+    /* Final Great Rhino layout override: keep all five reels in one row. */
+    #cf-app .cf-rhino-screen .cf-slots-window.cf-rhino-reels{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;grid-template-rows:minmax(0,1fr)!important;align-items:stretch!important;gap:3px!important;height:clamp(270px,82vw,390px)!important;min-height:0!important;overflow:hidden!important;padding:5px!important}
+    #cf-app .cf-rhino-screen .cf-slots-window.cf-rhino-reels>.cf-rhino-reel-column{display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:repeat(3,minmax(0,1fr))!important;grid-column:auto!important;grid-row:1!important;min-width:0!important;min-height:0!important;gap:3px!important}
+    #cf-app .cf-rhino-screen .cf-rhino-reel-column .cf-slot-reel-cell{min-height:0!important}
+    #cf-app .cf-rhino-screen .cf-rhino-reel-column .cf-slot-symbol{font-size:clamp(20px,6.5vw,38px)!important}
+    #cf-app .cf-rhino-screen{padding-bottom:18px!important}
+    #cf-app .cf-rhino-screen .cf-rhino-auto{padding-bottom:12px!important}
+    #cf-app .cf-rhino-screen .cf-rhino-controls{grid-template-columns:42px minmax(0,1fr) 42px minmax(0,1fr)!important;gap:5px!important}
+    #cf-app .cf-rhino-screen .cf-rhino-bottom{grid-template-columns:minmax(0,1fr) 82px minmax(0,1fr)!important;gap:5px!important}
+    #cf-app .cf-rhino-screen .cf-rhino-spin{width:78px!important;height:78px!important;font-size:54px!important}
+    #cf-app .cf-rhino-screen .cf-rhino-credit b,#cf-app .cf-rhino-screen .cf-rhino-win b{font-variant-numeric:tabular-nums}
   `;
   document.head.appendChild(style);
   document.body.classList.add('cf-code-app');
@@ -492,7 +504,7 @@
   function luckyjet(){return panel('🚀 LUCKY JET','<div class="cf-flight" id="cf-jet-scene"><div class="cf-stars"></div><div class="cf-trail-glow"></div><div class="cf-trail" id="cf-jet-trail"></div><div id="cf-jet-rocket-wrap" class="cf-rocket">🚀</div><div id="cf-jet-explosion" style="display:none;position:absolute;left:42%;top:28%;font-size:90px;z-index:5">💥</div><div style="position:absolute;top:16px;left:16px;font-size:11px;letter-spacing:.15em;color:#e0b8ff;font-weight:900">COSMIC FLIGHT</div><div style="position:absolute;left:0;right:0;bottom:18px;text-align:center"><div id="cf-jet-multiplier" style="font-size:58px;font-weight:1000;color:#d56aff;text-shadow:0 0 22px #b52cff">1.00×</div><div id="cf-jet-status" style="margin-top:8px;color:#f0e1ff">Ракета готова к запуску</div></div></div><div style="padding:14px;margin-top:14px;border:1px solid #553080;border-radius:16px;background:linear-gradient(135deg,#1b1030,#0b0816)"><label for="cf-bet" style="display:block;color:#d3b2fa;font-size:12px;font-weight:900;letter-spacing:.12em">РАЗМЕР СТАВКИ · ✦</label><input class="cf-bet-input" id="cf-bet" type="number" min="1" max="100000" step="1" value="100"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0;color:#e9d9ff"><label><input id="cf-jet-auto" type="checkbox" style="accent-color:#bd37ff"> Авто-вывод</label><input class="cf-bet-input" id="cf-jet-auto-value" type="number" min="1.1" max="100" step="0.1" value="2.0" style="width:105px;margin:0"></div><div id="cf-jet-result" style="color:#ffe08a;font-weight:800;margin:8px 0"></div><button class="cf-button" data-action="jet-start">🚀 ЗАПУСТИТЬ РАКЕТУ</button><button class="cf-button" data-action="jet-cashout" style="display:none;margin-top:8px;background:linear-gradient(105deg,#12dba0,#07835e);border-color:#a0ffe2;box-shadow:0 5px 0 #075a46">✦ ЗАБРАТЬ ВЫИГРЫШ</button></div>');}
   const renderers={home,games:gameList,slots,dice,roulette,blackjack,miner,luckyjet,bonuses,profile,tournaments};
   let current='home',selected='Больше 7',opened=0;
-  function render(name){current=renderers[name]?name:'home';content.innerHTML=renderers[current]();if(current==='bonuses')refreshDailyRewardStatus();if(current==='profile'){renderTelegramProfileImmediately();refreshAccount();}app.querySelectorAll('.bottom button').forEach(b=>b.classList.toggle('active',b.dataset.go===current || (current==='mines'||current==='dice'||current==='wheel'||current==='crash')&&b.dataset.go==='games'));app.scrollTo({top:0,behavior:'instant'});}
+  function render(name){current=renderers[name]?name:'home';content.innerHTML=renderers[current]();if(current==='slots'){api('/api/me').then(d=>{const c=app.querySelector('#cf-rhino-credit');if(c)c.textContent=formatBalance(d.balance??d.account?.balance??0)}).catch(()=>{const c=app.querySelector('#cf-rhino-credit');if(c)c.textContent='—'})}if(current==='bonuses')refreshDailyRewardStatus();if(current==='profile'){renderTelegramProfileImmediately();refreshAccount();}app.querySelectorAll('.bottom button').forEach(b=>b.classList.toggle('active',b.dataset.go===current || (current==='mines'||current==='dice'||current==='wheel'||current==='crash')&&b.dataset.go==='games'));app.scrollTo({top:0,behavior:'instant'});}
   window.cfNavigate=function(name){try{render(name)}catch(error){console.error('Navigation failed',error);say('Не удалось открыть раздел. Перезапусти приложение.')}};
   // Capture taps before Telegram WebView or underlying page handlers can swallow them.
   document.addEventListener('click', function cosmicNavigationCapture(e){
@@ -627,7 +639,7 @@
         }
         if(result)result.textContent='🎉 '+(data.outcome?.label||'Результат')+' · баланс '+formatBalance(data.balance)+' ✦';
         const balance=app.querySelector('#cf-balance');if(balance)balance.textContent=formatBalance(data.balance);
-        const profileBalance=app.querySelector('#cf-profile-balance');if(profileBalance)profileBalance.textContent=formatBalance(data.balance);
+        const profileBalance=app.querySelector('#cf-profile-balance');if(profileBalance)profileBalance.textContent=formatBalance(data.balance);if(game==='slots'){const credit=app.querySelector('#cf-rhino-credit'),win=app.querySelector('#cf-rhino-win');if(credit)credit.textContent=formatBalance(data.balance);if(win)win.textContent=formatBalance(data.payout??0)}
         say(data.outcome?.label||'Бонус получен');
       }catch(error){if(result)result.textContent=error.message;say(error.message)}
       finally{button.disabled=false;button.textContent='🎡 Крутить бесплатно'}
