@@ -21,8 +21,11 @@
     #cf-app .cf-rhino-screen .cf-slots-marquee{border-radius:6px;border:1px solid #ffe49a;background:linear-gradient(#4a622d,#152a1b);font-size:clamp(19px,5.5vw,27px);letter-spacing:1.4px;color:#ffe8a1;text-shadow:0 2px #552d0c,0 0 12px #ffc74a;box-shadow:inset 0 0 0 2px #ffffff10,0 3px 0 #142516}
     #cf-app .cf-rhino-reels{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;padding:5px!important;height:clamp(270px,82vw,390px)}
     #cf-app .cf-rhino-reel-column{display:grid;grid-template-rows:repeat(3,minmax(76px,1fr));gap:3px;min-width:0;overflow:hidden;background:#102317}
-    #cf-app .cf-rhino-reel-column .cf-slot-reel-cell{min-width:0;display:grid;place-items:center;overflow:hidden;border:1px solid #b8a16a;background:linear-gradient(90deg,#b9b5a6,#fffbed 18%,#eee8d7 80%,#aaa48f);box-shadow:inset 0 0 8px #584c2c55}
+    #cf-app .cf-rhino-reel-column .cf-slot-reel-cell{position:relative;min-width:0;display:grid;place-items:center;overflow:hidden;border:1px solid #b8a16a;background:linear-gradient(90deg,#b9b5a6,#fffbed 18%,#eee8d7 80%,#aaa48f);box-shadow:inset 0 0 8px #584c2c55;transition:background .18s ease,border-color .18s ease,box-shadow .18s ease}
     #cf-app .cf-rhino-reel-column .cf-slot-symbol{font-size:clamp(24px,7vw,40px);line-height:1;text-align:center}
+    #cf-app .cf-rhino-reel-column .cf-slot-reel-cell.cf-slot-winning{z-index:2;border:2px solid #fff5a1;background:linear-gradient(135deg,#fff8b0 0%,#ffd43b 38%,#d98b08 100%);box-shadow:inset 0 0 16px #fff8bb,0 0 0 2px #ffcf39,0 0 17px 6px #ffcf39;animation:cfSlotWinPulse .72s ease-in-out infinite alternate}
+    #cf-app .cf-rhino-reel-column .cf-slot-reel-cell.cf-slot-winning .cf-slot-symbol{filter:drop-shadow(0 0 5px #fff8b0);transform:scale(1.07)}
+    @keyframes cfSlotWinPulse{from{box-shadow:inset 0 0 9px #fff8bb,0 0 0 1px #ffcf39,0 0 8px 2px #ffcf39}to{box-shadow:inset 0 0 20px #fff,0 0 0 3px #fff0a1,0 0 23px 9px #ffcf39}}
     #cf-app .cf-rhino-reel-column.is-spinning .cf-slot-symbol{animation:cfSlotReelRoll .11s linear infinite;filter:blur(1.5px)}
     #cf-app .cf-rhino-prompt{text-align:center;color:#ffdf54;font-weight:1000;letter-spacing:.5px;padding:12px 0 7px;text-shadow:0 2px #50340c}
     #cf-app .cf-rhino-controls{display:grid;grid-template-columns:44px minmax(70px,1fr) 44px minmax(78px,1fr);gap:6px;align-items:center;margin:8px 0 12px}
@@ -413,6 +416,31 @@
   function gamePanel(game,title,art,description,extra=''){
     return panel(title,'<div class="game-stage '+game+'" id="cf-game-stage">'+gameAvatar(game)+'<p style="color:#c5b6df;margin:8px 0 0">'+description+'</p></div>'+extra+'<div class="fieldrow"><label class="field">Ставка <input id="cf-bet" type="number" min="1" max="100000" value="100" style="width:100%;margin-top:8px;background:#0b0918;color:white;border:1px solid #6c3a9e;border-radius:8px;padding:8px;text-align:center"></label></div><div id="cf-game-result" style="text-align:center;color:#e6d8ff;min-height:24px;margin:10px 0"></div><button class="primary" data-action="play-game" data-game="'+game+'">Играть</button>');
   }
+  const cfSlotPaylines = [
+    [1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],[0,1,2,1,0],[2,1,0,1,2],
+    [0,0,1,0,0],[2,2,1,2,2],[1,0,0,0,1],[1,2,2,2,1],[0,1,1,1,0],
+    [2,1,1,1,2],[1,0,1,2,1],[1,2,1,0,1],[0,1,0,1,0],[2,1,2,1,2],
+    [0,2,0,2,0],[2,0,2,0,2],[0,2,2,2,0],[2,0,0,0,2],[1,1,0,1,1]
+  ];
+  function clearCfSlotWinningCells(){
+    app.querySelectorAll('#cf-app .cf-slot-reel-cell.cf-slot-winning').forEach(cell=>cell.classList.remove('cf-slot-winning'));
+  }
+  function highlightCfSlotWinningCells(wins){
+    clearCfSlotWinningCells();
+    if(!Array.isArray(wins)||!wins.length)return;
+    const winningIndexes=new Set();
+    for(const win of wins){
+      const line=cfSlotPaylines[Number(win.payline)-1];
+      const count=Math.max(0,Math.min(5,Number(win.count)||0));
+      if(!line||count<2)continue;
+      for(let col=0;col<count;col++)winningIndexes.add(col*3+line[col]);
+    }
+    for(const index of winningIndexes){
+      const col=Math.floor(index/3),row=index%3;
+      const cell=app.querySelector('#cf-slot-reel-'+col+' .cf-slot-reel-cell:nth-child('+(row+1)+')');
+      if(cell)cell.classList.add('cf-slot-winning');
+    }
+  }
   const cfSlotImageMap = {
     'A':['A.png'],'K':['K.png'],'Q':['Q.png'],'J':['J.png'],
     'rhino':['rhino.png'],'golden-rhino':['golden_rhino.png'],
@@ -758,7 +786,7 @@
       const result=app.querySelector('#cf-game-result');
       if(!Number.isSafeInteger(bet)||bet<1||bet>100000){say('Ставка должна быть от 1 до 100 000.');return}
       const body={game,bet,requestId:crypto.randomUUID()};
-      const slotReels=game==='slots'?[0,1,2,3,4].map(i=>app.querySelector('#cf-slot-reel-'+i)):[];let slotSpinFailsafe=null;if(game==='slots'){slotReels.forEach(el=>{if(el){el.classList.add('is-spinning');el.querySelectorAll('.cf-slot-symbol').forEach((symbol,j)=>{const keys=['rhino','golden-rhino','eagle','flamingo','crocodile','hyena','A','K','Q','J','sun'];symbol.innerHTML=rhinoSymbol(keys[Math.floor(Math.random()*keys.length)]);});}});slotSpinFailsafe=setTimeout(()=>{slotReels.forEach(el=>el?.classList.remove('is-spinning'));action.classList.remove('cf-spinning')},8000)}const diceOne=game==='dice'?app.querySelector('#cf-die-one'):null;const diceTwo=game==='dice'?app.querySelector('#cf-die-two'):null;const diceTotal=game==='dice'?app.querySelector('#cf-dice-total'):null;if(game==='dice'){[diceOne,diceTwo].forEach(d=>{if(d){d.classList.remove('face-1','face-2','face-3','face-4','face-5','face-6');d.classList.add('face-6','is-rolling');}});if(diceTotal)diceTotal.textContent='КОСТИ БРОШЕНЫ…';}const stage=app.querySelector('#cf-game-stage');
+      const slotReels=game==='slots'?[0,1,2,3,4].map(i=>app.querySelector('#cf-slot-reel-'+i)):[];let slotSpinFailsafe=null;if(game==='slots'){clearCfSlotWinningCells();slotReels.forEach(el=>{if(el){el.classList.add('is-spinning');el.querySelectorAll('.cf-slot-symbol').forEach((symbol,j)=>{const keys=['rhino','golden-rhino','eagle','flamingo','crocodile','hyena','A','K','Q','J','sun'];symbol.innerHTML=rhinoSymbol(keys[Math.floor(Math.random()*keys.length)]);});}});slotSpinFailsafe=setTimeout(()=>{slotReels.forEach(el=>el?.classList.remove('is-spinning'));action.classList.remove('cf-spinning')},8000)}const diceOne=game==='dice'?app.querySelector('#cf-die-one'):null;const diceTwo=game==='dice'?app.querySelector('#cf-die-two'):null;const diceTotal=game==='dice'?app.querySelector('#cf-dice-total'):null;if(game==='dice'){[diceOne,diceTwo].forEach(d=>{if(d){d.classList.remove('face-1','face-2','face-3','face-4','face-5','face-6');d.classList.add('face-6','is-rolling');}});if(diceTotal)diceTotal.textContent='КОСТИ БРОШЕНЫ…';}const stage=app.querySelector('#cf-game-stage');
       if(stage){stage.classList.add('is-playing');}
       const art=app.querySelector('.bigart');
       if(art){art.classList.remove('anim-dice','anim-slots','anim-cards','anim-wheel');void art.offsetWidth;art.classList.add(game==='dice'?'anim-dice':game==='slots'?'anim-slots':game==='roulette'?'anim-wheel':'anim-cards');}
@@ -779,6 +807,7 @@
         if(game==='slots'){const slotWin=app.querySelector('#cf-rhino-win');if(slotWin)slotWin.textContent=formatBalance(data.payout);}
         if(game==='slots'){await new Promise(resolve=>setTimeout(resolve,350));}if(game==='dice'){await new Promise(resolve=>setTimeout(resolve,1250));}const out=data.outcome||{};if(game==='slots'&&Array.isArray(out.reels)&&out.reels.length===15){for(let i=0;i<5;i++){const el=slotReels[i];if(!el)continue;await new Promise(resolve=>setTimeout(resolve,450+i*220));el.classList.remove('is-spinning');const cells=el.querySelectorAll('.cf-slot-symbol');for(let j=0;j<3;j++){if(cells[j]){setCfSlotSymbol(cells[j],out.reels[i*3+j]);cells[j].style.animation='none';void cells[j].offsetWidth;cells[j].style.animation='';}}el.animate?.([{transform:'translateY(-10px)'},{transform:'translateY(3px)'},{transform:'translateY(0)'}],{duration:260,easing:'cubic-bezier(.2,.8,.2,1)'});}}if(game==='dice'&&diceOne&&diceTwo&&Number.isInteger(Number(out.roll))){const total=Number(out.roll);const values=Array.isArray(out.dice)&&out.dice.length===2?out.dice:[1,Math.max(1,total-1)];[diceOne,diceTwo].forEach((d,i)=>{d.classList.remove('is-rolling','face-1','face-2','face-3','face-4','face-5','face-6');d.classList.add('face-'+Math.max(1,Math.min(6,Number(values[i])||1)));});if(diceTotal)diceTotal.textContent='СУММА: '+total;}
         if(game==='roulette'&&Number.isInteger(Number(out.number))){const winningNumber=Number(out.number);const ix=rouletteNumbers.indexOf(winningNumber);if(ix>=0&&rouletteWheel&&rouletteBall){const step=360/37;const pocketCenter=ix*step+step/2;const finalRotation=1440-pocketCenter;rouletteWheel.style.transition='transform 5.2s cubic-bezier(.08,.72,.12,1)';void rouletteWheel.offsetWidth;rouletteWheel.style.transform='rotate('+finalRotation+'deg)';const wheelWrap=app.querySelector('.cf-roulette-wheel-wrap');if(wheelWrap)rouletteBall.style.setProperty('--ball-radius',Math.round(wheelWrap.clientWidth*.345)+'px');rouletteBall.style.setProperty('--ball-angle','0deg');rouletteBall.classList.remove('is-spinning','is-slowing','is-falling');rouletteBall.style.animation='none';rouletteBall.style.transform='rotate(0deg) translateY(calc(0px - var(--ball-radius)))';void rouletteBall.offsetWidth;rouletteBall.style.animation='';rouletteBall.classList.add('is-slowing');if(result)result.textContent='Колесо замедляется, шарик катится по секторам…';await new Promise(resolve=>setTimeout(resolve,6300));rouletteBall.classList.remove('is-slowing');rouletteBall.classList.add('is-falling');if(result)result.textContent='Выпало '+winningNumber+' · '+(out.color==='green'?'ЗЕЛЁНОЕ':out.color==='red'?'КРАСНОЕ':'ЧЁРНОЕ');await new Promise(resolve=>setTimeout(resolve,550));}}
+        if(game==='slots')highlightCfSlotWinningCells(out.wins);
         let message=out.message||'Раунд завершён';
         if(out.reels)message+=' · '+out.reels.join(' ');
         if(out.roll)message+=' · выпало '+out.roll;
