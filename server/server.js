@@ -230,7 +230,8 @@ function slotPaylineWin(grid, totalBet, wildRhino=false){
     for(const symbol of Object.keys(SLOT_PAYTABLE)){
       let count=0;
       for(const value of line){
-        if(value===symbol||(wildRhino&&value==='rhino'))count++;else break;
+        const isWild=value==='golden-rhino'||(wildRhino&&value==='rhino');
+        if(value===symbol||isWild)count++;else break;
       }
       const multiplier=SLOT_PAYTABLE[symbol][count]||0;
       if(multiplier>best.multiplier)best={symbol,count,multiplier};
@@ -278,6 +279,8 @@ function playSlotRound(bet, activeFeature){
   const pay=slotPaylineWin(grid,bet,false);
   const scatterReels=[1,2,3].filter(col=>grid.slice(col*3,col*3+3).includes('sun'));
   const scatterTriggered=scatterReels.length===3;
+  // The original Bonus symbol also pays 2x total bet when all three required scatters land.
+  const scatterPayout=scatterTriggered?Math.floor(bet*2):0;
   const stacks=slotGridHasRhinoStacks(grid);
   const respinTriggered=stacks.length>=2;
   let featureState=null,feature=null,message=pay.total?'Выигрыш по линиям!':'Попробуй ещё раз';
@@ -288,7 +291,8 @@ function playSlotRound(bet, activeFeature){
     featureState={mode:'super-respin',grid:respinGrid,remaining:3,bet,afterFeature:scatterTriggered?{mode:'free-spins',remaining:10,bet}:null};
     message=scatterTriggered?'SUPER RESPIN! Затем 10 бесплатных вращений':'SUPER RESPIN! Носороги закреплены · 3 респина';
   }else if(scatterTriggered){feature='free-spins';featureState={mode:'free-spins',remaining:10,bet};message='БОНУС! 10 бесплатных вращений · носорог — Wild';}
-  return {payout:pay.total,outcome:{reels:feature==='super-respin'?featureState.grid:grid,feature,featureState,freeSpinsLeft:feature==='free-spins'?10:undefined,respinsLeft:feature==='super-respin'?3:undefined,wins:pay.wins,chargedBet:bet,multiplier:pay.total/(bet||1),message,scatterCount:scatterReels.length,rhinoStacks:stacks.length},chargeBet:true};
+  const totalPayout=pay.total+scatterPayout;
+  return {payout:totalPayout,outcome:{reels:feature==='super-respin'?featureState.grid:grid,feature,featureState,freeSpinsLeft:feature==='free-spins'?10:undefined,respinsLeft:feature==='super-respin'?3:undefined,wins:pay.wins,scatterPayout,chargedBet:bet,multiplier:totalPayout/(bet||1),message,scatterCount:scatterReels.length,rhinoStacks:stacks.length},chargeBet:true};
 }
 function playRound(game, bet, choice, activeSlotFeature=null) {
   if (game === 'slots') return playSlotRound(bet, activeSlotFeature);
