@@ -489,6 +489,31 @@
     #cf-app button.primary{transition:transform .15s ease,filter .15s ease}
     #cf-app button.primary:active{transform:scale(.98);filter:brightness(1.12)}
     @media(prefers-reduced-motion:reduce){#cf-app .cf-slots-toplights i,#cf-app .cf-slot-reel.is-spinning .cf-slot-symbol{animation-duration:1.5s!important}}
+
+    /* Great Rhino-inspired visual direction; original Cosmic Fortune artwork, existing server game logic retained */
+    #cf-app .cf-slots-casino{padding:3px 0 8px}
+    #cf-app .cf-slots-machine{border:2px solid #d9b45f;border-radius:13px;padding:10px 9px 12px;background:radial-gradient(ellipse at 50% 20%,#6e8d3e 0%,#315328 36%,#192d22 68%,#101b19 100%);box-shadow:inset 0 0 0 3px #f3d98c22,inset 0 -22px 35px #06110dcc,0 9px 22px #0009}
+    #cf-app .cf-slots-machine:before{inset:4px;border:1px solid #eed68c88;border-radius:8px}
+    #cf-app .cf-slots-marquee{margin:0 auto 10px;border:1px solid #f6df99;border-radius:6px;background:linear-gradient(180deg,#3e602c,#1a321f);color:#ffe6a0;letter-spacing:1.7px;text-shadow:0 2px 2px #17210b,0 0 10px #d6b85d88;box-shadow:inset 0 0 0 2px #ffffff0b,0 3px 0 #18271a}
+    #cf-app .cf-slots-toplights{margin:0 8px 9px}
+    #cf-app .cf-slots-toplights i{background:#f9d77a;box-shadow:0 0 5px #fff0b1,0 0 12px #f6c34c;animation-duration:.85s}
+    #cf-app .cf-slots-window{gap:5px;padding:6px;border:3px solid #c99a42;border-radius:5px;background:linear-gradient(90deg,#66441c,#f5d77e 12%,#a77a2e 19%,#f7e3a2 50%,#916322 82%,#f7d87a);box-shadow:inset 0 0 0 1px #fff8,0 4px 0 #4b3217,0 9px 16px #0008}
+    #cf-app .cf-slot-reel{height:clamp(94px,29vw,132px);border:1px solid #bcb7a9;border-radius:3px;background:linear-gradient(90deg,#d7d4c9,#fffef4 15%,#f5f1e6 80%,#bcb8aa);box-shadow:inset 0 0 12px #554b3555,0 1px 2px #0008}
+    #cf-app .cf-slot-symbol{font-size:clamp(43px,13vw,70px);filter:drop-shadow(0 3px 1px #0003)}
+    #cf-app .cf-slot-reel.is-spinning .cf-slot-symbol{animation:cfSlotReelRoll .12s linear infinite;filter:blur(2px) saturate(1.2)}
+    #cf-app .cf-slots-payline{margin:12px 0 7px;color:#ffe5a1;letter-spacing:1.6px;text-shadow:0 0 8px #e9bf5c55}
+    #cf-app .cf-slots-footer{border-top:1px solid #ecd28c44;padding-top:8px;color:#ffe39a;font-size:13px}
+    #cf-app .cf-slots-footer span{color:#e4d6a3}
+    #cf-app .cf-slots-paytable{gap:6px;margin:11px 0}
+    #cf-app .cf-slots-paytable div{min-height:32px;padding:8px 9px;border:1px solid #526d3f;border-radius:7px;background:linear-gradient(145deg,#213521,#101b18);color:#eee8ce;box-shadow:inset 0 1px 0 #ffffff12}
+    #cf-app .cf-slots-paytable div:first-child{border-color:#c9a04b;background:linear-gradient(145deg,#3d351d,#182219)}
+    #cf-app .cf-slots-paytable b{color:#ffe092;text-shadow:0 0 8px #e8bb5744}
+    #cf-app .cf-slots-casino button.primary{min-height:46px!important;border:1px solid #fff0b3!important;border-radius:7px!important;background:linear-gradient(180deg,#ffe9a1 0%,#e9bf5a 48%,#b47b28 100%)!important;color:#26351e!important;font-size:14px!important;font-weight:1000!important;letter-spacing:.7px;box-shadow:0 4px 0 #67491d,0 7px 14px #0005!important;text-shadow:0 1px #fff7;transition:transform .12s,filter .12s}
+    #cf-app .cf-slots-casino button.primary:active{transform:translateY(3px);filter:brightness(1.1);box-shadow:0 1px 0 #67491d!important}
+    #cf-app .cf-slots-casino label{display:block;padding:8px 10px;border:1px solid #596e42;border-radius:7px;background:linear-gradient(145deg,#213521,#101b18);font-size:11px!important;font-weight:800}
+    #cf-app .cf-slots-casino input#cf-bet{height:36px;border:1px solid #b4a067!important;border-radius:5px!important;background:#0c1510!important;color:#fff3c4!important;font-size:16px!important;font-weight:800;outline:none}
+    #cf-app .cf-slots-casino input#cf-bet:focus{border-color:#ffe6a0!important;box-shadow:0 0 0 2px #f6d77b22}
+    @media(prefers-reduced-motion:reduce){#cf-app .cf-slots-toplights i,#cf-app .cf-slot-reel.is-spinning .cf-slot-symbol{animation-duration:1.5s!important}}
 </style><div class="cf-flight" id="cf-jet-scene"><div class="cf-stars"></div><div class="cf-trail-glow"></div><div class="cf-trail" id="cf-jet-trail"></div><div id="cf-jet-rocket-wrap" class="cf-rocket">🚀</div><div id="cf-jet-explosion" style="display:none;position:absolute;left:42%;top:28%;font-size:90px;z-index:5">💥</div><div style="position:absolute;top:16px;left:16px;font-size:11px;letter-spacing:.15em;color:#e0b8ff;font-weight:900">COSMIC FLIGHT</div><div style="position:absolute;left:0;right:0;bottom:18px;text-align:center"><div id="cf-jet-multiplier" style="font-size:58px;font-weight:1000;color:#d56aff;text-shadow:0 0 22px #b52cff">1.00×</div><div id="cf-jet-status" style="margin-top:8px;color:#f0e1ff">Ракета готова к запуску</div></div></div><div style="padding:14px;margin-top:14px;border:1px solid #553080;border-radius:16px;background:linear-gradient(135deg,#1b1030,#0b0816)"><label for="cf-bet" style="display:block;color:#d3b2fa;font-size:12px;font-weight:900;letter-spacing:.12em">РАЗМЕР СТАВКИ · ✦</label><input class="cf-bet-input" id="cf-bet" type="number" min="1" max="100000" step="1" value="100"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0;color:#e9d9ff"><label><input id="cf-jet-auto" type="checkbox" style="accent-color:#bd37ff"> Авто-вывод</label><input class="cf-bet-input" id="cf-jet-auto-value" type="number" min="1.1" max="100" step="0.1" value="2.0" style="width:105px;margin:0"></div><div id="cf-jet-result" style="color:#ffe08a;font-weight:800;margin:8px 0"></div><button class="cf-button" data-action="jet-start">🚀 ЗАПУСТИТЬ РАКЕТУ</button><button class="cf-button" data-action="jet-cashout" style="display:none;margin-top:8px;background:linear-gradient(105deg,#12dba0,#07835e);border-color:#a0ffe2;box-shadow:0 5px 0 #075a46">✦ ЗАБРАТЬ ВЫИГРЫШ</button></div>');}
   const renderers={home,games:gameList,slots,dice,roulette,blackjack,miner,luckyjet,bonuses,profile,tournaments};
   let current='home',selected='Больше 7',opened=0;
