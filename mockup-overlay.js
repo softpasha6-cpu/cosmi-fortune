@@ -423,7 +423,7 @@
     [0,2,0,2,0],[2,0,2,0,2],[0,2,2,2,0],[2,0,0,0,2],[1,1,0,1,1]
   ];
   function clearCfSlotWinningCells(){
-    app.querySelectorAll('#cf-app .cf-slot-reel-cell.cf-slot-winning').forEach(cell=>cell.classList.remove('cf-slot-winning'));
+    app.querySelectorAll('.cf-slot-reel-cell.cf-slot-winning').forEach(cell=>cell.classList.remove('cf-slot-winning'));
   }
   function highlightCfSlotWinningCells(wins,reels,payout,feature){
     clearCfSlotWinningCells();
@@ -436,14 +436,15 @@
         for(let col=0;col<count;col++)winningIndexes.add(col*3+line[col]);
       }
     }
-    // Super Respin wins are paid as a feature/jackpot, not as ordinary paylines.
-    // Illuminate the rhino symbols that make up that feature result.
-    if(winningIndexes.size===0&&feature==='super-respin'&&Array.isArray(reels)){
+    // During Super Respin, every landed rhino is a feature symbol, even before
+    // the final jackpot payout is resolved. Highlight those landed cells too.
+    if(feature==='super-respin'&&Array.isArray(reels)){
       reels.forEach((symbol,index)=>{if(symbol==='rhino')winningIndexes.add(index);});
     }
     for(const index of winningIndexes){
       const col=Math.floor(index/3),row=index%3;
-      const cell=app.querySelector('#cf-slot-reel-'+col+' .cf-slot-reel-cell:nth-child('+(row+1)+')');
+      const reel=app.querySelector('#cf-slot-reel-'+col);
+      const cell=reel?.querySelectorAll('.cf-slot-reel-cell')?.[row];
       if(cell)cell.classList.add('cf-slot-winning');
     }
   }
