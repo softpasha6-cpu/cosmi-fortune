@@ -224,7 +224,7 @@ function slotGridHasRhinoStacks(grid){
 }
 function slotPaylineWin(grid, totalBet, wildRhino=false){
   let total=0;const wins=[];
-  const betPerLine=Number(totalBet)/SLOT_PAYLINES.length;
+  const betPerLine=Number(totalBet);
   for(let li=0;li<SLOT_PAYLINES.length;li++){
     const rows=SLOT_PAYLINES[li],line=rows.map((row,col)=>grid[col*3+row]);
     let best={symbol:null,count:0,multiplier:0};
