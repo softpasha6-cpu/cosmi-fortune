@@ -808,7 +808,7 @@ app.get('/api/luckyjet/live',requireUser,async(req,res,next)=>{
     q={rowCount:0,rows:[]};
    }else{
     flight={startedAt:new Date(startedAt).getTime(),multiplier,crashAt};
-    const b=await pool.query("SELECT l.telegram_id,l.bet,l.status,l.payout,p.username,p.first_name FROM luckyjet_rounds l JOIN players p ON p.telegram_id=l.telegram_id WHERE l.started_at=$1 ORDER BY l.created_at ASC LIMIT 100",[startedAt]);
+    const b=await pool.query("SELECT l.telegram_id,l.bet,l.status,l.payout,p.username,p.first_name FROM luckyjet_rounds l JOIN players p ON p.telegram_id=l.telegram_id WHERE l.started_at=$1 ORDER BY l.telegram_id ASC LIMIT 100",[startedAt]);
     bets=b.rows.map(x=>({telegramId:String(x.telegram_id),name:(x.username&&String(x.username).trim())?'@'+String(x.username).replace(/^@/,''):((x.first_name&&String(x.first_name).trim())||'Игрок'),bet:Number(x.bet),status:x.status,payout:Number(x.payout||0),isMe:String(x.telegram_id)===String(req.player.telegram_id)}));
    }
   }
