@@ -200,8 +200,9 @@ const SLOT_PAYTABLE = {
   hyena:{3:1.5,4:4,5:12}, A:{3:1,4:2.5,5:8}, K:{3:0.8,4:2,5:6},
   Q:{3:0.6,4:1.5,5:5}, J:{3:0.5,4:1.2,5:4}
 };
-function slotRandomSymbol(){
-  const pool=['J','J','J','Q','Q','Q','K','K','A','A','hyena','hyena','crocodile','flamingo','eagle','golden-rhino','rhino','sun'];
+function slotRandomSymbol(allowBonus=true){
+  const pool=['J','J','J','Q','Q','Q','K','K','A','A','hyena','hyena','crocodile','flamingo','eagle','golden-rhino','rhino'];
+  if(allowBonus)pool.push('sun');
   return pool[randInt(pool.length)];
 }
 function slotGridHasRhinoStacks(grid){
@@ -233,8 +234,8 @@ function slotPaylineWin(grid, totalBet, wildRhino=false){
 function playSlotRound(bet, activeFeature){
   const feature=activeFeature&&typeof activeFeature==='object'?activeFeature:null;
   if(feature?.mode==='free-spins'){
-    const grid=Array.from({length:15},()=>slotRandomSymbol());
-    // In the original Great Rhino free-spin round, every rhino acts as a Wild.
+    const grid=Array.from({length:15},()=>slotRandomSymbol(false));
+    // In the original Great Rhino free-spin round, every rhino acts as a Wild and Bonus symbols are absent.
     const pay=slotPaylineWin(grid,Number(feature.bet)||bet,true);
     const remaining=Math.max(0,Number(feature.remaining||0)-1);
     const next=remaining?{...feature,remaining}:null;
@@ -255,7 +256,7 @@ function playSlotRound(bet, activeFeature){
     let payout=0;
     let message=landed?'Носорог закреплён — дополнительный респин!':'Super Respin';
     if(newRhinos>=15){payout=Math.floor((Number(feature.bet)||bet)*500);remaining=0;message='GRAND JACKPOT · 500×';}
-    else if(newRhinos>=14){payout=Math.floor((Number(feature.bet)||bet)*375);remaining=0;message='MAJOR JACKPOT · 375×';}
+    else if(newRhinos>=14&&remaining===0){payout=Math.floor((Number(feature.bet)||bet)*375);remaining=0;message='MAJOR JACKPOT · 375×';}
     else if(remaining===0){payout=slotPaylineWin(grid,Number(feature.bet)||bet,false).total;message='Super Respin завершён';}
     const next=remaining?{...feature,grid,remaining}:null;
     return {payout,outcome:{reels:grid,feature:'super-respin',rhinoCount:newRhinos,respinsLeft:remaining,featureState:next,chargedBet:0,message},chargeBet:false};
@@ -274,11 +275,12 @@ function playSlotRound(bet, activeFeature){
   if(scatterTriggered){feature='free-spins';featureState={mode:'free-spins',remaining:10,bet};message='БОНУС! 10 бесплатных вращений · носорог — Wild';}
   else if(respinTriggered){
     feature='super-respin';
-    // Keep the two triggering 2x2 stacks locked in place for the feature.
-    featureState={mode:'super-respin',grid,remaining:3,bet};
+    // Keep only the full rhino stacks; all other positions become blank during Super Respin.
+    const respinGrid=grid.map(symbol=>symbol==='rhino'?'rhino':null);
+    featureState={mode:'super-respin',grid:respinGrid,remaining:3,bet};
     message='SUPER RESPIN! Носороги закреплены · 3 респина';
   }
-  return {payout:pay.total,outcome:{reels:grid,feature,featureState,freeSpinsLeft:feature==='free-spins'?10:undefined,respinsLeft:feature==='super-respin'?3:undefined,wins:pay.wins,chargedBet:bet,multiplier:pay.total/(bet||1),message,scatterCount:scatterReels.length,rhinoStacks:stacks.length},chargeBet:true};
+  return {payout:pay.total,outcome:{reels:feature==='super-respin'?featureState.grid:grid,feature,featureState,freeSpinsLeft:feature==='free-spins'?10:undefined,respinsLeft:feature==='super-respin'?3:undefined,wins:pay.wins,chargedBet:bet,multiplier:pay.total/(bet||1),message,scatterCount:scatterReels.length,rhinoStacks:stacks.length},chargeBet:true};
 }
 function playRound(game, bet, choice, activeSlotFeature=null) {
   if (game === 'slots') return playSlotRound(bet, activeSlotFeature);
