@@ -795,6 +795,27 @@ app.post('/api/miner/cashout',requireUser,async(req,res,next)=>{
  await client.query('COMMIT');res.json({payout,balance:Number(b.rows[0].balance),multiplier:Number(r.multiplier)});
  }catch(e){await client.query('ROLLBACK').catch(()=>{});next(e)}finally{client.release()}
 });
+app.get('/api/luckyjet/live',requireUser,async(req,res,next)=>{
+ try{
+  let q=await pool.query("SELECT id,started_at,crash_at FROM luckyjet_rounds WHERE status='active' ORDER BY started_at DESC LIMIT 1");
+  let flight=null,bets=[];
+  if(q.rowCount){
+   const startedAt=q.rows[0].started_at,crashAt=Number(q.rows[0].crash_at);
+   const elapsed=Math.max(0,(Date.now()-new Date(startedAt).getTime())/1000);
+   const multiplier=Number((1+Math.pow(elapsed,1.35)*0.23).toFixed(2));
+   if(multiplier>=crashAt){
+    await pool.query("UPDATE luckyjet_rounds SET status='crashed',finished_at=COALESCE(finished_at,NOW()) WHERE status='active' AND started_at=$1",[startedAt]);
+    q={rowCount:0,rows:[]};
+   }else{
+    flight={startedAt:new Date(startedAt).getTime(),multiplier,crashAt};
+    const b=await pool.query("SELECT l.telegram_id,l.bet,l.status,l.payout,p.username,p.first_name FROM luckyjet_rounds l JOIN players p ON p.telegram_id=l.telegram_id WHERE l.started_at=$1 ORDER BY l.created_at ASC LIMIT 100",[startedAt]);
+    bets=b.rows.map(x=>({telegramId:String(x.telegram_id),name:(x.username&&String(x.username).trim())?'@'+String(x.username).replace(/^@/,''):((x.first_name&&String(x.first_name).trim())||'Игрок'),bet:Number(x.bet),status:x.status,payout:Number(x.payout||0),isMe:String(x.telegram_id)===String(req.player.telegram_id)}));
+   }
+  }
+  const history=await pool.query("SELECT crash_at,finished_at,status FROM luckyjet_rounds WHERE status IN ('crashed','cashed_out') ORDER BY finished_at DESC NULLS LAST LIMIT 8");
+  res.json({flight,bets,history:history.rows.map(x=>({multiplier:Number(x.crash_at),status:x.status,finishedAt:x.finished_at?new Date(x.finished_at).getTime():null}))});
+ }catch(e){next(e)}
+});
 app.post('/api/luckyjet/start',requireUser,async(req,res,next)=>{
  const bet=Number(req.body?.bet),autoAt=req.body?.autoAt==null?null:Number(req.body.autoAt);
  if(!Number.isSafeInteger(bet)||bet<1||bet>MAX_BET)return res.status(400).json({error:'Ставка от 1 до 100 000.'});
