@@ -425,15 +425,21 @@
   function clearCfSlotWinningCells(){
     app.querySelectorAll('#cf-app .cf-slot-reel-cell.cf-slot-winning').forEach(cell=>cell.classList.remove('cf-slot-winning'));
   }
-  function highlightCfSlotWinningCells(wins){
+  function highlightCfSlotWinningCells(wins,reels,payout,feature){
     clearCfSlotWinningCells();
-    if(!Array.isArray(wins)||!wins.length)return;
     const winningIndexes=new Set();
-    for(const win of wins){
-      const line=cfSlotPaylines[Number(win.payline)-1];
-      const count=Math.max(0,Math.min(5,Number(win.count)||0));
-      if(!line||count<2)continue;
-      for(let col=0;col<count;col++)winningIndexes.add(col*3+line[col]);
+    if(Array.isArray(wins)){
+      for(const win of wins){
+        const line=cfSlotPaylines[Number(win.payline)-1];
+        const count=Math.max(0,Math.min(5,Number(win.count)||0));
+        if(!line||count<2)continue;
+        for(let col=0;col<count;col++)winningIndexes.add(col*3+line[col]);
+      }
+    }
+    // Super Respin wins are paid as a feature/jackpot, not as ordinary paylines.
+    // Illuminate the rhino symbols that make up that feature result.
+    if(winningIndexes.size===0&&Number(payout)>0&&feature==='super-respin'&&Array.isArray(reels)){
+      reels.forEach((symbol,index)=>{if(symbol==='rhino')winningIndexes.add(index);});
     }
     for(const index of winningIndexes){
       const col=Math.floor(index/3),row=index%3;
@@ -807,7 +813,7 @@
         if(game==='slots'){const slotWin=app.querySelector('#cf-rhino-win');if(slotWin)slotWin.textContent=formatBalance(data.payout);}
         if(game==='slots'){await new Promise(resolve=>setTimeout(resolve,350));}if(game==='dice'){await new Promise(resolve=>setTimeout(resolve,1250));}const out=data.outcome||{};if(game==='slots'&&Array.isArray(out.reels)&&out.reels.length===15){for(let i=0;i<5;i++){const el=slotReels[i];if(!el)continue;await new Promise(resolve=>setTimeout(resolve,450+i*220));el.classList.remove('is-spinning');const cells=el.querySelectorAll('.cf-slot-symbol');for(let j=0;j<3;j++){if(cells[j]){setCfSlotSymbol(cells[j],out.reels[i*3+j]);cells[j].style.animation='none';void cells[j].offsetWidth;cells[j].style.animation='';}}el.animate?.([{transform:'translateY(-10px)'},{transform:'translateY(3px)'},{transform:'translateY(0)'}],{duration:260,easing:'cubic-bezier(.2,.8,.2,1)'});}}if(game==='dice'&&diceOne&&diceTwo&&Number.isInteger(Number(out.roll))){const total=Number(out.roll);const values=Array.isArray(out.dice)&&out.dice.length===2?out.dice:[1,Math.max(1,total-1)];[diceOne,diceTwo].forEach((d,i)=>{d.classList.remove('is-rolling','face-1','face-2','face-3','face-4','face-5','face-6');d.classList.add('face-'+Math.max(1,Math.min(6,Number(values[i])||1)));});if(diceTotal)diceTotal.textContent='СУММА: '+total;}
         if(game==='roulette'&&Number.isInteger(Number(out.number))){const winningNumber=Number(out.number);const ix=rouletteNumbers.indexOf(winningNumber);if(ix>=0&&rouletteWheel&&rouletteBall){const step=360/37;const pocketCenter=ix*step+step/2;const finalRotation=1440-pocketCenter;rouletteWheel.style.transition='transform 5.2s cubic-bezier(.08,.72,.12,1)';void rouletteWheel.offsetWidth;rouletteWheel.style.transform='rotate('+finalRotation+'deg)';const wheelWrap=app.querySelector('.cf-roulette-wheel-wrap');if(wheelWrap)rouletteBall.style.setProperty('--ball-radius',Math.round(wheelWrap.clientWidth*.345)+'px');rouletteBall.style.setProperty('--ball-angle','0deg');rouletteBall.classList.remove('is-spinning','is-slowing','is-falling');rouletteBall.style.animation='none';rouletteBall.style.transform='rotate(0deg) translateY(calc(0px - var(--ball-radius)))';void rouletteBall.offsetWidth;rouletteBall.style.animation='';rouletteBall.classList.add('is-slowing');if(result)result.textContent='Колесо замедляется, шарик катится по секторам…';await new Promise(resolve=>setTimeout(resolve,6300));rouletteBall.classList.remove('is-slowing');rouletteBall.classList.add('is-falling');if(result)result.textContent='Выпало '+winningNumber+' · '+(out.color==='green'?'ЗЕЛЁНОЕ':out.color==='red'?'КРАСНОЕ':'ЧЁРНОЕ');await new Promise(resolve=>setTimeout(resolve,550));}}
-        if(game==='slots')highlightCfSlotWinningCells(out.wins);
+        if(game==='slots')highlightCfSlotWinningCells(out.wins,out.reels,data.payout,out.feature);
         let message=out.message||'Раунд завершён';
         if(out.reels)message+=' · '+out.reels.join(' ');
         if(out.roll)message+=' · выпало '+out.roll;
