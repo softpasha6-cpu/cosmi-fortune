@@ -35,10 +35,11 @@
     #cf-app .cf-rhino-credit span,#cf-app .cf-rhino-win span{font-size:11px;font-weight:1000;color:#ffdc4e}
     #cf-app .cf-rhino-credit b,#cf-app .cf-rhino-win b{font-size:clamp(13px,3.8vw,17px);overflow-wrap:anywhere;color:white}
     #cf-app .cf-rhino-win{text-align:right}
+    #cf-app .cf-rhino-screen .cf-rhino-spin .cf-rhino-spin-icon{transform:none!important;animation:none!important;position:static!important;inset:auto!important;}
     #cf-app .cf-rhino-screen .cf-rhino-spin{display:flex!important;align-items:center!important;justify-content:center!important;padding:0!important;line-height:1!important;text-align:center!important;box-sizing:border-box!important;position:relative!important}
-    #cf-app .cf-rhino-screen .cf-rhino-spin .cf-rhino-spin-icon{display:flex;align-items:center;justify-content:center;width:1em;height:1em;line-height:1;font-family:Arial,sans-serif;font-size:1em;font-weight:400;text-align:center;transform:translate(0,0);margin:0;padding:0}
+    #cf-app .cf-rhino-screen .cf-rhino-spin .cf-rhino-spin-icon{display:flex;align-items:center;justify-content:center;width:1em;height:1em;line-height:1;font-family:Arial,sans-serif;font-size:1em;font-weight:400;text-align:center;transform:none;flex:0 0 1em;margin:0;padding:0}
     #cf-app .cf-rhino-spin{width:88px;height:88px;justify-self:center;border-radius:50%;border:4px solid #ffdf63;background:radial-gradient(circle,#4b3410 0%,#090a05 58%,#a46b14 61%,#ffdb4f 72%,#5d370b 78%);color:#ffe44f;font-size:65px;line-height:1;box-shadow:0 0 18px #ffbd2e66,inset 0 0 0 3px #fff1;touch-action:manipulation;transition:transform .15s}
-    #cf-app .cf-rhino-spin:active{transform:rotate(-30deg) scale(.96)}
+    #cf-app .cf-rhino-spin:active{transform:scale(.96)}
     #cf-app .cf-rhino-auto{display:flex;align-items:center;justify-content:space-between;gap:10px}
     #cf-app .cf-rhino-autoplay,#cf-app .cf-rhino-info{border:1px solid #c99b3c;border-radius:30px;background:linear-gradient(#252315,#090a06);color:#ffdc4e;padding:8px 13px;font-weight:900}
     #cf-app .cf-rhino-autoplay{display:flex;align-items:center;gap:8px;font-size:22px}
@@ -301,8 +302,7 @@
     #cf-app .cf-roulette-number-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:2px;margin-top:4px;width:100%;box-sizing:border-box} #cf-app .cf-roulette-number-grid button{min-width:0;min-height:22px;height:22px;padding:0;border:1px solid #e4c57888;border-radius:4px;font-size:10px;line-height:1;font-weight:900} #cf-app .cf-roulette-number-grid button.is-selected{outline:2px solid #ffdf7c;box-shadow:0 0 12px #ffdf7c88;transform:scale(1.06)}
     #cf-app .cf-roulette-footnote{font-size:11px;color:#c8e6d4;margin-top:9px}
 
-    @keyframes cfRhinoSpin{to{transform:rotate(720deg)}}
-    #cf-app .cf-rhino-screen .cf-rhino-spin.cf-spinning{animation:cfRhinoSpin 1.1s linear infinite;filter:brightness(1.12)}
+    #cf-app .cf-rhino-screen .cf-rhino-spin.cf-spinning{filter:brightness(1.12)}
     #cf-app .cf-rhino-screen .cf-rhino-credit b,#cf-app .cf-rhino-screen .cf-rhino-win b{display:block;min-height:1.2em;font-size:clamp(15px,4vw,19px)!important;line-height:1.25;text-align:inherit}
     /* Keep the slot balance and win labels compact on mobile. */
     #cf-app .cf-rhino-screen .cf-rhino-credit span,#cf-app .cf-rhino-screen .cf-rhino-win span{font-size:clamp(9px,2.7vw,11px)!important;letter-spacing:0!important;white-space:nowrap!important}
