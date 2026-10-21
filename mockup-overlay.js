@@ -299,6 +299,9 @@
     #cf-app .cf-roulette-number-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:2px;margin-top:4px;width:100%;box-sizing:border-box} #cf-app .cf-roulette-number-grid button{min-width:0;min-height:22px;height:22px;padding:0;border:1px solid #e4c57888;border-radius:4px;font-size:10px;line-height:1;font-weight:900} #cf-app .cf-roulette-number-grid button.is-selected{outline:2px solid #ffdf7c;box-shadow:0 0 12px #ffdf7c88;transform:scale(1.06)}
     #cf-app .cf-roulette-footnote{font-size:11px;color:#c8e6d4;margin-top:9px}
 
+    @keyframes cfRhinoSpin{to{transform:rotate(720deg)}}
+    #cf-app .cf-rhino-screen .cf-rhino-spin.cf-spinning{animation:cfRhinoSpin 1.1s linear infinite;filter:brightness(1.12)}
+    #cf-app .cf-rhino-screen .cf-rhino-credit b,#cf-app .cf-rhino-screen .cf-rhino-win b{display:block;min-height:1.2em;font-size:clamp(15px,4vw,19px)!important;line-height:1.25;text-align:inherit}
     /* Keep the slot balance and win labels compact on mobile. */
     #cf-app .cf-rhino-screen .cf-rhino-credit span,#cf-app .cf-rhino-screen .cf-rhino-win span{font-size:clamp(9px,2.7vw,11px)!important;letter-spacing:0!important;white-space:nowrap!important}
     #cf-app .cf-rhino-screen .cf-rhino-win{text-align:right!important}
@@ -511,7 +514,7 @@
   function luckyjet(){return panel('🚀 LUCKY JET','<div class="cf-flight" id="cf-jet-scene"><div class="cf-stars"></div><div class="cf-trail-glow"></div><div class="cf-trail" id="cf-jet-trail"></div><div id="cf-jet-rocket-wrap" class="cf-rocket">🚀</div><div id="cf-jet-explosion" style="display:none;position:absolute;left:42%;top:28%;font-size:90px;z-index:5">💥</div><div style="position:absolute;top:16px;left:16px;font-size:11px;letter-spacing:.15em;color:#e0b8ff;font-weight:900">COSMIC FLIGHT</div><div style="position:absolute;left:0;right:0;bottom:18px;text-align:center"><div id="cf-jet-multiplier" style="font-size:58px;font-weight:1000;color:#d56aff;text-shadow:0 0 22px #b52cff">1.00×</div><div id="cf-jet-status" style="margin-top:8px;color:#f0e1ff">Ракета готова к запуску</div></div></div><div style="padding:14px;margin-top:14px;border:1px solid #553080;border-radius:16px;background:linear-gradient(135deg,#1b1030,#0b0816)"><label for="cf-bet" style="display:block;color:#d3b2fa;font-size:12px;font-weight:900;letter-spacing:.12em">РАЗМЕР СТАВКИ · ✦</label><input class="cf-bet-input" id="cf-bet" type="number" min="1" max="100000" step="1" value="100"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0;color:#e9d9ff"><label><input id="cf-jet-auto" type="checkbox" style="accent-color:#bd37ff"> Авто-вывод</label><input class="cf-bet-input" id="cf-jet-auto-value" type="number" min="1.1" max="100" step="0.1" value="2.0" style="width:105px;margin:0"></div><div id="cf-jet-result" style="color:#ffe08a;font-weight:800;margin:8px 0"></div><button class="cf-button" data-action="jet-start">🚀 ЗАПУСТИТЬ РАКЕТУ</button><button class="cf-button" data-action="jet-cashout" style="display:none;margin-top:8px;background:linear-gradient(105deg,#12dba0,#07835e);border-color:#a0ffe2;box-shadow:0 5px 0 #075a46">✦ ЗАБРАТЬ ВЫИГРЫШ</button></div>');}
   const renderers={home,games:gameList,slots,dice,roulette,blackjack,miner,luckyjet,bonuses,profile,tournaments};
   let current='home',selected='Больше 7',opened=0;
-  function render(name){current=renderers[name]?name:'home';content.innerHTML=renderers[current]();if(current==='slots'){api('/api/me').then(d=>{const c=app.querySelector('#cf-rhino-credit');if(c)c.textContent=formatBalance(d.balance??d.account?.balance??d.user?.balance??d.credits??0)}).catch(()=>{const c=app.querySelector('#cf-rhino-credit');if(c)c.textContent='—'})}if(current==='bonuses')refreshDailyRewardStatus();if(current==='profile'){renderTelegramProfileImmediately();refreshAccount();}app.querySelectorAll('.bottom button').forEach(b=>b.classList.toggle('active',b.dataset.go===current || (current==='mines'||current==='dice'||current==='wheel'||current==='crash')&&b.dataset.go==='games'));app.scrollTo({top:0,behavior:'instant'});}
+  function render(name){current=renderers[name]?name:'home';content.innerHTML=renderers[current]();if(current==='slots'){api('/api/me').then(d=>{const c=app.querySelector('#cf-rhino-credit');if(c)c.textContent=formatBalance(d.player?.balance??d.balance??d.account?.balance??d.user?.balance??d.credits??0)}).catch(()=>{const c=app.querySelector('#cf-rhino-credit');if(c)c.textContent='—'})}if(current==='bonuses')refreshDailyRewardStatus();if(current==='profile'){renderTelegramProfileImmediately();refreshAccount();}app.querySelectorAll('.bottom button').forEach(b=>b.classList.toggle('active',b.dataset.go===current || (current==='mines'||current==='dice'||current==='wheel'||current==='crash')&&b.dataset.go==='games'));app.scrollTo({top:0,behavior:'instant'});}
   window.cfNavigate=function(name){try{render(name)}catch(error){console.error('Navigation failed',error);say('Не удалось открыть раздел. Перезапусти приложение.')}};
   // Capture taps before Telegram WebView or underlying page handlers can swallow them.
   document.addEventListener('click', function cosmicNavigationCapture(e){
@@ -675,7 +678,7 @@
         if(!['red','black','green'].includes(selected)&&!(Number.isInteger(selected)&&selected>=0&&selected<=36)){say('Выбери цвет или номер от 0 до 36.');return}
         body.choice=selected;
       }
-      action.disabled=true;action.setAttribute('aria-busy','true');if(game==='slots'&&result){result.textContent='';result.classList.remove('cf-show-result')}
+      action.disabled=true;action.setAttribute('aria-busy','true');if(game==='slots'){action.classList.add('cf-spinning');if(result){result.textContent='';result.classList.remove('cf-show-result')}}
       const rouletteWheel=game==='roulette'?app.querySelector('#cf-roulette-wheel'):null;
       const rouletteBall=game==='roulette'?app.querySelector('#cf-roulette-ball'):null;
       if(rouletteWheel){rouletteWheel.style.transition='none';rouletteWheel.style.transform='rotate(0deg)';}if(rouletteBall){rouletteBall.style.setProperty('--ball-angle','0deg');rouletteBall.classList.remove('is-falling');rouletteBall.classList.add('is-spinning');}
@@ -696,7 +699,7 @@
         const me=await api('/api/me');
         if(current==='profile')renderHistoryInProfile(me.history||[]);
       }catch(error){if(result)result.textContent=error.message;say(error.message)}
-      finally{app.querySelector('#cf-game-stage')?.classList.remove('is-playing');if(game==='dice'){[diceOne,diceTwo].forEach(d=>d?.classList.remove('is-rolling'));}if(game==='slots'){slotReels.forEach(el=>el?.classList.remove('is-spinning'));}action.disabled=false;action.removeAttribute('aria-busy')}
+      finally{app.querySelector('#cf-game-stage')?.classList.remove('is-playing');if(game==='dice'){[diceOne,diceTwo].forEach(d=>d?.classList.remove('is-rolling'));}if(game==='slots'){slotReels.forEach(el=>el?.classList.remove('is-spinning'));action.classList.remove('cf-spinning')}action.disabled=false;action.removeAttribute('aria-busy')}
       return
     }
     if(action.dataset.action==='roll'){say('Открой раздел «Кости» для игры.');return}
