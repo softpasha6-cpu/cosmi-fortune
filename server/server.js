@@ -835,6 +835,8 @@ app.post('/api/luckyjet/start',requireUser,async(req,res,next)=>{
   let shared=await client.query("SELECT started_at,crash_at FROM luckyjet_rounds WHERE started_at>NOW()-INTERVAL '3 minutes' ORDER BY started_at DESC LIMIT 1");
   if(shared.rowCount){
    const flight=shared.rows[0],elapsed=(Date.now()-new Date(flight.started_at).getTime())/1000;
+   // Bets are accepted only at the very beginning of the shared round, never once the rocket is visibly flying.
+   if(elapsed>0.75){await client.query('ROLLBACK');return res.status(409).json({error:'Раунд уже начался — дождись следующего запуска.'})}
    const current=1+Math.pow(Math.max(0,elapsed),1.35)*0.23;
    if(current>=Number(flight.crash_at)){
     await client.query("UPDATE luckyjet_rounds SET status='crashed',finished_at=COALESCE(finished_at,NOW()) WHERE status='active' AND started_at=$1",[flight.started_at]);
