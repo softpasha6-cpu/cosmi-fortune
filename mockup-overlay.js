@@ -725,7 +725,7 @@
   function startLuckyJetLiveUpdates(){
     if(jetLiveTimer)clearInterval(jetLiveTimer);
     jetPollLive();
-    jetLiveTimer=setInterval(jetPollLive,1800);
+    jetLiveTimer=setInterval(jetPollLive,2200);
   }
   function jetSetButtons(index,active){const start=app.querySelector('[data-action="jet-start"][data-bet-index="'+index+'"]'),cash=app.querySelector('[data-action="jet-cashout"][data-bet-index="'+index+'"]');if(start)start.style.display=active?'none':'block';if(cash)cash.style.display=active?'block':'none';}
   let jetFlightState=null,jetAnimationFrame=0,jetLastTextUpdate=0;
@@ -750,12 +750,13 @@
         jetLastTextUpdate=now;
       }
     }
-    jetAnimationFrame=requestAnimationFrame(jetSmoothAnimation);
+    if(jetFlightState)jetAnimationFrame=requestAnimationFrame(jetSmoothAnimation);
+    else jetAnimationFrame=0;
   }
   function ensureJetAnimation(){
-    if(!jetAnimationFrame)jetAnimationFrame=requestAnimationFrame(jetSmoothAnimation);
+    if(jetFlightState&&!jetAnimationFrame)jetAnimationFrame=requestAnimationFrame(jetSmoothAnimation);
   }
-  function jetRenderLive(d){jetFlightState=d.flight?{startedAt:Number(d.flight.startedAt),crashAt:Number(d.flight.crashAt)}:null;ensureJetAnimation();const elapsed=d.flight?Date.now()-Number(d.flight.startedAt):0;app.querySelectorAll('[data-action="jet-start"]').forEach(b=>{const idx=Number(b.dataset.betIndex||0),already=jetRounds.some(r=>r.index===idx);if(!already){b.disabled=!!d.flight&&elapsed>750;b.style.opacity=b.disabled?'.48':'1';b.title=b.disabled?'Раунд уже летит — дождись следующего запуска':'';b.textContent=b.disabled?'ОЖИДАНИЕ · РАУНД ИДЁТ':'СТАВКА';}});const history=app.querySelector('#cf-jet-history');if(history&&d.history){history.innerHTML=d.history.map(h=>'<span style="flex:0 0 auto;background:'+(h.multiplier>=2?'#4c2582':'#28183c')+';color:'+(h.multiplier>=2?'#e3c8ff':'#c1b0d8')+';border-radius:8px;padding:5px 8px;font-size:11px;font-weight:900">'+Number(h.multiplier).toFixed(2)+'×</span>').join('')||'<span style="color:#b9a7d7">Ожидание первого раунда</span>';}
+  function jetRenderLive(d){jetFlightState=d.flight?{startedAt:Number(d.flight.startedAt),crashAt:Number(d.flight.crashAt)}:null;if(!jetFlightState&&jetAnimationFrame){cancelAnimationFrame(jetAnimationFrame);jetAnimationFrame=0;}ensureJetAnimation();const elapsed=d.flight?Date.now()-Number(d.flight.startedAt):0;app.querySelectorAll('[data-action="jet-start"]').forEach(b=>{const idx=Number(b.dataset.betIndex||0),already=jetRounds.some(r=>r.index===idx);if(!already){b.disabled=!!d.flight&&elapsed>750;b.style.opacity=b.disabled?'.48':'1';b.title=b.disabled?'Раунд уже летит — дождись следующего запуска':'';b.textContent=b.disabled?'ОЖИДАНИЕ · РАУНД ИДЁТ':'СТАВКА';}});const history=app.querySelector('#cf-jet-history');if(history&&d.history){history.innerHTML=d.history.map(h=>'<span style="flex:0 0 auto;background:'+(h.multiplier>=2?'#4c2582':'#28183c')+';color:'+(h.multiplier>=2?'#e3c8ff':'#c1b0d8')+';border-radius:8px;padding:5px 8px;font-size:11px;font-weight:900">'+Number(h.multiplier).toFixed(2)+'×</span>').join('')||'<span style="color:#b9a7d7">Ожидание первого раунда</span>';}
     const list=app.querySelector('#cf-jet-bets'),count=app.querySelector('#cf-jet-bet-count');if(list&&d.bets){if(count)count.textContent=String(d.bets.length);list.innerHTML=d.bets.map(x=>'<div style="display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:7px;background:'+(x.isMe?'linear-gradient(100deg,#39205a,#241438)':'#21132f')+';border:1px solid '+(x.isMe?'#8756b7':'#39264e')+';border-radius:10px;padding:9px;font-size:12px;color:#e8ddff"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b style="display:inline-grid;place-items:center;width:24px;height:24px;border-radius:8px;background:#604078;margin-right:6px">✦</b>'+String(x.name).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))+'</span><span style="background:#5d35a1;border-radius:7px;padding:5px 7px">'+Number(x.bet).toLocaleString('ru-RU')+'</span><b style="color:'+(x.status==='cashed_out'?'#63ffc0':'#f5c66f')+'">'+(x.status==='cashed_out'?(Number(x.payout)/Math.max(1,Number(x.bet))).toFixed(2)+'×':'—')+'</b></div>').join('')||'<div style="background:#21132f;border-radius:10px;padding:16px;text-align:center;color:#a895c4">Ставок в текущем раунде пока нет</div>';}
     const mult=app.querySelector('#cf-jet-multiplier'),status=app.querySelector('#cf-jet-status'),wrap=app.querySelector('#cf-jet-rocket-wrap');if(d.flight){if(status)status.textContent='🚀 РАКЕТА ЛЕТИТ';if(wrap)wrap.style.opacity='1';}
     else {if(mult&&jetRounds.length===0){mult.textContent='1.00×';mult.style.color='#d56aff';}if(status)status.textContent='Ожидание раунда — ставки открыты';if(wrap){wrap.style.opacity='1';wrap.style.transform='translate3d(0,0,0) rotate(0deg)';}}
