@@ -728,10 +728,36 @@
     jetLiveTimer=setInterval(jetPollLive,1800);
   }
   function jetSetButtons(index,active){const start=app.querySelector('[data-action="jet-start"][data-bet-index="'+index+'"]'),cash=app.querySelector('[data-action="jet-cashout"][data-bet-index="'+index+'"]');if(start)start.style.display=active?'none':'block';if(cash)cash.style.display=active?'block':'none';}
-  function jetRenderLive(d){const history=app.querySelector('#cf-jet-history');if(history&&d.history){history.innerHTML=d.history.map(h=>'<span style="flex:0 0 auto;background:'+(h.multiplier>=2?'#4c2582':'#28183c')+';color:'+(h.multiplier>=2?'#e3c8ff':'#c1b0d8')+';border-radius:8px;padding:5px 8px;font-size:11px;font-weight:900">'+Number(h.multiplier).toFixed(2)+'×</span>').join('')||'<span style="color:#b9a7d7">Ожидание первого раунда</span>';}
+  let jetFlightState=null,jetAnimationFrame=0,jetLastTextUpdate=0;
+  function jetSmoothAnimation(now){
+    const scene=app.querySelector('#cf-jet-scene');
+    const wrap=app.querySelector('#cf-jet-rocket-wrap');
+    if(scene&&wrap&&jetFlightState){
+      const elapsed=Math.max(0,(Date.now()-jetFlightState.startedAt)/1000);
+      const m=1+Math.pow(elapsed,1.35)*0.23;
+      const x=Math.min(Math.max(0,scene.clientWidth-86),Math.max(0,(m-1)*24));
+      const y=-Math.min(160,Math.max(0,(m-1)*18));
+      wrap.style.transform='translate3d('+x.toFixed(2)+'px,'+y.toFixed(2)+'px,0) rotate(38deg)';
+      const trail=app.querySelector('#cf-jet-trail'),glow=app.querySelector('.cf-trail-glow');
+      const progress=Math.max(.4,Math.min(1,elapsed/22));
+      const transform='translate3d('+x.toFixed(2)+'px,'+y.toFixed(2)+'px,0) rotate(-25deg) scaleX('+progress.toFixed(3)+')';
+      if(trail)trail.style.transform=transform;
+      if(glow)glow.style.transform=transform;
+      if(now-jetLastTextUpdate>100){
+        const mult=app.querySelector('#cf-jet-multiplier');
+        if(mult){mult.textContent=m.toFixed(2)+'×';mult.style.color='#d56aff';}
+        jetLastTextUpdate=now;
+      }
+    }
+    jetAnimationFrame=requestAnimationFrame(jetSmoothAnimation);
+  }
+  function ensureJetAnimation(){
+    if(!jetAnimationFrame)jetAnimationFrame=requestAnimationFrame(jetSmoothAnimation);
+  }
+  function jetRenderLive(d){jetFlightState=d.flight?{startedAt:Number(d.flight.startedAt),crashAt:Number(d.flight.crashAt)}:null;ensureJetAnimation();const history=app.querySelector('#cf-jet-history');if(history&&d.history){history.innerHTML=d.history.map(h=>'<span style="flex:0 0 auto;background:'+(h.multiplier>=2?'#4c2582':'#28183c')+';color:'+(h.multiplier>=2?'#e3c8ff':'#c1b0d8')+';border-radius:8px;padding:5px 8px;font-size:11px;font-weight:900">'+Number(h.multiplier).toFixed(2)+'×</span>').join('')||'<span style="color:#b9a7d7">Ожидание первого раунда</span>';}
     const list=app.querySelector('#cf-jet-bets'),count=app.querySelector('#cf-jet-bet-count');if(list&&d.bets){if(count)count.textContent=String(d.bets.length);list.innerHTML=d.bets.map(x=>'<div style="display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:7px;background:'+(x.isMe?'linear-gradient(100deg,#39205a,#241438)':'#21132f')+';border:1px solid '+(x.isMe?'#8756b7':'#39264e')+';border-radius:10px;padding:9px;font-size:12px;color:#e8ddff"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b style="display:inline-grid;place-items:center;width:24px;height:24px;border-radius:8px;background:#604078;margin-right:6px">✦</b>'+String(x.name).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))+'</span><span style="background:#5d35a1;border-radius:7px;padding:5px 7px">'+Number(x.bet).toLocaleString('ru-RU')+'</span><b style="color:'+(x.status==='cashed_out'?'#63ffc0':'#f5c66f')+'">'+(x.status==='cashed_out'?(Number(x.payout)/Math.max(1,Number(x.bet))).toFixed(2)+'×':'—')+'</b></div>').join('')||'<div style="background:#21132f;border-radius:10px;padding:16px;text-align:center;color:#a895c4">Ставок в текущем раунде пока нет</div>';}
-    const scene=app.querySelector('#cf-jet-scene'),wrap=app.querySelector('#cf-jet-rocket-wrap'),mult=app.querySelector('#cf-jet-multiplier'),status=app.querySelector('#cf-jet-status');if(d.flight){const m=Number(d.flight.multiplier),elapsed=Math.max(0,(Date.now()-Number(d.flight.startedAt))/1000),progress=Math.min(1,elapsed/22),x=Math.min(Math.max(0,(scene?.clientWidth||320)-86),Math.max(0,(m-1)*24)),y=-Math.min(160,Math.max(0,(m-1)*18));if(mult){mult.textContent=m.toFixed(2)+'×';mult.style.color='#d56aff';}if(wrap){wrap.style.opacity='1';wrap.style.transform='translate('+x+'px,'+y+'px) rotate(38deg)';}const trail=app.querySelector('#cf-jet-trail'),glow=app.querySelector('.cf-trail-glow');if(trail)trail.style.transform='translate('+x+'px,'+y+'px) rotate(-25deg) scaleX('+Math.max(.4,progress)+')';if(glow)glow.style.transform='translate('+x+'px,'+y+'px) rotate(-25deg) scaleX('+Math.max(.4,progress)+')';if(status)status.textContent='РАУНД ИДЁТ · выводи в любой момент';}
-    else {if(mult&&jetRounds.length===0)mult.textContent='ОЖИДАНИЕ';if(status)status.textContent='Следующий раунд скоро начнётся';if(wrap){wrap.style.opacity='1';wrap.style.transform='translate(0px,0px) rotate(38deg)';}}
+    const mult=app.querySelector('#cf-jet-multiplier'),status=app.querySelector('#cf-jet-status'),wrap=app.querySelector('#cf-jet-rocket-wrap');if(d.flight){if(status)status.textContent='РАУНД ИДЁТ · выводи в любой момент';if(wrap)wrap.style.opacity='1';}
+    else {if(mult&&jetRounds.length===0)mult.textContent='ОЖИДАНИЕ';if(status)status.textContent='Следующий раунд скоро начнётся';if(wrap){wrap.style.opacity='1';wrap.style.transform='translate3d(0,0,0) rotate(38deg)';}}
   }
   function jetStartLivePolling(){if(jetLiveTimer)clearInterval(jetLiveTimer);jetPollLive();jetLiveTimer=setInterval(jetPollLive,1800);}
   async function jetStart(index=0){const startButton=app.querySelector('[data-action="jet-start"][data-bet-index="'+index+'"]');if(startButton?.disabled)return;const input=app.querySelector(index===1?'#cf-bet-2':'#cf-bet'),bet=Number(input?.value),auto=app.querySelector('#cf-jet-autocash-'+index)?.checked,autoAt=Number(app.querySelector('#cf-jet-auto-value-'+index)?.value);if(!Number.isSafeInteger(bet)||bet<1||bet>100000)return say('Ставка должна быть от 1 до 100 000.');if(auto&&(!Number.isFinite(autoAt)||autoAt<1.1||autoAt>100))return say('Авто-вывод: от 1.1× до 100×.');if(jetRounds.some(r=>r.index===index))return say('Эта ставка уже участвует в раунде.');if(startButton){startButton.disabled=true;startButton.textContent='Подключаем…'}try{const d=await api('/api/luckyjet/start',{method:'POST',body:JSON.stringify({bet,autoAt:auto?autoAt:null})});const round={id:d.round.id,startedAt:d.round.startedAt,autoAt:auto?autoAt:null,index,bet};jetRounds.push(round);jetRound=round;syncBalance(d.balance);jetSetButtons(index,true);app.querySelector('#cf-jet-status').textContent='🚀 Общий полёт уже идёт';jetStartLivePolling();if(jetTimer)clearInterval(jetTimer);jetTimer=setInterval(async()=>{for(const r of [...jetRounds]){try{const st=await api('/api/luckyjet/status',{method:'POST',body:JSON.stringify({roundId:r.id})});if(st.crashed){jetRounds=jetRounds.filter(x=>x.id!==r.id);jetSetButtons(r.index,false);syncBalance(st.balance);const ex=app.querySelector('#cf-jet-explosion');if(ex){ex.style.display='block';ex.style.animation='cfBlast .8s ease-out forwards';}const m=app.querySelector('#cf-jet-multiplier');if(m){m.textContent='💥 '+Number(st.crashAt).toFixed(2)+'×';m.style.color='#ff6b73';}const status=app.querySelector('#cf-jet-status');if(status)status.textContent='РАКЕТА ВЗОРВАЛАСЬ';}else if(r.autoAt&&Number(st.multiplier)>=r.autoAt){await jetCashout(r.index);}}catch(e){console.warn('LuckyJet bet poll failed',e)}}if(jetRounds.length===0&&jetTimer){clearInterval(jetTimer);jetTimer=null;}},1000);}catch(e){say(e.message)}finally{if(startButton){startButton.disabled=false;startButton.textContent='СТАВКА'}}}
