@@ -181,8 +181,8 @@ app.get('/api/tournaments', requireUser, async (req,res,next) => {
     const period=['daily','weekly'].includes(req.query.period) ? req.query.period : 'daily';
     const game=TOURNAMENT_GAMES.includes(req.query.game) ? req.query.game : 'all';
     const interval=period==='weekly' ? "date_trunc('week', NOW())" : "date_trunc('day', NOW())";
-    const gameFilter=game==='all' ? '' : ' AND gt.game=$2';
-    const params=game==='all' ? [period] : [period,game];
+    const gameFilter=game==='all' ? '' : ' AND gt.game=$1';
+    const params=game==='all' ? [] : [game];
     const query=`
       SELECT gt.telegram_id, p.username, p.first_name,
         COUNT(*)::int AS rounds,
@@ -195,7 +195,7 @@ app.get('/api/tournaments', requireUser, async (req,res,next) => {
       GROUP BY gt.telegram_id,p.username,p.first_name
       ORDER BY points DESC, rounds DESC, MIN(gt.created_at) ASC
       LIMIT 50`;
-    const result=await pool.query(query,params.slice(1));
+    const result=await pool.query(query,params);
     const me=result.rows.findIndex(r=>String(r.telegram_id)===String(req.player.telegram_id));
     const mine=await pool.query(`
       SELECT COUNT(*)::int AS rounds,
@@ -203,7 +203,7 @@ app.get('/api/tournaments', requireUser, async (req,res,next) => {
       FROM game_transactions WHERE telegram_id=$1 AND bet>0
         AND created_at >= ${interval} AND created_at < ${interval} + INTERVAL '1 ${period==='weekly'?'week':'day'}'
         ${game==='all'?'':' AND game=$2'}`,game==='all'?[req.player.telegram_id]:[req.player.telegram_id,game]);
-    res.json({period,game,scoring:'10 очков за раунд + 5 за выигрышный раунд',leaders:result.rows.map((r,i)=>({place:i+1,telegramId:String(r.telegram_id),name:r.username?'@'+r.username:(r.first_name||'Игрок'),rounds:Number(r.rounds),points:Number(r.points)})),me:{place:me<0?null:me+1,rounds:Number(mine.rows[0].rounds),points:Number(mine.rows[0].points)}});
+    res.json({period,game,scoring:'10 очков за раунд + 5 за выигрышный раунд',leaders:result.rows.map((r,i)=>({place:i+1,name:r.username?'@'+String(r.username).replace(/^@/,''):(String(r.first_name||'').trim()||'Игрок'),rounds:Number(r.rounds),points:Number(r.points)})),me:{place:me<0?null:me+1,rounds:Number(mine.rows[0].rounds),points:Number(mine.rows[0].points)}});
   } catch(e) { next(e); }
 });
 
