@@ -174,11 +174,11 @@
     #cf-app .cf-plinko-bin.bin-gold{border-color:#ffd36a;background:linear-gradient(180deg,#ffbd48,#7b3512);color:#fff1ae}
     #cf-app .cf-plinko-controls,#cf-app .cf-plinko-payouts{margin-top:14px;padding:12px;border:1px solid #7447a0;border-radius:16px;background:linear-gradient(145deg,#1d1231,#090713)}
     #cf-app .cf-plinko-label{font-size:11px;letter-spacing:1.5px;color:#c9a9e9;font-weight:900;margin-bottom:9px}
-    #cf-app .cf-plinko-control-row{display:grid;grid-template-columns:36px minmax(76px,1fr) 36px repeat(4,minmax(30px,.65fr));gap:5px;align-items:center}
+    #cf-app .cf-plinko-control-row{display:grid;grid-template-columns:42px minmax(0,1fr) 42px;gap:8px;align-items:center}#cf-app .cf-plinko-quick-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:9px}
     #cf-app .cf-plinko-step{height:38px;border:1px solid #b04aff;border-radius:10px;background:linear-gradient(140deg,#7a2bba,#31124d);color:white;font-size:24px;font-weight:900}
-    #cf-app .cf-plinko-stake{display:flex;align-items:center;justify-content:center;gap:5px;min-width:0;padding:9px 4px;border:1px solid #563477;border-radius:10px;color:#ffd66d;font-weight:900}
-    #cf-app .cf-plinko-stake input{min-width:0;width:100%;border:0;outline:0;background:transparent;color:white;text-align:center;font-size:16px;font-weight:900}
-    #cf-app .cf-plinko-quick{height:38px;padding:0 2px;border:1px solid #57377b;border-radius:9px;background:#1b1230;color:#d6c1ef;font-size:10px;font-weight:900}
+    #cf-app .cf-plinko-stake{display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;width:100%;padding:9px 10px;border:1px solid #563477;border-radius:10px;color:#ffd66d;font-weight:900}
+    #cf-app .cf-plinko-stake input{display:block;min-width:0;flex:1;width:100%;max-width:100%;border:0;outline:0;background:transparent;color:white;text-align:center;font-size:clamp(16px,5vw,20px);font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:.3px}
+    #cf-app .cf-plinko-quick{height:40px;min-width:0;width:100%;padding:0 4px;border:1px solid #57377b;border-radius:9px;background:#1b1230;color:#d6c1ef;font-size:10px;font-weight:900}
     #cf-app .cf-plinko-launch{display:block;width:100%;margin-top:14px;padding:18px 8px;border:2px solid #ffe17b;border-radius:20px;background:linear-gradient(180deg,#ffe58a,#ffad28 60%,#b65b09);box-shadow:0 0 18px #ffb52d88,inset 0 2px #fff8;color:#321605;font-size:clamp(17px,5vw,23px);font-weight:1000}
     #cf-app .cf-plinko-payout-row{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:3px}
     #cf-app .cf-plinko-payout{min-width:0;border:1px solid #64448a;border-radius:7px;overflow:hidden;text-align:center;background:#160e26}
@@ -200,7 +200,7 @@
     #cf-app .cf-plinko-stake{flex:1;min-width:0;overflow:hidden}
     #cf-app .cf-plinko-stake input{display:block;flex:1;min-width:0;width:100%;max-width:100%;font-size:clamp(12px,4vw,17px);font-variant-numeric:tabular-nums;padding:0}
     #cf-app .cf-plinko-control-row{grid-template-columns:34px minmax(0,1fr) 34px repeat(4,minmax(27px,.62fr))}
-    @media(max-width:370px){#cf-app .cf-plinko-control-row{grid-template-columns:30px minmax(0,1fr) 30px repeat(4,minmax(24px,.58fr));gap:3px}#cf-app .cf-plinko-quick{font-size:9px}#cf-app .cf-plinko-stake{gap:2px;padding:8px 2px}}
+    @media(max-width:370px){#cf-app .cf-plinko-control-row{grid-template-columns:38px minmax(0,1fr) 38px;gap:6px}#cf-app .cf-plinko-quick-row{gap:5px}#cf-app .cf-plinko-quick{font-size:10px}#cf-app .cf-plinko-stake{gap:5px;padding:9px 7px}}
     #cf-app .cf-plinko-footnote{margin-top:8px;text-align:center;color:#9e8ab8;font-size:10px}
     @media(max-width:370px){#cf-app .cf-plinko-control-row{grid-template-columns:32px minmax(65px,1fr) 32px repeat(4,minmax(27px,.6fr));gap:3px}#cf-app .cf-plinko-quick{font-size:9px}}
 #cf-app .cf-game-tile.plinko .cf-game-art:before{display:none}#cf-app .cf-game-tile.plinko .cf-game-emoji,#cf-app .cf-game-tile.plinko .cf-game-title{display:none}#cf-app .cf-game-tile.plinko{border-color:#e9bc61;box-shadow:0 0 16px #d79cff66,inset 0 0 0 1px #fff4}
@@ -708,7 +708,7 @@
   function plinko(){
     const multipliers=[8,3,1.8,1.3,1.1,0.8,0.5,0.8,1.1,1.3,1.8,3,8];
     const rows=Array.from({length:12},(_,r)=>'<div class="cf-plinko-row">'+Array.from({length:r+1},()=>'<i class="cf-plinko-peg"></i>').join('')+'</div>').join('');
-    return '<div class="section-title">🔮 PLINKO</div><section class="cf-plinko-shell"><div class="cf-plinko-heading"><div class="cf-plinko-brand">✦ COSMIC FORTUNE</div><div class="cf-plinko-title">PLINKO</div><div class="cf-plinko-subtitle">ПУТЬ К МНОЖИТЕЛЮ</div></div><div class="cf-plinko-board" id="cf-plinko-board"><div class="cf-plinko-rails"></div><div id="cf-plinko-ball" class="cf-plinko-ball"></div><div class="cf-plinko-pins">'+rows+'</div><div class="cf-plinko-bins">'+multipliers.map((m,i)=>'<div class="cf-plinko-bin '+(m>=3?'bin-gold':m>=1?'bin-blue':'bin-purple')+'" data-plinko-bin="'+i+'">'+m+'×</div>').join('')+'</div></div><div class="cf-plinko-controls"><div class="cf-plinko-label">СУММА СТАВКИ</div><div class="cf-plinko-control-row"><button type="button" class="cf-plinko-step" data-action="plinko-bet" data-mode="minus">−</button><div class="cf-plinko-stake">✦ <input id="cf-plinko-bet" type="number" inputmode="numeric" min="1" max="100000" step="1" value="1000" aria-label="Сумма ставки"></div><button type="button" class="cf-plinko-step" data-action="plinko-bet" data-mode="plus">+</button><button type="button" class="cf-plinko-quick" data-action="plinko-bet" data-mode="min">MIN</button><button type="button" class="cf-plinko-quick" data-action="plinko-bet" data-mode="half">1/2</button><button type="button" class="cf-plinko-quick" data-action="plinko-bet" data-mode="double">X2</button><button type="button" class="cf-plinko-quick" data-action="plinko-bet" data-mode="max">MAX</button></div></div><button type="button" class="cf-plinko-launch" data-action="plinko-play">▶　БРОСИТЬ ШАР</button><div class="cf-plinko-footnote">12 рядов · 13 секторов · серверный расчёт результата</div><div id="cf-plinko-win" class="cf-plinko-win-overlay" hidden><div class="cf-plinko-win-card"><div class="cf-plinko-win-spark">✦ ✧ ✦</div><div class="cf-plinko-win-caption">РАУНД ЗАВЕРШЁН</div><div class="cf-plinko-win-title">ВЫ ВЫИГРАЛИ</div><div id="cf-plinko-win-amount" class="cf-plinko-win-amount">0</div><div id="cf-plinko-win-multiplier" class="cf-plinko-win-multiplier">0×</div><div id="cf-plinko-win-balance" class="cf-plinko-win-balance"></div><button type="button" class="cf-plinko-win-close" data-action="plinko-win-close">ПРОДОЛЖИТЬ</button></div></div></section>';
+    return '<div class="section-title">🔮 PLINKO</div><section class="cf-plinko-shell"><div class="cf-plinko-heading"><div class="cf-plinko-brand">✦ COSMIC FORTUNE</div><div class="cf-plinko-title">PLINKO</div><div class="cf-plinko-subtitle">ПУТЬ К МНОЖИТЕЛЮ</div></div><div class="cf-plinko-board" id="cf-plinko-board"><div class="cf-plinko-rails"></div><div id="cf-plinko-ball" class="cf-plinko-ball"></div><div class="cf-plinko-pins">'+rows+'</div><div class="cf-plinko-bins">'+multipliers.map((m,i)=>'<div class="cf-plinko-bin '+(m>=3?'bin-gold':m>=1?'bin-blue':'bin-purple')+'" data-plinko-bin="'+i+'">'+m+'×</div>').join('')+'</div></div><div class="cf-plinko-controls"><div class="cf-plinko-label">СУММА СТАВКИ</div><div class="cf-plinko-control-row"><button type="button" class="cf-plinko-step" data-action="plinko-bet" data-mode="minus">−</button><div class="cf-plinko-stake">✦ <input id="cf-plinko-bet" type="text" inputmode="numeric" autocomplete="off" value="1000" aria-label="Сумма ставки"></div><button type="button" class="cf-plinko-step" data-action="plinko-bet" data-mode="plus">+</button></div><div class="cf-plinko-quick-row"><button type="button" class="cf-plinko-quick" data-action="plinko-bet" data-mode="min">MIN</button><button type="button" class="cf-plinko-quick" data-action="plinko-bet" data-mode="half">1/2</button><button type="button" class="cf-plinko-quick" data-action="plinko-bet" data-mode="double">X2</button><button type="button" class="cf-plinko-quick" data-action="plinko-bet" data-mode="max">MAX</button></div></div><button type="button" class="cf-plinko-launch" data-action="plinko-play">▶　БРОСИТЬ ШАР</button><div class="cf-plinko-footnote">12 рядов · 13 секторов · серверный расчёт результата</div><div id="cf-plinko-win" class="cf-plinko-win-overlay" hidden><div class="cf-plinko-win-card"><div class="cf-plinko-win-spark">✦ ✧ ✦</div><div class="cf-plinko-win-caption">РАУНД ЗАВЕРШЁН</div><div class="cf-plinko-win-title">ВЫ ВЫИГРАЛИ</div><div id="cf-plinko-win-amount" class="cf-plinko-win-amount">0</div><div id="cf-plinko-win-multiplier" class="cf-plinko-win-multiplier">0×</div><div id="cf-plinko-win-balance" class="cf-plinko-win-balance"></div><button type="button" class="cf-plinko-win-close" data-action="plinko-win-close">ПРОДОЛЖИТЬ</button></div></div></section>';
   }
   const renderers={home,games:gameList,slots,dice,roulette,blackjack,miner,luckyjet,plinko,bonuses,profile,tournaments};
   let current='home',selected='Больше 7',opened=0;
@@ -857,21 +857,20 @@
           if(!ball||!board)break;
           const right=path.slice(0,i+1).reduce((a,b)=>a+Number(b),0);
           const x=50+(2*right-(i+1))*3.75;
-          ball.style.transition='left .17s cubic-bezier(.22,.75,.3,1),top .17s cubic-bezier(.2,.8,.25,1)';
+          ball.style.transition='left .09s cubic-bezier(.22,.75,.3,1),top .09s cubic-bezier(.2,.8,.25,1)';
           ball.style.transform='translateX(-50%)';
           ball.style.left=x+'%';
           ball.style.top=(7+(i+1)*6.4)+'%';
-          ball.animate([{filter:'brightness(1.7)',scale:'1.22'},{filter:'brightness(1)',scale:'1'}],{duration:155,easing:'ease-out'});
-          await new Promise(r=>setTimeout(r,175));
+          await new Promise(r=>setTimeout(r,85));
         }
         app.querySelectorAll('[data-plinko-bin]').forEach(el=>el.classList.remove('is-hit'));
         const winningBin=app.querySelector('[data-plinko-bin="'+Number(d.outcome?.bin)+'"]');
         if(ball&&board&&winningBin){
           const br=board.getBoundingClientRect(),cr=winningBin.getBoundingClientRect();
           const targetX=cr.left+cr.width/2-br.left,targetY=cr.top+cr.height/2-br.top;
-          ball.style.transition='left .32s cubic-bezier(.18,.72,.25,1),top .32s cubic-bezier(.18,.72,.25,1),transform .32s ease';
+          ball.style.transition='left .18s cubic-bezier(.18,.72,.25,1),top .18s cubic-bezier(.18,.72,.25,1),transform .18s ease';
           ball.style.left=targetX+'px';ball.style.top=targetY+'px';ball.style.transform='translate(-50%,-50%) scale(.92)';
-          await new Promise(r=>setTimeout(r,340));
+          await new Promise(r=>setTimeout(r,190));
           winningBin.classList.add('is-hit');
         }
         syncBalance(d.balance);
