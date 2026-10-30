@@ -155,7 +155,7 @@
     #cf-app .art-roulette{background-image:url("./a_vibrant_glossy_high_detail_casino_game_app_ico.png");background-size:116% 116%;background-position:center;background-repeat:no-repeat;filter:brightness(1.3) saturate(1.12)}#cf-app .cf-game-tile.roulette .cf-game-art:before{display:none}#cf-app .cf-game-tile.roulette .cf-game-emoji,#cf-app .cf-game-tile.roulette .cf-game-title{display:none}
     #cf-app .art-blackjack{background-image:url("./a_highly_detailed_glossy_neon_gold_casino_themed.png");background-size:116% 116%;background-position:center;background-repeat:no-repeat;filter:brightness(1.3) saturate(1.12)}#cf-app .cf-game-tile.blackjack .cf-game-art:before{display:none}#cf-app .cf-game-tile.blackjack .cf-game-emoji,#cf-app .cf-game-tile.blackjack .cf-game-title{display:none}
     #cf-app .art-dice{background-image:url("./a_glossy_high_detail_casino_gambling_app_icon_sty.png");background-size:116% 116%;background-position:center;background-repeat:no-repeat;filter:brightness(1.3) saturate(1.12)}#cf-app .cf-game-tile.dice .cf-game-art:before{display:none}#cf-app .cf-game-tile.dice .cf-game-emoji,#cf-app .cf-game-tile.dice .cf-game-title{display:none}
-    #cf-app .cf-plinko-shell{padding:12px 10px 18px;border:1px solid #7447a0;border-radius:22px;background:radial-gradient(ellipse at 50% 0%,#35104f,#0a0715 62%);box-shadow:0 0 28px #9a38ff24;overflow:hidden}
+    #cf-app .cf-plinko-shell{position:relative;overflow:visible;padding:12px 10px 18px;border:1px solid #7447a0;border-radius:22px;background:radial-gradient(ellipse at 50% 0%,#35104f,#0a0715 62%);box-shadow:0 0 28px #9a38ff24;overflow:hidden}
     #cf-app .cf-plinko-heading{text-align:center;padding:10px 0 16px;background:radial-gradient(ellipse at 50% 30%,#7d31b8aa,transparent 68%)}
     #cf-app .cf-plinko-brand{font-size:10px;letter-spacing:3px;color:#d9b7ff;font-weight:900}
     #cf-app .cf-plinko-title{font-size:clamp(40px,12vw,64px);font-weight:1000;letter-spacing:2px;line-height:1.08;color:#ffdc7b;text-shadow:0 2px #8a4214,0 4px #32102d,0 0 22px #c04cff}
@@ -185,7 +185,7 @@
     #cf-app .cf-plinko-payout strong{display:block;padding:6px 0;color:#ffdc7b;font-size:clamp(9px,2.8vw,12px)}
     #cf-app .cf-plinko-payout span{display:block;padding:6px 0;background:#090713;color:#fff;font-size:clamp(8px,2.5vw,11px)}
     #cf-app .cf-plinko-result{min-height:40px;margin-top:12px;padding:11px;border-radius:11px;background:#160e27;color:#ffe4a0;text-align:center;font-size:13px}
-    #cf-app .cf-plinko-win-overlay{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;background:#05020bd9;backdrop-filter:blur(7px)}
+    #cf-app .cf-plinko-win-overlay{position:absolute;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;background:#05020bd9;backdrop-filter:blur(7px);border-radius:22px}
     #cf-app .cf-plinko-win-overlay[hidden]{display:none!important}
     #cf-app .cf-plinko-win-card{width:min(100%,360px);padding:24px 18px 20px;text-align:center;border:2px solid #f5c65e;border-radius:25px;background:radial-gradient(ellipse at 50% 0%,#68249b,#21102f 54%,#090611);box-shadow:0 0 25px #ffca5c99,0 0 70px #a53dff66,inset 0 0 24px #ffda6b22;transform:scale(.82);opacity:0}
     #cf-app .cf-plinko-win-card.is-show{animation:cf-plinko-pop .38s cubic-bezier(.18,.9,.25,1.25) forwards}
@@ -871,7 +871,7 @@
         const m=Number(d.outcome?.multiplier||0),payout=Number(d.payout||0);
         const amount=app.querySelector('#cf-plinko-win-amount'),mult=app.querySelector('#cf-plinko-win-multiplier'),bal=app.querySelector('#cf-plinko-win-balance');
         if(amount)amount.textContent=formatBalance(payout)+' ✦';
-        if(mult)mult.textContent=m.toFixed(2).replace(/\\.00$/,'')+'×';
+        const actualMultiplier=bet>0?payout/bet:0;if(mult)mult.textContent=actualMultiplier.toFixed(2).replace(/0+$/,'').replace(/\\.$/,'')+'×';
         if(bal)bal.textContent='Баланс: '+formatBalance(d.balance)+' ✦';
         if(win){win.hidden=false;const card=win.querySelector('.cf-plinko-win-card');if(card){card.classList.remove('is-show');void card.offsetWidth;card.classList.add('is-show')}}
       }catch(e){if(ball)ball.style.display='none';say(e.message)}
