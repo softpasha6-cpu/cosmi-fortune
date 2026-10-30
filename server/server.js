@@ -172,51 +172,112 @@ app.get('/api/me', requireUser, async (req, res) => {
 
 
 
-const TOURNAMENT_GAMES = ['all','slots','roulette','blackjack','dice','miner','luckyjet','plinko'];
-function tournamentPoints(row) {
-  return 10 + (Number(row.payout) > Number(row.bet) ? 5 : 0);
+const TOURNAMENT_GAMES = ['slots','plinko','blackjack','dice'];
+const TOURNAMENT_PRIZES = {
+  daily: [10000,6000,3000,1000,1000,1000,1000,1000,1000,1000],
+  weekly: [50000,30000,15000,5000,5000,5000,5000,5000,5000,5000]
+};
+async function settleDueTournaments() {
+  const client=await pool.connect();
+  const notifications=[];
+  try {
+    await client.query('BEGIN');
+    await client.query('SELECT pg_advisory_xact_lock($1)',[74190262]);
+    for (const period of ['daily','weekly']) {
+      const unit=period==='daily'?'day':'week';
+      const cursor=await client.query('SELECT next_period_start FROM tournament_settlement_cursors WHERE period_type=$1 FOR UPDATE',[period]);
+      if(!cursor.rowCount) continue;
+      const current=await client.query("SELECT date_trunc($1,NOW()) AS current_start",[unit]);
+      let periodStart=new Date(cursor.rows[0].next_period_start);
+      const currentStart=new Date(current.rows[0].current_start);
+      let loops=0;
+      while(periodStart<currentStart && loops<400) {
+        const next=await client.query("SELECT $1::timestamptz + ($2::text || ' 1')::interval AS period_end",[periodStart,unit]);
+        const periodEnd=next.rows[0].period_end;
+        const winners=await client.query(`
+          SELECT gt.telegram_id,p.first_name,COUNT(*)::int AS rounds,
+            (COUNT(*)*15)::int AS points,MIN(gt.created_at) AS first_win
+          FROM game_transactions gt
+          JOIN players p ON p.telegram_id=gt.telegram_id
+          WHERE gt.game=ANY($3::text[]) AND gt.bet>0 AND gt.payout>gt.bet
+            AND gt.created_at >= $1 AND gt.created_at < $2
+          GROUP BY gt.telegram_id,p.first_name
+          ORDER BY points DESC,rounds DESC,first_win ASC
+          LIMIT 10`,[periodStart,periodEnd,TOURNAMENT_GAMES]);
+        const prizes=TOURNAMENT_PRIZES[period];
+        for(let i=0;i<winners.rows.length;i++) {
+          const winner=winners.rows[i],prize=prizes[i]||0;
+          if(prize<=0)continue;
+          const award=await client.query(`
+            INSERT INTO tournament_awards(period_type,period_start,period_end,telegram_id,place,points,rounds,prize)
+            VALUES($1,$2,$3,$4,$5,$6,$7,$8)
+            ON CONFLICT(period_type,period_start,telegram_id) DO NOTHING
+            RETURNING telegram_id`,[period,periodStart,periodEnd,winner.telegram_id,i+1,winner.points,winner.rounds,prize]);
+          if(!award.rowCount)continue;
+          const balance=await client.query(
+            'UPDATE players SET balance=balance+$2,updated_at=NOW() WHERE telegram_id=$1 RETURNING balance',
+            [winner.telegram_id,prize]);
+          notifications.push({
+            telegramId:String(winner.telegram_id),name:String(winner.first_name||'Игрок'),
+            period,place:i+1,prize,balance:Number(balance.rows[0]?.balance||0)
+          });
+        }
+        await client.query('UPDATE tournament_settlement_cursors SET next_period_start=$2 WHERE period_type=$1',[period,periodEnd]);
+        periodStart=new Date(periodEnd);
+        loops++;
+      }
+      if(loops>=400)console.error('Tournament settlement catch-up limit reached for '+period);
+    }
+    await client.query('COMMIT');
+  } catch(error) {
+    await client.query('ROLLBACK').catch(()=>{});
+    throw error;
+  } finally { client.release(); }
+  for(const n of notifications) {
+    const label=n.period==='daily'?'ежедневном':'недельном';
+    void notifyUser(n.telegramId,'🏆 Cosmic Fortune — итоги турнира!\n\nПоздравляем, '+n.name+'! Ты занял '+n.place+' место в '+label+' турнире.\n✦ Начислено: '+n.prize.toLocaleString('ru-RU')+' кредитов\n💰 Баланс: '+n.balance.toLocaleString('ru-RU')+' кредитов. Награда уже зачислена автоматически.');
+  }
+  if(notifications.length)console.log('Tournament rewards credited:',notifications.length);
 }
 app.get('/api/tournaments', requireUser, async (req,res,next) => {
   try {
+    await settleDueTournaments();
     const period=['daily','weekly'].includes(req.query.period) ? req.query.period : 'daily';
     const unit=period==='weekly'?'week':'day';
     const interval=period==='weekly' ? "date_trunc('week', NOW())" : "date_trunc('day', NOW())";
-    // Only rounds with a strictly positive net result count toward the tournament.
     const query=`
-      SELECT gt.telegram_id, p.first_name,
-        COUNT(*)::int AS rounds,
-        (COUNT(*) * 15)::int AS points
-      FROM game_transactions gt
-      JOIN players p ON p.telegram_id=gt.telegram_id
-      WHERE gt.bet > 0 AND gt.payout > gt.bet
+      SELECT gt.telegram_id,p.first_name,COUNT(*)::int AS rounds,
+        (COUNT(*)*15)::int AS points
+      FROM game_transactions gt JOIN players p ON p.telegram_id=gt.telegram_id
+      WHERE gt.game=ANY($1::text[]) AND gt.bet>0 AND gt.payout>gt.bet
         AND gt.created_at >= ${interval}
         AND gt.created_at < ${interval} + INTERVAL '1 ${unit}'
       GROUP BY gt.telegram_id,p.first_name
-      ORDER BY points DESC, rounds DESC, MIN(gt.created_at) ASC
-      LIMIT 50`;
-    const result=await pool.query(query);
+      ORDER BY points DESC,rounds DESC,MIN(gt.created_at) ASC LIMIT 50`;
+    const result=await pool.query(query,[TOURNAMENT_GAMES]);
     const me=result.rows.findIndex(r=>String(r.telegram_id)===String(req.player.telegram_id));
     const mine=await pool.query(`
-      SELECT COUNT(*)::int AS rounds,
-        (COUNT(*) * 15)::int AS points
-      FROM game_transactions
-      WHERE telegram_id=$1 AND bet>0 AND payout>bet
+      SELECT COUNT(*)::int AS rounds,(COUNT(*)*15)::int AS points
+      FROM game_transactions WHERE telegram_id=$1 AND game=ANY($2::text[])
+        AND bet>0 AND payout>bet
         AND created_at >= ${interval}
-        AND created_at < ${interval} + INTERVAL '1 ${unit}'`,[req.player.telegram_id]);
+        AND created_at < ${interval} + INTERVAL '1 ${unit}'`,
+      [req.player.telegram_id,TOURNAMENT_GAMES]);
     const previous=await pool.query(`
-      SELECT p.first_name, COUNT(*)::int AS rounds,
-        (COUNT(*) * 15)::int AS points
-      FROM game_transactions gt
-      JOIN players p ON p.telegram_id=gt.telegram_id
-      WHERE gt.bet>0 AND gt.payout>gt.bet
+      SELECT p.first_name,COUNT(*)::int AS rounds,(COUNT(*)*15)::int AS points
+      FROM game_transactions gt JOIN players p ON p.telegram_id=gt.telegram_id
+      WHERE gt.game=ANY($3::text[]) AND gt.bet>0 AND gt.payout>gt.bet
         AND gt.created_at >= ${interval} - INTERVAL '1 ${unit}'
         AND gt.created_at < ${interval}
       GROUP BY gt.telegram_id,p.first_name
-      ORDER BY points DESC,rounds DESC LIMIT 3`);
-    const displayName=r=>(String(r.first_name||'').trim()||'Игрок');
+      ORDER BY points DESC,rounds DESC LIMIT 3`,
+      [period,period,TOURNAMENT_GAMES]);
+    const displayName=r=>String(r.first_name||'').trim()||'Игрок';
+    res.set('Cache-Control','no-store, max-age=0');
     res.json({
-      period,game:'all',
-      scoring:'15 очков за раунд с чистым выигрышем; проигрышные и нулевые раунды не учитываются',
+      period,game:'selected',
+      eligibleGames:TOURNAMENT_GAMES,
+      scoring:'15 очков за выигрышный раунд в слотах, Plinko, блэкджеке и костях',
       previous:previous.rows.map((r,i)=>({place:i+1,name:displayName(r),points:Number(r.points)})),
       leaders:result.rows.map((r,i)=>({place:i+1,name:displayName(r),rounds:Number(r.rounds),points:Number(r.points)})),
       me:{place:me<0?null:me+1,rounds:Number(mine.rows[0].rounds),points:Number(mine.rows[0].points)}
@@ -1072,7 +1133,7 @@ const port = Number(process.env.PORT || 3000);
 try {
   const schema = await readFile(new URL('./schema.sql', import.meta.url), 'utf8');
   await pool.query(schema);
-  app.listen(port, () => console.log('Cosmic Fortune API listening on port ' + port));
+  await pool.query(\`INSERT INTO tournament_settlement_cursors(period_type,next_period_start) VALUES ('daily',date_trunc('day',NOW())),('weekly',date_trunc('week',NOW())) ON CONFLICT(period_type) DO NOTHING\`);\n  await settleDueTournaments();\n  app.listen(port, () => console.log('Cosmic Fortune API listening on port ' + port));\n  const tournamentSettlementTimer=setInterval(()=>settleDueTournaments().catch(error=>console.error('Tournament settlement failed:',error)),30000);\n  tournamentSettlementTimer.unref?.();
 } catch (error) {
   console.error('Startup failed: database schema could not be initialized.', error);
   process.exit(1);
