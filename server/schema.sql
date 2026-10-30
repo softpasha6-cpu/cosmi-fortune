@@ -31,7 +31,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS game_transactions_idempotency_idx
 
 -- Upgrade existing databases to support the free bonus wheel.
 ALTER TABLE game_transactions DROP CONSTRAINT IF EXISTS game_transactions_game_check;
-ALTER TABLE game_transactions ADD CONSTRAINT game_transactions_game_check CHECK (game IN ('slots','roulette','blackjack','dice','bonus_wheel','miner','luckyjet'));
+ALTER TABLE game_transactions ADD CONSTRAINT game_transactions_game_check CHECK (game IN ('slots','roulette','blackjack','dice','bonus_wheel','miner','luckyjet','plinko'));
 
 CREATE TABLE IF NOT EXISTS bonus_wheel_cooldowns (
   telegram_id BIGINT PRIMARY KEY REFERENCES players(telegram_id) ON DELETE CASCADE,
@@ -161,3 +161,47 @@ CREATE TABLE IF NOT EXISTS bot_users (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+
+-- Cosmic Fortune 2.0 foundation: shared jackpot and promo infrastructure.
+ALTER TABLE players ADD COLUMN IF NOT EXISTS vip_xp BIGINT NOT NULL DEFAULT 0 CHECK (vip_xp >= 0);
+
+CREATE TABLE IF NOT EXISTS jackpot_state (
+  id SMALLINT PRIMARY KEY CHECK (id = 1),
+  balance BIGINT NOT NULL DEFAULT 0 CHECK (balance >= 0),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+INSERT INTO jackpot_state (id, balance) VALUES (1, 0) ON CONFLICT (id) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS jackpot_events (
+  id BIGSERIAL PRIMARY KEY,
+  telegram_id BIGINT NOT NULL REFERENCES players(telegram_id),
+  event_type TEXT NOT NULL CHECK (event_type IN ('contribution','win')),
+  amount BIGINT NOT NULL CHECK (amount >= 0),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS jackpot_events_created_idx ON jackpot_events(created_at DESC);
+
+CREATE TABLE IF NOT EXISTS promo_codes (
+  code TEXT PRIMARY KEY,
+  reward_credits BIGINT NOT NULL DEFAULT 0 CHECK (reward_credits >= 0),
+  reward_xp BIGINT NOT NULL DEFAULT 0 CHECK (reward_xp >= 0),
+  max_uses INTEGER NOT NULL DEFAULT 1 CHECK (max_uses >= 1),
+  uses INTEGER NOT NULL DEFAULT 0 CHECK (uses >= 0),
+  expires_at TIMESTAMPTZ,
+  active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_by BIGINT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CHECK (reward_credits > 0 OR reward_xp > 0),
+  CHECK (uses <= max_uses)
+);
+CREATE TABLE IF NOT EXISTS promo_redemptions (
+  id BIGSERIAL PRIMARY KEY,
+  code TEXT NOT NULL REFERENCES promo_codes(code),
+  telegram_id BIGINT NOT NULL REFERENCES players(telegram_id) ON DELETE CASCADE,
+  reward_credits BIGINT NOT NULL DEFAULT 0 CHECK (reward_credits >= 0),
+  reward_xp BIGINT NOT NULL DEFAULT 0 CHECK (reward_xp >= 0),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (code, telegram_id)
+);
+CREATE INDEX IF NOT EXISTS promo_redemptions_player_idx ON promo_redemptions(telegram_id, created_at DESC);
