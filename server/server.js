@@ -179,40 +179,48 @@ function tournamentPoints(row) {
 app.get('/api/tournaments', requireUser, async (req,res,next) => {
   try {
     const period=['daily','weekly'].includes(req.query.period) ? req.query.period : 'daily';
-    const game='all';
+    const unit=period==='weekly'?'week':'day';
     const interval=period==='weekly' ? "date_trunc('week', NOW())" : "date_trunc('day', NOW())";
-    const gameFilter=game==='all' ? '' : ' AND gt.game=$1';
-    const params=game==='all' ? [] : [game];
+    // Only rounds with a strictly positive net result count toward the tournament.
     const query=`
       SELECT gt.telegram_id, p.first_name,
         COUNT(*)::int AS rounds,
-        SUM(10 + CASE WHEN gt.payout > gt.bet THEN 5 ELSE 0 END)::int AS points
+        (COUNT(*) * 15)::int AS points
       FROM game_transactions gt
       JOIN players p ON p.telegram_id=gt.telegram_id
-      WHERE gt.bet > 0 AND gt.created_at >= ${interval}
-        AND gt.created_at < ${interval} + INTERVAL '1 ${period==='weekly'?'week':'day'}'
-        ${gameFilter}
+      WHERE gt.bet > 0 AND gt.payout > gt.bet
+        AND gt.created_at >= ${interval}
+        AND gt.created_at < ${interval} + INTERVAL '1 ${unit}'
       GROUP BY gt.telegram_id,p.first_name
       ORDER BY points DESC, rounds DESC, MIN(gt.created_at) ASC
       LIMIT 50`;
-    const result=await pool.query(query,params);
+    const result=await pool.query(query);
     const me=result.rows.findIndex(r=>String(r.telegram_id)===String(req.player.telegram_id));
     const mine=await pool.query(`
       SELECT COUNT(*)::int AS rounds,
-        COALESCE(SUM(10 + CASE WHEN payout > bet THEN 5 ELSE 0 END),0)::int AS points
-      FROM game_transactions WHERE telegram_id=$1 AND bet>0
-        AND created_at >= ${interval} AND created_at < ${interval} + INTERVAL '1 ${period==='weekly'?'week':'day'}'
-        ${game==='all'?'':' AND game=$2'}`,game==='all'?[req.player.telegram_id]:[req.player.telegram_id,game]);
-    const unit=period==='weekly'?'week':'day';
+        (COUNT(*) * 15)::int AS points
+      FROM game_transactions
+      WHERE telegram_id=$1 AND bet>0 AND payout>bet
+        AND created_at >= ${interval}
+        AND created_at < ${interval} + INTERVAL '1 ${unit}'`,[req.player.telegram_id]);
     const previous=await pool.query(`
       SELECT p.first_name, COUNT(*)::int AS rounds,
-        SUM(10 + CASE WHEN gt.payout > gt.bet THEN 5 ELSE 0 END)::int AS points
-      FROM game_transactions gt JOIN players p ON p.telegram_id=gt.telegram_id
-      WHERE gt.bet>0 AND gt.created_at >= ${interval} - INTERVAL '1 ${unit}'
+        (COUNT(*) * 15)::int AS points
+      FROM game_transactions gt
+      JOIN players p ON p.telegram_id=gt.telegram_id
+      WHERE gt.bet>0 AND gt.payout>gt.bet
+        AND gt.created_at >= ${interval} - INTERVAL '1 ${unit}'
         AND gt.created_at < ${interval}
       GROUP BY gt.telegram_id,p.first_name
       ORDER BY points DESC,rounds DESC LIMIT 3`);
-    res.json({period,game,scoring:'10 очков за раунд + 5 за выигрышный раунд',previous:previous.rows.map((r,i)=>({place:i+1,name:(String(r.first_name||'').trim()||'Игрок'),points:Number(r.points)})),leaders:result.rows.map((r,i)=>({place:i+1,name:(String(r.first_name||'').trim()||'Игрок'),rounds:Number(r.rounds),points:Number(r.points)})),me:{place:me<0?null:me+1,rounds:Number(mine.rows[0].rounds),points:Number(mine.rows[0].points)}});
+    const displayName=r=>(String(r.first_name||'').trim()||'Игрок');
+    res.json({
+      period,game:'all',
+      scoring:'15 очков за раунд с чистым выигрышем; проигрышные и нулевые раунды не учитываются',
+      previous:previous.rows.map((r,i)=>({place:i+1,name:displayName(r),points:Number(r.points)})),
+      leaders:result.rows.map((r,i)=>({place:i+1,name:displayName(r),rounds:Number(r.rounds),points:Number(r.points)})),
+      me:{place:me<0?null:me+1,rounds:Number(mine.rows[0].rounds),points:Number(mine.rows[0].points)}
+    });
   } catch(e) { next(e); }
 });
 
