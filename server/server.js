@@ -170,6 +170,57 @@ app.get('/api/me', requireUser, async (req, res) => {
   });
 });
 
+
+const VIP_TASKS = [{"level":0,"key":"rounds","title":"Сыграй 3 раунда","kind":"rounds","target":3,"reward":1000},{"level":0,"key":"turnover","title":"Сделай ставок на 10 000","kind":"turnover","target":10000,"reward":2000},{"level":1,"key":"rounds","title":"Сыграй 5 раундов","kind":"rounds","target":5,"reward":2500},{"level":1,"key":"turnover","title":"Сделай ставок на 30 000","kind":"turnover","target":30000,"reward":5000},{"level":2,"key":"rounds","title":"Сыграй 8 раундов","kind":"rounds","target":8,"reward":5000},{"level":2,"key":"turnover","title":"Сделай ставок на 75 000","kind":"turnover","target":75000,"reward":10000},{"level":3,"key":"rounds","title":"Сыграй 10 раундов","kind":"rounds","target":10,"reward":10000},{"level":3,"key":"turnover","title":"Сделай ставок на 150 000","kind":"turnover","target":150000,"reward":20000},{"level":4,"key":"rounds","title":"Сыграй 15 раундов","kind":"rounds","target":15,"reward":25000},{"level":4,"key":"turnover","title":"Сделай ставок на 300 000","kind":"turnover","target":300000,"reward":50000}];
+function vipLevelForTurnover(total) {
+  if (total >= 5000000) return 4;
+  if (total >= 2000000) return 3;
+  if (total >= 500000) return 2;
+  if (total >= 100000) return 1;
+  return 0;
+}
+async function getVipTaskState(db, telegramId, lock = false) {
+  const turnover = await db.query("SELECT COALESCE(SUM(bet),0)::numeric AS total FROM game_transactions WHERE telegram_id=$1", [telegramId]);
+  const stats = await db.query("SELECT COUNT(*) FILTER (WHERE bet > 0)::int AS rounds, COALESCE(SUM(bet),0)::numeric AS turnover FROM game_transactions WHERE telegram_id=$1 AND created_at >= CURRENT_DATE AND created_at < CURRENT_DATE + INTERVAL '1 day' AND bet > 0", [telegramId]);
+  const claims = await db.query("SELECT task_key FROM vip_task_claims WHERE telegram_id=$1 AND task_date=CURRENT_DATE", [telegramId]);
+  const level = vipLevelForTurnover(Number(turnover.rows[0]?.total || 0));
+  const claimed = new Set(claims.rows.map(r => r.task_key));
+  return {
+    level,
+    tasks: VIP_TASKS.filter(t => t.level === level).map(t => ({
+      key: t.key, title: t.title, target: t.target, reward: t.reward,
+      progress: Math.min(t.target, Number(stats.rows[0]?.[t.kind] || 0)),
+      completed: Number(stats.rows[0]?.[t.kind] || 0) >= t.target,
+      claimed: claimed.has(t.key)
+    }))
+  };
+}
+app.get('/api/vip/tasks', requireUser, async (req,res,next) => {
+  try { res.json(await getVipTaskState(pool, req.player.telegram_id)); } catch(e) { next(e); }
+});
+app.post('/api/vip/tasks/:taskKey/claim', requireUser, async (req,res,next) => {
+  const taskKey=String(req.params.taskKey || '');
+  const client=await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const player=await client.query('SELECT balance FROM players WHERE telegram_id=$1 FOR UPDATE',[req.player.telegram_id]);
+    if(!player.rowCount){await client.query('ROLLBACK');return res.status(404).json({error:'Аккаунт не найден.'});}
+    const state=await getVipTaskState(client,req.player.telegram_id);
+    const task=state.tasks.find(t=>t.key===taskKey);
+    if(!task){await client.query('ROLLBACK');return res.status(403).json({error:'Это задание недоступно для твоего VIP-уровня.'});}
+    if(task.claimed){await client.query('ROLLBACK');return res.status(409).json({error:'Награда за это задание уже получена сегодня.'});}
+    if(!task.completed){await client.query('ROLLBACK');return res.status(400).json({error:'Сначала выполни задание.'});}
+    const reward=task.reward,balanceAfter=Number(player.rows[0].balance)+reward;
+    const claim=await client.query('INSERT INTO vip_task_claims (telegram_id,task_date,task_key,reward) VALUES ($1,CURRENT_DATE,$2,$3) ON CONFLICT DO NOTHING RETURNING task_key',[req.player.telegram_id,taskKey,reward]);
+    if(!claim.rowCount){await client.query('ROLLBACK');return res.status(409).json({error:'Награда уже получена.'});}
+    await client.query('UPDATE players SET balance=$2,updated_at=NOW() WHERE telegram_id=$1',[req.player.telegram_id,balanceAfter]);
+    await client.query("INSERT INTO game_transactions (telegram_id,game,bet,payout,balance_after,outcome,idempotency_key) VALUES ($1,'bonus_wheel',0,$2,$3,$4::jsonb,$5)",[req.player.telegram_id,reward,balanceAfter,JSON.stringify({type:'vip_task_reward',taskKey,reward}), 'vip-task:'+new Date().toISOString().slice(0,10)+':'+taskKey]);
+    await client.query('COMMIT');
+    res.json({ok:true,reward,balance:balanceAfter,tasks:(await getVipTaskState(pool,req.player.telegram_id)).tasks});
+  } catch(e) { await client.query('ROLLBACK').catch(()=>{}); next(e); }
+  finally { client.release(); }
+});
+
 const MAX_BET = 100000;
 const SYMBOLS = ['rhino', 'golden-rhino', 'eagle', 'flamingo', 'crocodile', 'hyena', 'A', 'K', 'Q', 'J'];
 const RED_NUMBERS = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);

@@ -162,3 +162,14 @@ CREATE TABLE IF NOT EXISTS bot_users (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Daily VIP task claims are unique per player, task and database date.
+
+CREATE TABLE IF NOT EXISTS vip_task_claims (
+  telegram_id BIGINT NOT NULL REFERENCES players(telegram_id) ON DELETE CASCADE,
+  task_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  task_key TEXT NOT NULL,
+  reward BIGINT NOT NULL CHECK (reward > 0),
+  claimed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (telegram_id, task_date, task_key)
+);
+CREATE INDEX IF NOT EXISTS vip_task_claims_player_date_idx ON vip_task_claims(telegram_id, task_date);
