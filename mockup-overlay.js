@@ -798,8 +798,7 @@
         if(ball)ball.style.display='none';
         syncBalance(d.balance);
         const m=Number(d.outcome?.multiplier||0),payout=Number(d.payout||0);
-        if(result)result.innerHTML=(d.outcome?.jackpotHit?'<strong style="color:#ffdf78">🌌 COSMIC JACKPOT!</strong><br>':'')+'Множитель: <strong>'+m.toFixed(2)+'×</strong><br>Выплата: <strong>'+formatBalance(payout)+' ✦</strong><br><span style="color:#c8b7df">Баланс: '+formatBalance(d.balance)+' ✦</span>';
-        await refreshPlinkoJackpot();
+        if(result)result.innerHTML='Множитель: <strong>'+m.toFixed(2)+'×</strong><br>Выплата: <strong>'+formatBalance(payout)+' ✦</strong><br><span style="color:#c8b7df">Баланс: '+formatBalance(d.balance)+' ✦</span>';
       }catch(e){if(ball)ball.style.display='none';if(result)result.textContent=e.message;say(e.message)}
       finally{action.disabled=false;action.textContent='БРОСИТЬ'}
       return
