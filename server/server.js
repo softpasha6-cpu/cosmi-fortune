@@ -192,7 +192,7 @@ async function settleDueTournaments() {
       const currentStart=new Date(current.rows[0].current_start);
       let loops=0;
       while(periodStart<currentStart && loops<400) {
-        const next=await client.query("SELECT $1::timestamptz + ($2::text || ' 1')::interval AS period_end",[periodStart,unit]);
+        const next=await client.query('SELECT $1::timestamptz + $2::interval AS period_end',[periodStart,unit==='day'?'1 day':'1 week']);
         const periodEnd=next.rows[0].period_end;
         const winners=await client.query(`
           SELECT gt.telegram_id,p.first_name,COUNT(*)::int AS rounds,
@@ -271,7 +271,7 @@ app.get('/api/tournaments', requireUser, async (req,res,next) => {
         AND gt.created_at < ${interval}
       GROUP BY gt.telegram_id,p.first_name
       ORDER BY points DESC,rounds DESC LIMIT 3`,
-      [period,period,TOURNAMENT_GAMES]);
+      [TOURNAMENT_GAMES]);
     const displayName=r=>String(r.first_name||'').trim()||'Игрок';
     res.set('Cache-Control','no-store, max-age=0');
     res.json({
