@@ -157,8 +157,6 @@
     #cf-app .art-dice{background-image:url("./a_glossy_high_detail_casino_gambling_app_icon_sty.png");background-size:116% 116%;background-position:center;background-repeat:no-repeat;filter:brightness(1.3) saturate(1.12)}#cf-app .cf-game-tile.dice .cf-game-art:before{display:none}#cf-app .cf-game-tile.dice .cf-game-emoji,#cf-app .cf-game-tile.dice .cf-game-title{display:none}
     #cf-app .art-plinko{background-image:url("./plinko-avatar-4k.png");background-size:cover;background-position:center;background-repeat:no-repeat}#cf-app .cf-game-tile.plinko .cf-game-art:before{display:none}#cf-app .cf-game-tile.plinko .cf-game-emoji,#cf-app .cf-game-tile.plinko .cf-game-title{display:none}#cf-app .cf-game-tile.plinko{border-color:#e9bc61;box-shadow:0 0 16px #d79cff66,inset 0 0 0 1px #fff4}
     #cf-app .art-plinko{background-image:url("./plinko-avatar-4k.png");background-size:cover;background-position:center;background-repeat:no-repeat}
-    #cf-app .cf-game-tile.plinko .cf-game-art:before{display:none}
-    #cf-app .cf-game-tile.plinko .cf-game-emoji,#cf-app .cf-game-tile.plinko .cf-game-title{display:none}
     #cf-app .game-avatar.plinko{height:210px;background-image:url("./plinko-avatar-4k.png");background-size:cover;background-position:center;border:1px solid #e5b64f;box-shadow:0 0 24px #a34cff55}
     #cf-app .game-avatar.plinko .game-tag{background:#080611bb;border-color:#e5b64f;color:#ffe4a0}
     #cf-app .cf-game-tile.luckyjet{border-color:#d98bff}
@@ -435,7 +433,7 @@
       dice:'<span class="game-tag">DICE</span><span class="game-emoji">🎲</span>',
       roulette:'',
       blackjack:'<span class="game-tag">BLACKJACK</span><div class="cards-art"><span>♥</span><span>♠</span></div>',
-      plinko:'<span class="game-tag">PLINKO · COSMIC</span>'
+      plinko:'<span class="game-tag">PLINKO · COSMIC</span><span class="game-emoji">🔮</span>'
     };
     return '<div class="game-avatar '+game+'">'+(views[game]||'<span class="game-emoji">🎮</span>')+'</div>';
   }
