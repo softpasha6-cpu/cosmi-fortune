@@ -266,7 +266,7 @@ app.get('/api/tournaments', requireUser, async (req,res,next) => {
     const previous=await pool.query(`
       SELECT p.first_name,COUNT(*)::int AS rounds,(COUNT(*)*15)::int AS points
       FROM game_transactions gt JOIN players p ON p.telegram_id=gt.telegram_id
-      WHERE gt.game=ANY($3::text[]) AND gt.bet>0 AND gt.payout>gt.bet
+      WHERE gt.game=ANY($1::text[]) AND gt.bet>0 AND gt.payout>gt.bet
         AND gt.created_at >= ${interval} - INTERVAL '1 ${unit}'
         AND gt.created_at < ${interval}
       GROUP BY gt.telegram_id,p.first_name
