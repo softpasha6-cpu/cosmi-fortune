@@ -184,7 +184,7 @@ app.get('/api/tournaments', requireUser, async (req,res,next) => {
     const gameFilter=game==='all' ? '' : ' AND gt.game=$1';
     const params=game==='all' ? [] : [game];
     const query=`
-      SELECT gt.telegram_id,
+      SELECT gt.telegram_id, p.first_name,
         COUNT(*)::int AS rounds,
         SUM(10 + CASE WHEN gt.payout > gt.bet THEN 5 ELSE 0 END)::int AS points
       FROM game_transactions gt
@@ -192,7 +192,7 @@ app.get('/api/tournaments', requireUser, async (req,res,next) => {
       WHERE gt.bet > 0 AND gt.created_at >= ${interval}
         AND gt.created_at < ${interval} + INTERVAL '1 ${period==='weekly'?'week':'day'}'
         ${gameFilter}
-      GROUP BY gt.telegram_id
+      GROUP BY gt.telegram_id,p.first_name
       ORDER BY points DESC, rounds DESC, MIN(gt.created_at) ASC
       LIMIT 50`;
     const result=await pool.query(query,params);
@@ -203,7 +203,16 @@ app.get('/api/tournaments', requireUser, async (req,res,next) => {
       FROM game_transactions WHERE telegram_id=$1 AND bet>0
         AND created_at >= ${interval} AND created_at < ${interval} + INTERVAL '1 ${period==='weekly'?'week':'day'}'
         ${game==='all'?'':' AND game=$2'}`,game==='all'?[req.player.telegram_id]:[req.player.telegram_id,game]);
-    res.json({period,game,scoring:'10 очков за раунд + 5 за выигрышный раунд',leaders:result.rows.map((r,i)=>({place:i+1,rounds:Number(r.rounds),points:Number(r.points)})),me:{place:me<0?null:me+1,rounds:Number(mine.rows[0].rounds),points:Number(mine.rows[0].points)}});
+    const unit=period==='weekly'?'week':'day';
+    const previous=await pool.query(`
+      SELECT p.first_name, COUNT(*)::int AS rounds,
+        SUM(10 + CASE WHEN gt.payout > gt.bet THEN 5 ELSE 0 END)::int AS points
+      FROM game_transactions gt JOIN players p ON p.telegram_id=gt.telegram_id
+      WHERE gt.bet>0 AND gt.created_at >= ${interval} - INTERVAL '1 ${unit}'
+        AND gt.created_at < ${interval}
+      GROUP BY gt.telegram_id,p.first_name
+      ORDER BY points DESC,rounds DESC LIMIT 3`);
+    res.json({period,game,scoring:'10 очков за раунд + 5 за выигрышный раунд',previous:previous.rows.map((r,i)=>({place:i+1,name:(String(r.first_name||'').trim()||'Игрок'),points:Number(r.points)})),leaders:result.rows.map((r,i)=>({place:i+1,name:(String(r.first_name||'').trim()||'Игрок'),rounds:Number(r.rounds),points:Number(r.points)})),me:{place:me<0?null:me+1,rounds:Number(mine.rows[0].rounds),points:Number(mine.rows[0].points)}});
   } catch(e) { next(e); }
 });
 

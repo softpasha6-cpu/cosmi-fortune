@@ -423,6 +423,21 @@
     #cf-app .cf-vip-benefit span{color:#e9c36b}
     #cf-app .cf-vip-footnote{margin:12px 0 0;color:#8f7ca4;font-size:10px;line-height:1.45}
 
+    #cf-app .cf-timer-card{padding:15px;text-align:center;border:1px solid #a77bda;border-radius:16px;background:radial-gradient(circle at 50% 0%,#563080,#191027 72%);margin-bottom:12px}
+    #cf-app .cf-timer-card span,#cf-app .cf-timer-card small{display:block;color:#cdb8e5;font-size:10px;font-weight:800;letter-spacing:1px}
+    #cf-app .cf-timer-card strong{display:block;color:#ffe19a;font-size:30px;letter-spacing:2px;margin:5px 0;text-shadow:0 0 16px #ffcb62}
+    #cf-app .cf-t-podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;align-items:end;margin:12px 0}
+    #cf-app .cf-t-podium-item{display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 3px;border:1px solid #76549a;border-radius:13px;background:linear-gradient(160deg,#302044,#130d20);min-width:0}
+    #cf-app .cf-t-podium-item.p1{min-height:150px;border-color:#e8c56d;background:linear-gradient(160deg,#59451f,#21152a)}
+    #cf-app .cf-t-podium-item.p2{min-height:130px}.cf-t-podium-item.p3{min-height:118px}
+    #cf-app .cf-t-podium-cup{font-size:27px}#cf-app .cf-t-podium-item b{font-size:11px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    #cf-app .cf-t-podium-item strong{font-size:11px;color:#f7d88c}#cf-app .cf-t-podium-item small{font-size:10px;color:#c5a8e7}#cf-app .cf-t-podium-item span{font-size:9px;color:#bda8d4;font-weight:900}
+    #cf-app .cf-t-prize-strip{display:grid;gap:6px;padding:12px;border-radius:13px;background:#160e24;border:1px solid #49305e;font-size:11px;color:#d9c6eb}
+    #cf-app .cf-t-prize-strip b{color:#ffe19a;font-size:12px;margin-bottom:3px}
+    #cf-app .cf-t-progress{padding:11px;margin-top:10px;border-radius:11px;background:#2a1a40;color:#ffe09a;font-size:11px;font-weight:800}
+    #cf-app .cf-t-section-title{margin:16px 0 5px;color:#ffe19a;font-size:11px;font-weight:900;letter-spacing:1px}
+    #cf-app .cf-t-history-row{display:grid;grid-template-columns:25px 1fr auto;gap:8px;align-items:center;padding:9px 3px;border-bottom:1px solid #39284b;font-size:11px}
+    #cf-app .cf-t-history-row small{color:#bda8d4}
     #cf-app .cf-tournament-tabs,#cf-app .cf-tournament-games{display:flex;gap:7px;overflow-x:auto;margin:12px 0;padding-bottom:4px}
     #cf-app .cf-tournament-tabs button,#cf-app .cf-tournament-games button{flex:0 0 auto;border:1px solid #68458c;border-radius:10px;padding:9px 12px;background:#1b102b;color:#d9c6f0;font-size:11px;font-weight:800}
     #cf-app .cf-tournament-tabs button:first-child{border-color:#e9c16a}
@@ -803,18 +818,35 @@
 
 
   
-  let tournamentPeriod='daily',tournamentGame='all';
+  let tournamentPeriod='daily',tournamentClock=null;
+  const tournamentPrizes={daily:[10000,6000,3000,1000],weekly:[50000,30000,15000,5000]};
+  function tournamentTimeLeft(){
+    const now=new Date(),end=new Date(now);
+    if(tournamentPeriod==='daily'){end.setHours(24,0,0,0);}
+    else {const day=(8-now.getDay())%7||7;end.setDate(now.getDate()+day);end.setHours(0,0,0,0);}
+    const ms=Math.max(0,end-now),h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000),sec=Math.floor(ms%60000/1000);
+    return [h,m,sec].map(x=>String(x).padStart(2,'0')).join(':');
+  }
+  function tournamentClockUpdate(){const el=app.querySelector('#cf-tournament-countdown');if(el)el.textContent=tournamentTimeLeft();}
   async function loadTournamentBoard(){
     const box=app.querySelector('#cf-tournament-board');if(!box)return;
     box.innerHTML='<p class="cf-vip-muted">Загружаем турнирную таблицу…</p>';
     try{
       const d=await api('/api/tournaments?period='+tournamentPeriod+'&game=all');
-      const names={all:'Все игры',slots:'Слоты',roulette:'Рулетка',blackjack:'Блэкджек',dice:'Кости',miner:'Минер',luckyjet:'LuckyJet',plinko:'Plinko'};
-      const prizes=tournamentPeriod==='daily'?[50000,30000,20000]:[300000,200000,100000];
-      box.innerHTML='<div class="cf-tournament-me"><span>ТВОЙ РЕЗУЛЬТАТ</span><strong>'+(d.me.place?'№'+d.me.place:'Вне топ-50')+'</strong><b>'+formatBalance(d.me.points)+' очков</b><small>'+formatBalance(d.me.rounds)+' раундов</small></div><div class="cf-tournament-note">10 очков за каждый раунд + 5 за выигрышный. Рейтинг обновляется при загрузке.</div><div class="cf-tournament-list">'+(d.leaders.length?d.leaders.map((r,i)=>'<div class="cf-tournament-row"><span class="cf-tournament-place">'+(i<3?['🥇','🥈','🥉'][i]:r.place)+'</span><span class="cf-tournament-player"><b>Игрок №'+r.place+'</b><small>'+r.rounds+' раундов</small></span><strong>'+formatBalance(r.points)+' ✦</strong>'+(i<3?'<em>Приз: '+formatBalance(prizes[i])+' ₽</em>':'')+'</div>').join(''):'<p class="cf-vip-muted">Пока нет результатов. Сыграй раунд и попади в таблицу!</p>')+'</div>';
+      const prizes=tournamentPrizes[tournamentPeriod],leaders=d.leaders||[],top=leaders.slice(0,3);
+      const safeName=v=>String(v||'Игрок').replace(/[<>]/g,'');
+      const podium=top.map((r,i)=>'<div class="cf-t-podium-item p'+(i+1)+'"><div class="cf-t-podium-cup">'+['🥇','🥈','🥉'][i]+'</div><b>'+safeName(r.name)+'</b><strong>'+formatBalance(r.points)+' ✦</strong><small>'+formatBalance(prizes[i])+' ₽</small><span>'+(i+1)+' МЕСТО</span></div>').join('');
+      let progress='Сыграй раунды, чтобы попасть в рейтинг.';
+      if(d.me.place&&d.me.place>1){const above=leaders[d.me.place-2];if(above)progress='До следующего места: '+formatBalance(Math.max(0,above.points-d.me.points+1))+' очков';}
+      else if(d.me.place===1)progress='Ты сейчас на первом месте! Удерживай лидерство.';
+      else if(leaders.length)progress='До попадания в топ-50: '+formatBalance(Math.max(0,leaders[leaders.length-1].points-d.me.points+1))+' очков';
+      const rows=leaders.slice(3).map(r=>'<div class="cf-tournament-row"><span class="cf-tournament-place">'+r.place+'</span><span class="cf-tournament-player"><b>'+safeName(r.name)+'</b><small>'+r.rounds+' раундов</small></span><strong>'+formatBalance(r.points)+' ✦</strong><em>Приз: '+formatBalance(prizes[3]||0)+' ₽</em></div>').join('');
+      const history=(d.previous||[]).length?(d.previous||[]).map((r,i)=>'<div class="cf-t-history-row"><span>'+['🥇','🥈','🥉'][i]+'</span><b>'+safeName(r.name)+'</b><small>'+formatBalance(r.points)+' очков</small></div>').join(''):'<p class="cf-vip-muted">Данные за предыдущий период пока отсутствуют.</p>';
+      box.innerHTML='<div class="cf-timer-card"><span>⏳ ДО ЗАВЕРШЕНИЯ ТУРНИРА</span><strong id="cf-tournament-countdown">'+tournamentTimeLeft()+'</strong><small>Общий зачёт по всем играм</small></div><div class="cf-t-podium">'+podium+'</div><div class="cf-t-prize-strip"><b>🏆 Призы турнира</b><span>1 место · '+formatBalance(prizes[0])+' ₽</span><span>2 место · '+formatBalance(prizes[1])+' ₽</span><span>3 место · '+formatBalance(prizes[2])+' ₽</span><span>4–10 места · '+formatBalance(prizes[3])+' ₽</span></div><div class="cf-tournament-me"><span>ТВОЙ РЕЗУЛЬТАТ</span><strong>'+(d.me.place?'№'+d.me.place:'Вне топ-50')+'</strong><b>'+formatBalance(d.me.points)+' очков</b><small>'+formatBalance(d.me.rounds)+' раундов</small></div><div class="cf-t-progress">'+progress+'</div><div class="cf-tournament-note">10 очков за каждый раунд + 5 за выигрышный. Учитываются все игры.</div><div class="cf-t-section-title">ОСТАЛЬНЫЕ УЧАСТНИКИ</div><div class="cf-tournament-list">'+(rows||'<p class="cf-vip-muted">Пока нет других участников.</p>')+'</div><div class="cf-t-section-title">ПРОШЛЫЙ ТУРНИР</div><div class="cf-t-history">'+history+'</div>';
+      tournamentClockUpdate();
     }catch(e){box.innerHTML='<p class="cf-vip-muted">Не удалось загрузить турнир: '+String(e.message||e)+'</p>';}
   }
-  function tournaments(){return '<div class="section-title">🏆 ТУРНИРЫ COSMIC FORTUNE</div><div class="cf-tournament-tabs"><button data-action="tournament-period" data-period="daily">Ежедневный</button><button data-action="tournament-period" data-period="weekly">Недельный</button></div><div class="cf-tournament-games">'+[['all','Все'],['slots','Слоты'],['roulette','Рулетка'],['blackjack','Блэкджек'],['dice','Кости'],['miner','Минер'],['luckyjet','LuckyJet'],['plinko','Plinko']].map(x=>'<button data-action="tournament-game" data-game="'+x[0]+'">'+x[1]+'</button>').join('')+'</div><div id="cf-tournament-board" class="gamepanel">Загружаем рейтинг…</div><button class="primary" data-go="games">Перейти к играм</button><p class="cf-vip-footnote">Призы указаны в виртуальных игровых кредитах. Начисление победителям пока не автоматизировано.</p>'}
+  function tournaments(){return '<div class="section-title">🏆 ТУРНИРЫ COSMIC FORTUNE</div><div class="cf-tournament-tabs"><button data-action="tournament-period" data-period="daily">Ежедневный</button><button data-action="tournament-period" data-period="weekly">Недельный</button></div><div id="cf-tournament-board" class="gamepanel">Загружаем рейтинг…</div><button class="primary" data-go="games">Перейти к играм</button><p class="cf-vip-footnote">Призы указаны в виртуальных игровых кредитах. Выплаты пока требуют отдельного автоматического механизма.</p>'}
 
 
   function miner(){return panel('💎 МИНЕР','<div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;color:#e8d9ff"><label style="display:flex;flex-direction:column;gap:7px;font-size:14px;font-weight:700">РАЗМЕР ПОЛЯ<select id="cf-miner-size" style="background:#160b29;color:white;border:1px solid #7044a8;border-radius:10px;padding:10px;font-size:16px"><option value="3">3 × 3</option><option value="5" selected>5 × 5</option><option value="6">6 × 6</option></select></label><label style="display:flex;flex-direction:column;gap:7px;font-size:14px;font-weight:700">КОЛИЧЕСТВО МИН<select id="cf-miner-mines" style="background:#160b29;color:white;border:1px solid #7044a8;border-radius:10px;padding:10px;font-size:16px"><option value="3">3</option><option value="5" selected>5</option><option value="7">7</option><option value="10">10</option></select></label></div><div id="cf-miner-grid" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px">'+Array.from({length:25},(_,i)=>'<button data-miner-tile="'+i+'" style="aspect-ratio:1;border:1px solid #7044a8;border-radius:10px;background:#180b30;color:#d9aaff;font-size:24px">✦</button>').join('')+'</div><div id="cf-miner-multiplier" style="font-size:24px;color:#ffda73;margin:12px 0">1.00×</div><div id="cf-miner-status">Открывай кристаллы и избегай мин</div><div style="margin-top:18px"><label for="cf-bet" style="display:block;margin-bottom:8px;font-size:14px;font-weight:800;letter-spacing:.08em;color:#c9b1eb">РАЗМЕР СТАВКИ</label><input id="cf-bet" aria-label="Размер ставки в виртуальных кредитах" type="number" min="1" max="100000" step="1" value="100" style="display:block;box-sizing:border-box;width:100%;height:54px;padding:0 16px;background:#0b0918;color:white;border:1px solid #7044a8;border-radius:12px;font-size:20px"></div><button class="primary" data-action="miner-start" style="margin-top:12px">Начать игру</button><button class="primary" data-action="miner-cashout" style="display:none;margin-top:8px">Забрать выигрыш</button>');}
@@ -826,7 +858,7 @@
   }
   const renderers={home,games:gameList,slots,dice,roulette,blackjack,miner,luckyjet,plinko,bonuses,profile,settings,tournaments};
   let current='home',selected='Больше 7',opened=0;
-  function render(name){current=renderers[name]?name:'home';content.innerHTML=renderers[current]();if(current==='tournaments')loadTournamentBoard();if(current==='luckyjet')startLuckyJetLiveUpdates();else if(jetLiveTimer){clearInterval(jetLiveTimer);jetLiveTimer=null;}if(current==='slots'){api('/api/me').then(d=>{const c=app.querySelector('#cf-rhino-credit');if(c)c.textContent=formatBalance(d.player?.balance??d.balance??d.account?.balance??d.user?.balance??d.credits??0)}).catch(()=>{const c=app.querySelector('#cf-rhino-credit');if(c)c.textContent='—'})}if(current==='luckyjet')jetStartLivePolling();if(current==='bonuses')refreshDailyRewardStatus();if(current==='profile'||current==='settings'){renderTelegramProfileImmediately();refreshAccount();}app.querySelectorAll('.bottom button').forEach(b=>b.classList.toggle('active',b.dataset.go===current || (current==='mines'||current==='dice'||current==='wheel'||current==='crash')&&b.dataset.go==='games'));app.scrollTo({top:0,behavior:'instant'});}
+  function render(name){current=renderers[name]?name:'home';content.innerHTML=renderers[current]();if(tournamentClock){clearInterval(tournamentClock);tournamentClock=null;}if(current==='tournaments'){loadTournamentBoard();tournamentClock=setInterval(tournamentClockUpdate,1000);}if(current==='luckyjet')startLuckyJetLiveUpdates();else if(jetLiveTimer){clearInterval(jetLiveTimer);jetLiveTimer=null;}if(current==='slots'){api('/api/me').then(d=>{const c=app.querySelector('#cf-rhino-credit');if(c)c.textContent=formatBalance(d.player?.balance??d.balance??d.account?.balance??d.user?.balance??d.credits??0)}).catch(()=>{const c=app.querySelector('#cf-rhino-credit');if(c)c.textContent='—'})}if(current==='luckyjet')jetStartLivePolling();if(current==='bonuses')refreshDailyRewardStatus();if(current==='profile'||current==='settings'){renderTelegramProfileImmediately();refreshAccount();}app.querySelectorAll('.bottom button').forEach(b=>b.classList.toggle('active',b.dataset.go===current || (current==='mines'||current==='dice'||current==='wheel'||current==='crash')&&b.dataset.go==='games'));app.scrollTo({top:0,behavior:'instant'});}
   window.cfNavigate=function(name){try{render(name)}catch(error){console.error('Navigation failed',error);say('Не удалось открыть раздел. Перезапусти приложение.')}};
   // Capture taps before Telegram WebView or underlying page handlers can swallow them.
   document.addEventListener('click', function cosmicNavigationCapture(e){
