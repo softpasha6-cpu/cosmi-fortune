@@ -1133,7 +1133,11 @@ const port = Number(process.env.PORT || 3000);
 try {
   const schema = await readFile(new URL('./schema.sql', import.meta.url), 'utf8');
   await pool.query(schema);
-  await pool.query(\`INSERT INTO tournament_settlement_cursors(period_type,next_period_start) VALUES ('daily',date_trunc('day',NOW())),('weekly',date_trunc('week',NOW())) ON CONFLICT(period_type) DO NOTHING\`);\n  await settleDueTournaments();\n  app.listen(port, () => console.log('Cosmic Fortune API listening on port ' + port));\n  const tournamentSettlementTimer=setInterval(()=>settleDueTournaments().catch(error=>console.error('Tournament settlement failed:',error)),30000);\n  tournamentSettlementTimer.unref?.();
+  await pool.query("INSERT INTO tournament_settlement_cursors(period_type,next_period_start) VALUES ('daily',date_trunc('day',NOW())),('weekly',date_trunc('week',NOW())) ON CONFLICT(period_type) DO NOTHING");
+  await settleDueTournaments();
+  app.listen(port, () => console.log('Cosmic Fortune API listening on port ' + port));
+  const tournamentSettlementTimer=setInterval(()=>settleDueTournaments().catch(error=>console.error('Tournament settlement failed:',error)),30000);
+  tournamentSettlementTimer.unref?.();
 } catch (error) {
   console.error('Startup failed: database schema could not be initialized.', error);
   process.exit(1);
