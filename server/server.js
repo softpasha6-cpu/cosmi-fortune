@@ -662,6 +662,79 @@ app.post('/api/bonus-wheel', requireUser, async (req, res, next) => {
   } finally { client.release(); }
 });
 
+
+/* Stage 1: Plinko — result, balance and replay protection are server-authoritative. */
+app.post('/api/plinko/play', requireUser, async (req, res, next) => {
+  const bet = Number(req.body?.bet);
+  const requestId = req.body?.requestId;
+  if (typeof requestId !== 'string' || !/^[a-f0-9-]{36}$/i.test(requestId)) {
+    return res.status(400).json({ error: 'Некорректный идентификатор раунда.' });
+  }
+  if (!Number.isSafeInteger(bet) || bet < 1 || bet > MAX_BET) {
+    return res.status(400).json({ error: 'Ставка должна быть от 1 до 100 000 виртуальных кредитов.' });
+  }
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const prior = await client.query(
+      'SELECT id, bet, payout, balance_after, outcome, created_at FROM game_transactions WHERE telegram_id=$1 AND idempotency_key=$2',
+      [req.player.telegram_id, requestId]
+    );
+    if (prior.rowCount) {
+      const row = prior.rows[0];
+      await client.query('COMMIT');
+      return res.json({
+        transactionId: String(row.id), bet: Number(row.bet), payout: Number(row.payout),
+        balance: Number(row.balance_after), outcome: row.outcome, replayed: true
+      });
+    }
+    const player = await client.query(
+      'SELECT balance FROM players WHERE telegram_id=$1 FOR UPDATE',
+      [req.player.telegram_id]
+    );
+    if (!player.rowCount) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Аккаунт не найден.' });
+    }
+    const balance = Number(player.rows[0].balance);
+    if (balance < bet) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'Недостаточно виртуальных кредитов.' });
+    }
+
+    const path = Array.from({ length: 12 }, () => crypto.randomInt(0, 2));
+    const bin = path.reduce((sum, step) => sum + step, 0);
+    const multipliers = [8, 3, 1.8, 1.3, 1.1, 0.8, 0.5, 0.8, 1.1, 1.3, 1.8, 3, 8];
+    const multiplier = multipliers[bin];
+    const payout = Math.floor(bet * multiplier);
+    const balanceAfter = balance - bet + payout;
+    const outcome = {
+      path, bin, multiplier, payout,
+      message: payout > bet ? 'Отличный результат!' : payout === bet ? 'Ставка возвращена.' : 'В следующий раз повезёт!'
+    };
+
+    await client.query(
+      'UPDATE players SET balance=$2, updated_at=NOW() WHERE telegram_id=$1',
+      [req.player.telegram_id, balanceAfter]
+    );
+    const inserted = await client.query(
+      "INSERT INTO game_transactions (telegram_id, game, bet, payout, balance_after, outcome, idempotency_key) VALUES ($1, 'plinko', $2, $3, $4, $5::jsonb, $6) RETURNING id, created_at",
+      [req.player.telegram_id, bet, payout, balanceAfter, JSON.stringify(outcome), requestId]
+    );
+    await client.query('COMMIT');
+    res.json({
+      transactionId: String(inserted.rows[0].id), bet, payout, balance: balanceAfter,
+      outcome, createdAt: inserted.rows[0].created_at
+    });
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => {});
+    if (error.code === '23505') return res.status(409).json({ error: 'Этот раунд уже обработан.' });
+    next(error);
+  } finally {
+    client.release();
+  }
+});
+
 app.post('/api/game', requireUser, async (req, res, next) => {
   const { game, choice } = req.body || {};
   const bet = Number(req.body?.bet);

@@ -31,7 +31,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS game_transactions_idempotency_idx
 
 -- Upgrade existing databases to support the free bonus wheel.
 ALTER TABLE game_transactions DROP CONSTRAINT IF EXISTS game_transactions_game_check;
-ALTER TABLE game_transactions ADD CONSTRAINT game_transactions_game_check CHECK (game IN ('slots','roulette','blackjack','dice','bonus_wheel','miner','luckyjet'));
+ALTER TABLE game_transactions ADD CONSTRAINT game_transactions_game_check CHECK (game IN ('slots','roulette','blackjack','dice','bonus_wheel','miner','luckyjet','plinko'));
 
 CREATE TABLE IF NOT EXISTS bonus_wheel_cooldowns (
   telegram_id BIGINT PRIMARY KEY REFERENCES players(telegram_id) ON DELETE CASCADE,
@@ -161,3 +161,4 @@ CREATE TABLE IF NOT EXISTS bot_users (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
