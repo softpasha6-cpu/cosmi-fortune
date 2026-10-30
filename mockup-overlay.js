@@ -166,9 +166,9 @@
     #cf-app .cf-plinko-row{height:clamp(13px,3.7vw,19px);display:flex;justify-content:center;align-items:center;gap:clamp(9px,3.1vw,20px)}
     #cf-app .cf-plinko-peg{display:block;width:clamp(7px,2.2vw,12px);height:clamp(7px,2.2vw,12px);border-radius:50%;background:radial-gradient(circle at 30% 25%,#fff5c8 0 12%,#ffdc75 28%,#b96c1d 72%,#4e1d12);border:1px solid #ffe49a;box-shadow:0 2px 3px #000,0 0 9px #ffbd54aa}
     #cf-app .cf-plinko-bin.is-hit{outline:3px solid #fff0a8;box-shadow:0 0 18px #ffd45f,0 0 32px #b54aff;transform:translateY(-4px);filter:brightness(1.35)}
-    #cf-app .cf-plinko-ball{display:none;position:absolute;z-index:4;left:50%;top:6px;width:17px;height:17px;border-radius:50%;transform:translateX(-50%);background:radial-gradient(circle at 28% 24%,#fff,#ffdd8a 36%,#d64cff 70%,#6322a5);box-shadow:0 0 12px #ffcf71,0 0 24px #d24cff}
-    #cf-app .cf-plinko-bins{position:relative;z-index:2;display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:3px;margin-top:8px}
-    #cf-app .cf-plinko-bin{padding:10px 0;text-align:center;border:1px solid #d69a3d;border-radius:7px;font-size:clamp(10px,3vw,14px);font-weight:1000;color:#fff;background:linear-gradient(180deg,#a45b1d,#3b1b25)}
+    #cf-app .cf-plinko-ball{display:none;position:absolute;z-index:4;left:50%;top:6px;width:17px;height:17px;border-radius:50%;transform:translateX(-50%);pointer-events:none;background:radial-gradient(circle at 28% 24%,#fff,#ffdd8a 36%,#d64cff 70%,#6322a5);box-shadow:0 0 12px #ffcf71,0 0 24px #d24cff}
+    #cf-app .cf-plinko-bins{position:relative;z-index:2;display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:0;margin-top:10px;border:2px solid #d69a3d;border-radius:10px;overflow:hidden;background:#10091c}
+    #cf-app .cf-plinko-bin{display:flex;align-items:center;justify-content:center;min-width:0;min-height:48px;padding:7px 0;text-align:center;border:0;border-right:1px solid #e0b75d;border-radius:0;font-size:clamp(9px,2.65vw,13px);font-weight:1000;color:#fff;background:linear-gradient(180deg,#a45b1d,#3b1b25);box-sizing:border-box}#cf-app .cf-plinko-bin:last-child{border-right:0}
     #cf-app .cf-plinko-bin.bin-blue{border-color:#278dff;background:linear-gradient(180deg,#164da1,#07142d);color:#7bc8ff}
     #cf-app .cf-plinko-bin.bin-purple{border-color:#b43bff;background:linear-gradient(180deg,#7a1c9c,#211032);color:#f4a2ff}
     #cf-app .cf-plinko-bin.bin-gold{border-color:#ffd36a;background:linear-gradient(180deg,#ffbd48,#7b3512);color:#fff1ae}
@@ -856,17 +856,24 @@
         for(let i=0;i<path.length;i++){
           if(!ball||!board)break;
           const right=path.slice(0,i+1).reduce((a,b)=>a+Number(b),0);
-          const x=50+(2*right-(i+1))*3.45;
-          ball.style.transition='left .16s cubic-bezier(.22,.75,.3,1),top .16s cubic-bezier(.2,.8,.25,1)';
+          const x=50+(2*right-(i+1))*3.75;
+          ball.style.transition='left .17s cubic-bezier(.22,.75,.3,1),top .17s cubic-bezier(.2,.8,.25,1)';
+          ball.style.transform='translateX(-50%)';
           ball.style.left=x+'%';
-          ball.style.top=(7+(i+1)*6.7)+'%';
-          ball.animate([{filter:'brightness(1.6)',scale:'1.2'},{filter:'brightness(1)',scale:'1'}],{duration:150,easing:'ease-out'});
-          await new Promise(r=>setTimeout(r,165));
+          ball.style.top=(7+(i+1)*6.4)+'%';
+          ball.animate([{filter:'brightness(1.7)',scale:'1.22'},{filter:'brightness(1)',scale:'1'}],{duration:155,easing:'ease-out'});
+          await new Promise(r=>setTimeout(r,175));
         }
-        if(ball)ball.style.display='none';
         app.querySelectorAll('[data-plinko-bin]').forEach(el=>el.classList.remove('is-hit'));
         const winningBin=app.querySelector('[data-plinko-bin="'+Number(d.outcome?.bin)+'"]');
-        if(winningBin)winningBin.classList.add('is-hit');
+        if(ball&&board&&winningBin){
+          const br=board.getBoundingClientRect(),cr=winningBin.getBoundingClientRect();
+          const targetX=cr.left+cr.width/2-br.left,targetY=cr.top+cr.height/2-br.top;
+          ball.style.transition='left .32s cubic-bezier(.18,.72,.25,1),top .32s cubic-bezier(.18,.72,.25,1),transform .32s ease';
+          ball.style.left=targetX+'px';ball.style.top=targetY+'px';ball.style.transform='translate(-50%,-50%) scale(.92)';
+          await new Promise(r=>setTimeout(r,340));
+          winningBin.classList.add('is-hit');
+        }
         syncBalance(d.balance);
         const m=Number(d.outcome?.multiplier||0),payout=Number(d.payout||0);
         const amount=app.querySelector('#cf-plinko-win-amount'),mult=app.querySelector('#cf-plinko-win-multiplier'),bal=app.querySelector('#cf-plinko-win-balance');
