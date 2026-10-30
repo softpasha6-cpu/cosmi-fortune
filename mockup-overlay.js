@@ -185,6 +185,22 @@
     #cf-app .cf-plinko-payout strong{display:block;padding:6px 0;color:#ffdc7b;font-size:clamp(9px,2.8vw,12px)}
     #cf-app .cf-plinko-payout span{display:block;padding:6px 0;background:#090713;color:#fff;font-size:clamp(8px,2.5vw,11px)}
     #cf-app .cf-plinko-result{min-height:40px;margin-top:12px;padding:11px;border-radius:11px;background:#160e27;color:#ffe4a0;text-align:center;font-size:13px}
+    #cf-app .cf-plinko-win-overlay{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;background:#05020bd9;backdrop-filter:blur(7px)}
+    #cf-app .cf-plinko-win-overlay[hidden]{display:none!important}
+    #cf-app .cf-plinko-win-card{width:min(100%,360px);padding:24px 18px 20px;text-align:center;border:2px solid #f5c65e;border-radius:25px;background:radial-gradient(ellipse at 50% 0%,#68249b,#21102f 54%,#090611);box-shadow:0 0 25px #ffca5c99,0 0 70px #a53dff66,inset 0 0 24px #ffda6b22;transform:scale(.82);opacity:0}
+    #cf-app .cf-plinko-win-card.is-show{animation:cf-plinko-pop .38s cubic-bezier(.18,.9,.25,1.25) forwards}
+    @keyframes cf-plinko-pop{to{transform:scale(1);opacity:1}}
+    #cf-app .cf-plinko-win-spark{color:#ffe28b;font-size:24px;letter-spacing:10px;text-shadow:0 0 15px #ffbd43}
+    #cf-app .cf-plinko-win-caption{margin-top:8px;color:#d9b8f4;font-size:11px;letter-spacing:3px;font-weight:900}
+    #cf-app .cf-plinko-win-title{margin-top:8px;color:#ffe28b;font-size:clamp(22px,7vw,30px);font-weight:1000;text-shadow:0 2px #8e3e16,0 0 16px #ffc65a}
+    #cf-app .cf-plinko-win-amount{margin:13px 0 7px;color:#fff2bc;font-size:clamp(28px,9vw,42px);font-weight:1000;line-height:1.12;overflow-wrap:anywhere;text-shadow:0 3px #713411,0 0 20px #ffb832}
+    #cf-app .cf-plinko-win-multiplier{display:inline-block;padding:7px 24px;border:1px solid #df65ff;border-radius:14px;background:linear-gradient(135deg,#7c20a9,#32104d);color:#ffd5ff;font-size:25px;font-weight:1000;box-shadow:0 0 18px #bd44ff88}
+    #cf-app .cf-plinko-win-balance{margin-top:12px;color:#d3c0e7;font-size:13px}
+    #cf-app .cf-plinko-win-close{width:100%;margin-top:18px;padding:13px;border:1px solid #ffe18b;border-radius:13px;background:linear-gradient(180deg,#ffe68b,#f5a92b);color:#301508;font-size:15px;font-weight:1000}
+    #cf-app .cf-plinko-stake{flex:1;min-width:0;overflow:hidden}
+    #cf-app .cf-plinko-stake input{display:block;flex:1;min-width:0;width:100%;max-width:100%;font-size:clamp(12px,4vw,17px);font-variant-numeric:tabular-nums;padding:0}
+    #cf-app .cf-plinko-control-row{grid-template-columns:34px minmax(0,1fr) 34px repeat(4,minmax(27px,.62fr))}
+    @media(max-width:370px){#cf-app .cf-plinko-control-row{grid-template-columns:30px minmax(0,1fr) 30px repeat(4,minmax(24px,.58fr));gap:3px}#cf-app .cf-plinko-quick{font-size:9px}#cf-app .cf-plinko-stake{gap:2px;padding:8px 2px}}
     #cf-app .cf-plinko-footnote{margin-top:8px;text-align:center;color:#9e8ab8;font-size:10px}
     @media(max-width:370px){#cf-app .cf-plinko-control-row{grid-template-columns:32px minmax(65px,1fr) 32px repeat(4,minmax(27px,.6fr));gap:3px}#cf-app .cf-plinko-quick{font-size:9px}}
 #cf-app .cf-game-tile.plinko .cf-game-art:before{display:none}#cf-app .cf-game-tile.plinko .cf-game-emoji,#cf-app .cf-game-tile.plinko .cf-game-title{display:none}#cf-app .cf-game-tile.plinko{border-color:#e9bc61;box-shadow:0 0 16px #d79cff66,inset 0 0 0 1px #fff4}
@@ -692,7 +708,7 @@
   function plinko(){
     const multipliers=[8,3,1.8,1.3,1.1,0.8,0.5,0.8,1.1,1.3,1.8,3,8];
     const rows=Array.from({length:12},(_,r)=>'<div class="cf-plinko-row">'+Array.from({length:r+1},()=>'<i class="cf-plinko-peg"></i>').join('')+'</div>').join('');
-    return '<div class="section-title">🔮 PLINKO</div><section class="cf-plinko-shell"><div class="cf-plinko-heading"><div class="cf-plinko-brand">✦ COSMIC FORTUNE</div><div class="cf-plinko-title">PLINKO</div><div class="cf-plinko-subtitle">ПУТЬ К МНОЖИТЕЛЮ</div></div><div class="cf-plinko-board" id="cf-plinko-board"><div class="cf-plinko-rails"></div><div id="cf-plinko-ball" class="cf-plinko-ball"></div><div class="cf-plinko-pins">'+rows+'</div><div class="cf-plinko-bins">'+multipliers.map((m,i)=>'<div class="cf-plinko-bin '+(m>=3?'bin-gold':m>=1?'bin-blue':'bin-purple')+'" data-plinko-bin="'+i+'">'+m+'×</div>').join('')+'</div></div><div class="cf-plinko-controls"><div class="cf-plinko-label">СУММА СТАВКИ</div><div class="cf-plinko-control-row"><button type="button" class="cf-plinko-step" data-action="plinko-bet" data-mode="minus">−</button><div class="cf-plinko-stake">✦ <input id="cf-plinko-bet" type="number" inputmode="numeric" min="1" max="100000" step="1" value="1000" aria-label="Сумма ставки"></div><button type="button" class="cf-plinko-step" data-action="plinko-bet" data-mode="plus">+</button><button type="button" class="cf-plinko-quick" data-action="plinko-bet" data-mode="min">MIN</button><button type="button" class="cf-plinko-quick" data-action="plinko-bet" data-mode="half">1/2</button><button type="button" class="cf-plinko-quick" data-action="plinko-bet" data-mode="double">X2</button><button type="button" class="cf-plinko-quick" data-action="plinko-bet" data-mode="max">MAX</button></div></div><button type="button" class="cf-plinko-launch" data-action="plinko-play">▶　БРОСИТЬ ШАР</button><div id="cf-plinko-result" aria-live="polite" class="cf-plinko-result">Выбери ставку и запусти шарик</div><div class="cf-plinko-footnote">12 рядов · 13 секторов · серверный расчёт результата</div></section>';
+    return '<div class="section-title">🔮 PLINKO</div><section class="cf-plinko-shell"><div class="cf-plinko-heading"><div class="cf-plinko-brand">✦ COSMIC FORTUNE</div><div class="cf-plinko-title">PLINKO</div><div class="cf-plinko-subtitle">ПУТЬ К МНОЖИТЕЛЮ</div></div><div class="cf-plinko-board" id="cf-plinko-board"><div class="cf-plinko-rails"></div><div id="cf-plinko-ball" class="cf-plinko-ball"></div><div class="cf-plinko-pins">'+rows+'</div><div class="cf-plinko-bins">'+multipliers.map((m,i)=>'<div class="cf-plinko-bin '+(m>=3?'bin-gold':m>=1?'bin-blue':'bin-purple')+'" data-plinko-bin="'+i+'">'+m+'×</div>').join('')+'</div></div><div class="cf-plinko-controls"><div class="cf-plinko-label">СУММА СТАВКИ</div><div class="cf-plinko-control-row"><button type="button" class="cf-plinko-step" data-action="plinko-bet" data-mode="minus">−</button><div class="cf-plinko-stake">✦ <input id="cf-plinko-bet" type="number" inputmode="numeric" min="1" max="100000" step="1" value="1000" aria-label="Сумма ставки"></div><button type="button" class="cf-plinko-step" data-action="plinko-bet" data-mode="plus">+</button><button type="button" class="cf-plinko-quick" data-action="plinko-bet" data-mode="min">MIN</button><button type="button" class="cf-plinko-quick" data-action="plinko-bet" data-mode="half">1/2</button><button type="button" class="cf-plinko-quick" data-action="plinko-bet" data-mode="double">X2</button><button type="button" class="cf-plinko-quick" data-action="plinko-bet" data-mode="max">MAX</button></div></div><button type="button" class="cf-plinko-launch" data-action="plinko-play">▶　БРОСИТЬ ШАР</button><div class="cf-plinko-footnote">12 рядов · 13 секторов · серверный расчёт результата</div><div id="cf-plinko-win" class="cf-plinko-win-overlay" hidden><div class="cf-plinko-win-card"><div class="cf-plinko-win-spark">✦ ✧ ✦</div><div class="cf-plinko-win-caption">РАУНД ЗАВЕРШЁН</div><div class="cf-plinko-win-title">ВЫ ВЫИГРАЛИ</div><div id="cf-plinko-win-amount" class="cf-plinko-win-amount">0</div><div id="cf-plinko-win-multiplier" class="cf-plinko-win-multiplier">0×</div><div id="cf-plinko-win-balance" class="cf-plinko-win-balance"></div><button type="button" class="cf-plinko-win-close" data-action="plinko-win-close">ПРОДОЛЖИТЬ</button></div></div></section>';
   }
   const renderers={home,games:gameList,slots,dice,roulette,blackjack,miner,luckyjet,plinko,bonuses,profile,tournaments};
   let current='home',selected='Больше 7',opened=0;
@@ -817,6 +833,7 @@
     const mine=e.target.closest('[data-mine]'); if(mine){say('Эта игра ещё не подключена к серверу.');return}
     const choice=e.target.closest('[data-choice]');if(choice){selected=choice.dataset.choice;app.querySelectorAll('[data-choice],[data-number]').forEach(b=>{b.classList.toggle('is-selected',b===choice);b.style.borderColor=b===choice?'#ffdb73':''});return}const numberChoice=e.target.closest('[data-number]');if(numberChoice){selected=Number(numberChoice.dataset.number);app.querySelectorAll('[data-choice],[data-number]').forEach(b=>{b.classList.toggle('is-selected',b===numberChoice);b.style.borderColor=b===numberChoice?'#ffdb73':''});return}
     const action=e.target.closest('[data-action]');if(!action)return;
+    if(action.dataset.action==='plinko-win-close'){const win=app.querySelector('#cf-plinko-win');if(win)win.hidden=true;return}
     if(action.dataset.action==='plinko-bet'){
       const input=app.querySelector('#cf-plinko-bet');if(!input)return;
       let value=Math.max(1,Math.min(100000,Math.floor(Number(input.value)||1)));
@@ -830,9 +847,9 @@
       input.value=String(value);return
     }
     if(action.dataset.action==='plinko-play'){
-      const bet=Number(app.querySelector('#cf-plinko-bet')?.value),result=app.querySelector('#cf-plinko-result'),ball=app.querySelector('#cf-plinko-ball'),board=app.querySelector('#cf-plinko-board');
+      const bet=Number(app.querySelector('#cf-plinko-bet')?.value),win=app.querySelector('#cf-plinko-win'),ball=app.querySelector('#cf-plinko-ball'),board=app.querySelector('#cf-plinko-board');
       if(!Number.isSafeInteger(bet)||bet<1||bet>100000){say('Ставка должна быть от 1 до 100 000.');return}
-      action.disabled=true;action.textContent='ШАРИК ЛЕТИТ…';if(result)result.textContent='Шарик проходит через поле…';if(ball){ball.style.display='block';ball.style.transition='none';ball.style.left='50%';ball.style.top='4px'}
+      action.disabled=true;action.textContent='ШАРИК ЛЕТИТ…';if(win)win.hidden=true;if(ball){ball.style.display='block';ball.style.transition='none';ball.style.left='50%';ball.style.top='4px'}
       try{
         const d=await api('/api/plinko/play',{method:'POST',body:JSON.stringify({bet,requestId:crypto.randomUUID()})});
         const path=Array.isArray(d.outcome?.path)?d.outcome.path:[];
@@ -852,8 +869,12 @@
         if(winningBin)winningBin.classList.add('is-hit');
         syncBalance(d.balance);
         const m=Number(d.outcome?.multiplier||0),payout=Number(d.payout||0);
-        if(result)result.innerHTML='Множитель: <strong>'+m.toFixed(2)+'×</strong><br>Выплата: <strong>'+formatBalance(payout)+' ✦</strong><br><span style="color:#c8b7df">Баланс: '+formatBalance(d.balance)+' ✦</span>';
-      }catch(e){if(ball)ball.style.display='none';if(result)result.textContent=e.message;say(e.message)}
+        const amount=app.querySelector('#cf-plinko-win-amount'),mult=app.querySelector('#cf-plinko-win-multiplier'),bal=app.querySelector('#cf-plinko-win-balance');
+        if(amount)amount.textContent=formatBalance(payout)+' ✦';
+        if(mult)mult.textContent=m.toFixed(2).replace(/\\.00$/,'')+'×';
+        if(bal)bal.textContent='Баланс: '+formatBalance(d.balance)+' ✦';
+        if(win){win.hidden=false;const card=win.querySelector('.cf-plinko-win-card');if(card){card.classList.remove('is-show');void card.offsetWidth;card.classList.add('is-show')}}
+      }catch(e){if(ball)ball.style.display='none';say(e.message)}
       finally{action.disabled=false;action.textContent='БРОСИТЬ'}
       return
     }
