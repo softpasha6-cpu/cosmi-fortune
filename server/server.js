@@ -171,6 +171,42 @@ app.get('/api/me', requireUser, async (req, res) => {
 });
 
 
+
+const TOURNAMENT_GAMES = ['all','slots','roulette','blackjack','dice','miner','luckyjet','plinko'];
+function tournamentPoints(row) {
+  return 10 + (Number(row.payout) > Number(row.bet) ? 5 : 0);
+}
+app.get('/api/tournaments', requireUser, async (req,res,next) => {
+  try {
+    const period=['daily','weekly'].includes(req.query.period) ? req.query.period : 'daily';
+    const game=TOURNAMENT_GAMES.includes(req.query.game) ? req.query.game : 'all';
+    const interval=period==='weekly' ? "date_trunc('week', NOW())" : "date_trunc('day', NOW())";
+    const gameFilter=game==='all' ? '' : ' AND gt.game=$2';
+    const params=game==='all' ? [period] : [period,game];
+    const query=`
+      SELECT gt.telegram_id, p.username, p.first_name,
+        COUNT(*)::int AS rounds,
+        SUM(10 + CASE WHEN gt.payout > gt.bet THEN 5 ELSE 0 END)::int AS points
+      FROM game_transactions gt
+      JOIN players p ON p.telegram_id=gt.telegram_id
+      WHERE gt.bet > 0 AND gt.created_at >= ${interval}
+        AND gt.created_at < ${interval} + INTERVAL '1 ${period==='weekly'?'week':'day'}'
+        ${gameFilter}
+      GROUP BY gt.telegram_id,p.username,p.first_name
+      ORDER BY points DESC, rounds DESC, MIN(gt.created_at) ASC
+      LIMIT 50`;
+    const result=await pool.query(query,params.slice(1));
+    const me=result.rows.findIndex(r=>String(r.telegram_id)===String(req.player.telegram_id));
+    const mine=await pool.query(`
+      SELECT COUNT(*)::int AS rounds,
+        COALESCE(SUM(10 + CASE WHEN payout > bet THEN 5 ELSE 0 END),0)::int AS points
+      FROM game_transactions WHERE telegram_id=$1 AND bet>0
+        AND created_at >= ${interval} AND created_at < ${interval} + INTERVAL '1 ${period==='weekly'?'week':'day'}'
+        ${game==='all'?'':' AND game=$2'}`,game==='all'?[req.player.telegram_id]:[req.player.telegram_id,game]);
+    res.json({period,game,scoring:'10 очков за раунд + 5 за выигрышный раунд',leaders:result.rows.map((r,i)=>({place:i+1,telegramId:String(r.telegram_id),name:r.username?'@'+r.username:(r.first_name||'Игрок'),rounds:Number(r.rounds),points:Number(r.points)})),me:{place:me<0?null:me+1,rounds:Number(mine.rows[0].rounds),points:Number(mine.rows[0].points)}});
+  } catch(e) { next(e); }
+});
+
 const VIP_TASKS = [{"level":0,"key":"rounds","title":"Сыграй 3 раунда","kind":"rounds","target":3,"reward":1000},{"level":0,"key":"turnover","title":"Сделай ставок на 10 000","kind":"turnover","target":10000,"reward":2000},{"level":1,"key":"rounds","title":"Сыграй 5 раундов","kind":"rounds","target":5,"reward":2500},{"level":1,"key":"turnover","title":"Сделай ставок на 30 000","kind":"turnover","target":30000,"reward":5000},{"level":2,"key":"rounds","title":"Сыграй 8 раундов","kind":"rounds","target":8,"reward":5000},{"level":2,"key":"turnover","title":"Сделай ставок на 75 000","kind":"turnover","target":75000,"reward":10000},{"level":3,"key":"rounds","title":"Сыграй 10 раундов","kind":"rounds","target":10,"reward":10000},{"level":3,"key":"turnover","title":"Сделай ставок на 150 000","kind":"turnover","target":150000,"reward":20000},{"level":4,"key":"rounds","title":"Сыграй 15 раундов","kind":"rounds","target":15,"reward":25000},{"level":4,"key":"turnover","title":"Сделай ставок на 300 000","kind":"turnover","target":300000,"reward":50000}];
 function vipLevelForTurnover(total) {
   if (total >= 5000000) return 4;
