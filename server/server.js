@@ -236,7 +236,7 @@ app.get('/api/owner/stars-status',requireUser,async(req,res,next)=>{if(!ownerOnl
 app.post('/api/me/avatar', requireUser, async (req, res, next) => {
   try {
     const avatarDataUrl=req.body?.avatarDataUrl;
-    if(typeof avatarDataUrl!=='string'||avatarDataUrl.length>2500000||!/^data:image\\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(avatarDataUrl)){
+    if(typeof avatarDataUrl!=='string'||avatarDataUrl.length>2500000||!avatarDataUrl.startsWith('data:image/jpeg;base64,')||!/^[A-Za-z0-9+/]+={0,2}$/.test(avatarDataUrl.slice('data:image/jpeg;base64,'.length))){
       return res.status(400).json({error:'Не удалось сохранить фото. Выбери другое изображение.'});
     }
     const saved=await pool.query('UPDATE players SET avatar_data_url=$2,updated_at=NOW() WHERE telegram_id=$1 RETURNING telegram_id',[req.player.telegram_id,avatarDataUrl]);
