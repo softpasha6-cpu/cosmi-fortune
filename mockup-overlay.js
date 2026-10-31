@@ -524,6 +524,30 @@
   #cf-app.cf-compact-ui .cf-pref-row{min-height:52px}
   `;document.head.appendChild(cfSettingsPolish);
 
+
+  const cfVipCompact=document.createElement('style');cfVipCompact.textContent=`
+  #cf-app .cf-vip-card{margin:9px 0 7px!important;padding:10px 11px!important;border-radius:14px!important}
+  #cf-app .cf-vip-top{gap:7px!important;align-items:center!important}
+  #cf-app .cf-vip-kicker{font-size:8px!important;letter-spacing:1.1px!important;line-height:1.2!important}
+  #cf-app .cf-vip-name{font-size:18px!important;line-height:1.1!important;letter-spacing:.5px!important;margin-top:2px!important}
+  #cf-app .cf-vip-top .cf-vip-muted{font-size:9px!important;line-height:1.2!important;margin-top:2px!important}
+  #cf-app .cf-vip-emblem{width:38px!important;height:38px!important;flex:0 0 38px!important;border-radius:11px!important;font-size:21px!important}
+  #cf-app .cf-vip-progress-head{margin-top:7px!important;font-size:8px!important}
+  #cf-app .cf-vip-progress-head b{font-size:10px!important}
+  #cf-app .cf-vip-progress{height:7px!important;margin:4px 0 3px!important;padding:1px!important}
+  #cf-app .cf-vip-progress-label{font-size:8px!important;line-height:1.2!important}
+  #cf-app .cf-vip-next{margin-top:3px!important;font-size:9px!important;line-height:1.25!important}
+  #cf-app .cf-vip-levels{gap:4px!important;margin-top:8px!important}
+  #cf-app .cf-vip-level{display:flex!important;align-items:center!important;justify-content:center!important;gap:3px!important;min-height:25px!important;padding:3px 2px!important;border-radius:7px!important;font-size:7px!important;letter-spacing:.1px!important}
+  #cf-app .cf-vip-level span{display:inline!important;font-size:11px!important;margin:0!important}
+  #cf-app .cf-vip-benefits-title{margin:8px 0 4px!important;font-size:8px!important;letter-spacing:.8px!important}
+  #cf-app .cf-vip-benefits{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:4px!important;margin-top:4px!important}
+  #cf-app .cf-vip-benefit{gap:4px!important;min-height:30px!important;padding:5px 6px!important;border-radius:7px!important;font-size:8px!important;line-height:1.2!important}
+  #cf-app .cf-vip-benefit span{flex:0 0 auto!important}
+  #cf-app .cf-vip-footnote{margin:6px 0 0!important;font-size:8px!important;line-height:1.25!important}
+  @media(max-width:380px){#cf-app .cf-vip-level{font-size:6px!important;gap:2px!important}#cf-app .cf-vip-benefit{font-size:7px!important;padding:4px!important}}
+  `;document.head.appendChild(cfVipCompact);
+
   document.body.classList.add('cf-code-app');
   const app=document.createElement('div'); app.id='cf-app';
   app.innerHTML='<div class="shell"><div class="top"><div><div class="brand">✦ COSMIC FORTUNE</div><div class="sub">ТВОЯ УДАЧА В КОСМОСЕ</div></div><div class="balance"><span class="coin">✪</span><span id="cf-balance">—</span><button class="iconbtn" data-go="profile" aria-label="Пополнить">＋</button></div><button class="iconbtn" data-go="bonuses" aria-label="Бонусы">🎁</button></div><div id="cf-content"></div></div><nav class="bottom" aria-label="Навигация"><button data-go="home"><span class="navicon">⌂</span>Главная</button><button data-go="games" onclick="window.cfNavigate(this.dataset.go)"><span class="navicon">🎮</span>Игры</button><button data-go="bonuses"><span class="navicon">🎁</span>Бонусы</button><button data-go="tournaments"><span class="navicon">🏆</span>Турниры</button><button data-go="profile"><span class="navicon">♙</span>Профиль</button></nav><div class="toast" id="cf-toast"></div>';
