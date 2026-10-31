@@ -195,6 +195,7 @@ app.post('/api/promos/redeem',requireUser,async(req,res,next)=>{
   await client.query("ALTER TABLE promo_codes ADD COLUMN IF NOT EXISTS reward_stars INTEGER");
   await client.query("ALTER TABLE promo_codes ADD COLUMN IF NOT EXISTS promo_type TEXT NOT NULL DEFAULT 'credits'");
   await client.query("ALTER TABLE promo_codes ADD COLUMN IF NOT EXISTS author_comment TEXT");
+  await client.query("UPDATE promo_codes p SET author_comment=r.comment FROM promo_author_requests r WHERE r.promo_id=p.id AND p.author_comment IS NULL AND r.comment IS NOT NULL");
   await client.query("CREATE TABLE IF NOT EXISTS star_promo_claims(id BIGSERIAL PRIMARY KEY,promo_id BIGINT NOT NULL REFERENCES promo_codes(id),telegram_id BIGINT NOT NULL REFERENCES players(telegram_id),stars INTEGER NOT NULL,status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','paid')),created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),paid_at TIMESTAMPTZ,UNIQUE(promo_id,telegram_id))");
   const p=await client.query('SELECT id,code,reward_credits,reward_stars,promo_type,max_uses,used_count,author_telegram_id,commission_percent,author_comment,active,expires_at FROM promo_codes WHERE code=$1 FOR UPDATE',[code]);
   if(!p.rowCount){await client.query('ROLLBACK');return res.status(404).json({error:'Такого промокода не существует.'});}
