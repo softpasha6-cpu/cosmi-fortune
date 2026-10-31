@@ -199,3 +199,23 @@ CREATE TABLE IF NOT EXISTS promo_redemptions (
   UNIQUE(promo_id,telegram_id)
 );
 CREATE INDEX IF NOT EXISTS promo_redemptions_player_idx ON promo_redemptions(telegram_id,redeemed_at DESC);
+
+
+-- Player-submitted author promo codes; only owner approval activates them.
+
+CREATE TABLE IF NOT EXISTS promo_author_requests (
+ id BIGSERIAL PRIMARY KEY,
+ telegram_id BIGINT NOT NULL REFERENCES players(telegram_id) ON DELETE CASCADE,
+ code VARCHAR(32) NOT NULL,
+ reward_credits BIGINT NOT NULL CHECK (reward_credits >= 1000),
+ commission_percent NUMERIC(5,2) NOT NULL CHECK (commission_percent BETWEEN 5 AND 30),
+ max_uses INTEGER NOT NULL DEFAULT 0 CHECK (max_uses >= 0),
+ comment VARCHAR(200) NOT NULL DEFAULT '',
+ status VARCHAR(16) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
+ admin_note VARCHAR(300) NOT NULL DEFAULT '',
+ promo_id BIGINT REFERENCES promo_codes(id),
+ created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+ reviewed_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS promo_author_requests_player_idx ON promo_author_requests(telegram_id,created_at DESC);
+CREATE INDEX IF NOT EXISTS promo_author_requests_status_idx ON promo_author_requests(status,created_at DESC);
