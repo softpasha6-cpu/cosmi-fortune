@@ -533,6 +533,7 @@
   #cf-app.cf-no-glow .cf-vip-card,#cf-app.cf-no-glow .cf-profile-avatar{box-shadow:none!important}
   #cf-app.cf-compact-ui .cf-settings-panel{margin:7px 0}
   #cf-app.cf-compact-ui .cf-pref-row{min-height:52px}
+  #cf-app.cf-hide-balance .balance #cf-balance{filter:blur(7px);user-select:none}
   `;document.head.appendChild(cfSettingsPolish);
 
 
@@ -1149,10 +1150,11 @@
     if(key==='animations')app.classList.toggle('cf-no-animations',!on);
     if(key==='glow')app.classList.toggle('cf-no-glow',!on);
     if(key==='compact')app.classList.toggle('cf-compact-ui',on);
-    if(key==='hidebalance'){const b=app.querySelector('.balance #cf-balance');if(b)b.textContent=on?'••••••':(window.__cfBalanceText||b.textContent);}
+    if(key==='hidebalance')app.classList.toggle('cf-hide-balance',on);
     if(key==='haptics'&&on){try{window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light')}catch(e){}}
     if(key==='sounds'&&on){try{const C=window.AudioContext||window.webkitAudioContext;if(C){const c=new C(),o=c.createOscillator(),g=c.createGain();o.frequency.value=660;g.gain.value=.025;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.045);o.onended=()=>c.close()}}catch(e){}}
   }
+  app.addEventListener('click',e=>{const target=e.target.closest('button');if(!target)return;try{if(localStorage.getItem('cf-setting-haptics')!=='0')window.Telegram?.WebApp?.HapticFeedback?.selectionChanged?.()}catch(err){}try{if(localStorage.getItem('cf-setting-sounds')==='1'){const C=window.AudioContext||window.webkitAudioContext;if(C){const c=new C(),o=c.createOscillator(),g=c.createGain();o.frequency.value=520;g.gain.value=.012;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.025);o.onended=()=>c.close()}}}catch(err){}},true);
   function restoreCosmicSettings(){
     const keys=['animations','glow','compact','haptics','sounds','hidebalance'];
     keys.forEach(key=>{let on;try{const v=localStorage.getItem('cf-setting-'+key);on=v===null?({animations:true,glow:true,compact:false,haptics:true,sounds:false,hidebalance:false}[key]):v==='1'}catch(e){on=({animations:true,glow:true,compact:false,haptics:true,sounds:false,hidebalance:false}[key])}
