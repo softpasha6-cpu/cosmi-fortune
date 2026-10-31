@@ -573,6 +573,22 @@
   #cf-app .cf-avatar-edit:disabled{opacity:.65}
   `;document.head.appendChild(cfAvatarPickerStyle);
 
+  const cfAvatarCropStyle=document.createElement('style');cfAvatarCropStyle.textContent=`
+  #cf-avatar-crop-modal{position:fixed;z-index:999999;inset:0;display:flex;align-items:center;justify-content:center;padding:18px;background:#05030bdc;backdrop-filter:blur(9px)}
+  #cf-avatar-crop-modal .cf-avatar-crop-card{width:min(100%,360px);padding:17px;border:1px solid #8e66b0;border-radius:22px;background:linear-gradient(155deg,#21142f,#0b0914 75%);box-shadow:0 20px 70px #000b;color:#fff}
+  #cf-avatar-crop-modal .cf-avatar-crop-head{display:flex;align-items:center;justify-content:space-between;font-size:17px}
+  #cf-avatar-crop-modal .cf-avatar-crop-head button{width:30px;height:30px;border:1px solid #57406e;border-radius:50%;background:#21162f;color:#fff}
+  #cf-avatar-crop-modal p{margin:8px 0 15px;color:#bba9cc;font-size:11px;line-height:1.4;text-align:center}
+  #cf-avatar-crop-modal .cf-avatar-crop-stage{position:relative;width:min(76vw,280px);aspect-ratio:1;margin:0 auto 16px;overflow:hidden;border-radius:50%;border:3px solid #e6c477;box-shadow:0 0 0 100vmax #05030b55,0 0 25px #a56be977;touch-action:none}
+  #cf-avatar-crop-modal canvas{display:block;width:100%;height:100%;touch-action:none}
+  #cf-avatar-crop-modal .cf-avatar-crop-mask{pointer-events:none;position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 0 1px #fff6}
+  #cf-avatar-crop-modal .cf-avatar-zoom-label{display:flex;justify-content:space-between;align-items:center;color:#cdbbdf;font-size:11px;margin:4px 2px}
+  #cf-avatar-crop-modal input[type=range]{width:100%;accent-color:#d9b66c;margin:8px 0 17px}
+  #cf-avatar-crop-modal .cf-avatar-crop-actions{display:flex;gap:9px}
+  #cf-avatar-crop-modal .cf-avatar-crop-actions button{flex:1;min-height:43px;border:1px solid #6a4b83;border-radius:12px;background:#20152d;color:#eee;font-weight:700}
+  #cf-avatar-crop-modal .cf-avatar-crop-actions [data-crop-save]{border-color:#e1bf70;background:linear-gradient(110deg,#f3d58d,#b98536);color:#20152b}
+  `;document.head.appendChild(cfAvatarCropStyle);
+
   document.body.classList.add('cf-code-app');
   const app=document.createElement('div'); app.id='cf-app';
   app.innerHTML='<div class="shell"><div class="top"><div><div class="brand">✦ COSMIC FORTUNE</div><div class="sub">ТВОЯ УДАЧА В КОСМОСЕ</div></div><div class="balance"><span class="coin">✪</span><span id="cf-balance">—</span><button class="iconbtn" data-go="profile" aria-label="Пополнить">＋</button></div><button class="iconbtn" data-go="bonuses" aria-label="Бонусы">🎁</button></div><div id="cf-content"></div></div><nav class="bottom" aria-label="Навигация"><button data-go="home"><span class="navicon">⌂</span>Главная</button><button data-go="games" onclick="window.cfNavigate(this.dataset.go)"><span class="navicon">🎮</span>Игры</button><button data-go="bonuses"><span class="navicon">🎁</span>Бонусы</button><button data-go="tournaments"><span class="navicon">🏆</span>Турниры</button><button data-go="profile"><span class="navicon">♙</span>Профиль</button></nav><div class="toast" id="cf-toast"></div>';
@@ -762,20 +778,47 @@
       }else { avatar.textContent=''; avatar.style.backgroundImage='none'; }
     }
   }
-  async function compressProfileAvatar(file){
-    if(!file||!/^image\\//i.test(file.type))throw new Error('Выбери изображение из галереи.');
-    if(file.size>10*1024*1024)throw new Error('Фото должно быть не больше 10 МБ.');
-    const url=URL.createObjectURL(file);
-    try{
-      const img=await new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>reject(new Error('Не удалось открыть это изображение.'));image.src=url});
-      const side=Math.min(img.naturalWidth,img.naturalHeight),sx=(img.naturalWidth-side)/2,sy=(img.naturalHeight-side)/2;
-      const canvas=document.createElement('canvas');canvas.width=512;canvas.height=512;
-      const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Не удалось обработать изображение.');
-      ctx.drawImage(img,sx,sy,side,side,0,0,512,512);
-      const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.82));
-      if(!blob)throw new Error('Не удалось подготовить фото.');
-      return await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=()=>reject(new Error('Не удалось прочитать фото.'));reader.readAsDataURL(blob)});
-    }finally{URL.revokeObjectURL(url)}
+  let cfCropState=null;
+  function openAvatarCrop(file){
+    return new Promise((resolve,reject)=>{
+      if(!file||!/^image\\//i.test(file.type)){reject(new Error('Выбери изображение из галереи.'));return}
+      if(file.size>10*1024*1024){reject(new Error('Фото должно быть не больше 10 МБ.'));return}
+      const url=URL.createObjectURL(file),img=new Image();
+      img.onload=()=>{
+        const modal=document.createElement('div');modal.id='cf-avatar-crop-modal';modal.innerHTML='<div class="cf-avatar-crop-card"><div class="cf-avatar-crop-head"><b>Настрой аватар</b><button type="button" data-crop-cancel aria-label="Закрыть">✕</button></div><p>Перемещай фото пальцем и приближай, чтобы выбрать нужную область</p><div class="cf-avatar-crop-stage"><canvas id="cf-avatar-crop-canvas" width="320" height="320"></canvas><div class="cf-avatar-crop-mask"></div></div><div class="cf-avatar-zoom-label"><span>−</span><b>Масштаб</b><span>＋</span></div><input id="cf-avatar-zoom" type="range" min="1" max="3" step="0.01" value="1"><div class="cf-avatar-crop-actions"><button type="button" data-crop-cancel>Отмена</button><button type="button" data-crop-save>Сохранить аватар</button></div></div>';
+        document.body.appendChild(modal);
+        const canvas=modal.querySelector('canvas'),ctx=canvas.getContext('2d'),zoom=modal.querySelector('#cf-avatar-zoom');
+        const state={img,zoom:1,dx:0,dy:0,drag:null,canvas,ctx,modal,url};
+        cfCropState=state;
+        const draw=()=>{
+          const base=Math.max(320/img.naturalWidth,320/img.naturalHeight),scale=base*state.zoom;
+          const w=img.naturalWidth*scale,h=img.naturalHeight*scale;
+          const maxX=Math.max(0,(w-320)/2),maxY=Math.max(0,(h-320)/2);
+          state.dx=Math.max(-maxX,Math.min(maxX,state.dx));state.dy=Math.max(-maxY,Math.min(maxY,state.dy));
+          ctx.clearRect(0,0,320,320);ctx.fillStyle='#080610';ctx.fillRect(0,0,320,320);
+          ctx.drawImage(img,(320-w)/2+state.dx,(320-h)/2+state.dy,w,h);
+        };
+        state.draw=draw;draw();
+        zoom.addEventListener('input',()=>{state.zoom=Number(zoom.value);draw()});
+        const point=e=>{const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*320/r.width,y:(e.clientY-r.top)*320/r.height}};
+        canvas.addEventListener('pointerdown',e=>{state.drag=point(e);canvas.setPointerCapture(e.pointerId)});
+        canvas.addEventListener('pointermove',e=>{if(!state.drag)return;const p=point(e);state.dx+=p.x-state.drag.x;state.dy+=p.y-state.drag.y;state.drag=p;draw()});
+        const stop=()=>{state.drag=null};canvas.addEventListener('pointerup',stop);canvas.addEventListener('pointercancel',stop);
+        const cleanup=()=>{modal.remove();URL.revokeObjectURL(url);cfCropState=null};
+        modal.querySelectorAll('[data-crop-cancel]').forEach(btn=>btn.addEventListener('click',()=>{cleanup();resolve(null)}));
+        modal.querySelector('[data-crop-save]').addEventListener('click',()=>{
+          try{
+            const out=document.createElement('canvas');out.width=512;out.height=512;const o=out.getContext('2d');
+            const base=Math.max(320/img.naturalWidth,320/img.naturalHeight),scale=base*state.zoom;
+            const w=img.naturalWidth*scale,h=img.naturalHeight*scale;
+            o.drawImage(img,((320-w)/2+state.dx)/320*512,((320-h)/2+state.dy)/320*512,w/320*512,h/320*512);
+            const data=out.toDataURL('image/jpeg',0.84);cleanup();resolve(data);
+          }catch(err){cleanup();reject(err)}
+        });
+      };
+      img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Не удалось открыть это изображение.'))};
+      img.src=url;
+    });
   }
   async function refreshAccount(){
     renderTelegramProfileImmediately();
@@ -1142,7 +1185,7 @@
     const input=e.target,file=input.files?.[0];if(!file)return;
     const edit=app.querySelector('[data-action="choose-avatar"]');if(edit){edit.disabled=true;edit.textContent='…'}
     try{
-      const avatarDataUrl=await compressProfileAvatar(file);
+      const avatarDataUrl=await openAvatarCrop(file);if(!avatarDataUrl)return;
       const avatar=app.querySelector('#cf-profile-avatar');if(avatar)avatar.style.backgroundImage='url("'+avatarDataUrl+'")';
       await api('/api/me/avatar',{method:'POST',body:JSON.stringify({avatarDataUrl})});
       say('Фото профиля сохранено! ✨');
