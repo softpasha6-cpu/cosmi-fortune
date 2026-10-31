@@ -601,7 +601,7 @@ function playRound(game, bet, choice, activeSlotFeature=null) {
   }
   if (game === 'tower') {
     const floors=Number(choice?.floors),traps=Number(choice?.traps),path=choice?.path;
-    if (![3,5,8].includes(floors)||![1,2].includes(traps)||!Array.isArray(path)||path.length!==floors||path.some(v=>!Number.isInteger(v)||v<0||v>2))
+    if (![5,10,15,20].includes(floors)||![1,2].includes(traps)||!Array.isArray(path)||path.length!==floors||path.some(v=>!Number.isInteger(v)||v<0||v>2))
       throw Object.assign(new Error('Выбери 3, 5 или 8 этажей и по одной двери на каждом.'),{status:400});
     const safeCount=3-traps;
     const safeLanes=Array.from({length:floors},()=>{const lanes=[];while(lanes.length<safeCount){const lane=randInt(3);if(!lanes.includes(lane))lanes.push(lane)}return lanes});
