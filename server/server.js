@@ -178,7 +178,8 @@ app.post('/api/owner/promo-requests/:id/review',requireUser,async(req,res,next)=
   if(action==='approved'){
    const dup=await c.query('SELECT 1 FROM promo_codes WHERE code=$1',[r.code]);
    if(dup.rowCount){await c.query('ROLLBACK');return res.status(409).json({error:'Этот код уже занят.'})}
-   const p=await c.query("INSERT INTO promo_codes(code,reward_credits,max_uses,created_by,author_telegram_id,commission_percent,active) VALUES($1,$2,$3,$4,$4,$5,TRUE) RETURNING id",[r.code,r.reward_credits,r.max_uses,r.telegram_id,r.commission_percent]);promoId=p.rows[0].id;
+   await c.query("ALTER TABLE promo_codes ADD COLUMN IF NOT EXISTS author_comment TEXT");
+   const p=await c.query("INSERT INTO promo_codes(code,reward_credits,max_uses,created_by,author_telegram_id,commission_percent,author_comment,active) VALUES($1,$2,$3,$4,$4,$5,$6,TRUE) RETURNING id",[r.code,r.reward_credits,r.max_uses,r.telegram_id,r.commission_percent,r.comment||'']);promoId=p.rows[0].id;
   }
   await c.query('UPDATE promo_author_requests SET status=$2,admin_note=$3,promo_id=$4,reviewed_at=NOW() WHERE id=$1',[r.id,action,note,promoId]);await c.query('COMMIT');
   void notifyUser(String(r.telegram_id),action==='approved'?'🎉 Твой авторский промокод '+r.code+' одобрен и активирован!':'❌ Заявка на промокод '+r.code+' отклонена. '+note);
@@ -193,8 +194,9 @@ app.post('/api/promos/redeem',requireUser,async(req,res,next)=>{
   await client.query('BEGIN');
   await client.query("ALTER TABLE promo_codes ADD COLUMN IF NOT EXISTS reward_stars INTEGER");
   await client.query("ALTER TABLE promo_codes ADD COLUMN IF NOT EXISTS promo_type TEXT NOT NULL DEFAULT 'credits'");
+  await client.query("ALTER TABLE promo_codes ADD COLUMN IF NOT EXISTS author_comment TEXT");
   await client.query("CREATE TABLE IF NOT EXISTS star_promo_claims(id BIGSERIAL PRIMARY KEY,promo_id BIGINT NOT NULL REFERENCES promo_codes(id),telegram_id BIGINT NOT NULL REFERENCES players(telegram_id),stars INTEGER NOT NULL,status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','paid')),created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),paid_at TIMESTAMPTZ,UNIQUE(promo_id,telegram_id))");
-  const p=await client.query('SELECT id,code,reward_credits,reward_stars,promo_type,max_uses,used_count,author_telegram_id,commission_percent,active,expires_at FROM promo_codes WHERE code=$1 FOR UPDATE',[code]);
+  const p=await client.query('SELECT id,code,reward_credits,reward_stars,promo_type,max_uses,used_count,author_telegram_id,commission_percent,author_comment,active,expires_at FROM promo_codes WHERE code=$1 FOR UPDATE',[code]);
   if(!p.rowCount){await client.query('ROLLBACK');return res.status(404).json({error:'Такого промокода не существует.'});}
   const promo=p.rows[0],uid=String(req.player.telegram_id);
   if(!promo.active||(promo.expires_at&&new Date(promo.expires_at)<=new Date())){await client.query('ROLLBACK');return res.status(400).json({error:'Срок действия промокода истёк или он отключён.'});}
@@ -230,7 +232,7 @@ app.post('/api/promos/redeem',requireUser,async(req,res,next)=>{
   await client.query('COMMIT');
   void notifyUser(uid,'🎟 Промокод '+code+' активирован!\n✦ Начислено: '+reward.toLocaleString('ru-RU')+' кредитов.\n💰 Баланс: '+Number(player.rows[0].balance).toLocaleString('ru-RU')+' кредитов.');
   if(commission>0)void notifyUser(String(promo.author_telegram_id),'🌟 Твой авторский промокод '+code+' активирован!\nТвоя комиссия: '+commission.toLocaleString('ru-RU')+' кредитов ('+promo.commission_percent+'%).');
-  res.json({ok:true,code,reward,balance:Number(player.rows[0].balance),commissionForAuthor:commission});
+  res.json({ok:true,code,reward,balance:Number(player.rows[0].balance),commissionForAuthor:commission,authorComment:promo.author_comment||''});
  }catch(e){await client.query('ROLLBACK').catch(()=>{});if(e.code==='23505')return res.status(409).json({error:'Ты уже активировал этот промокод.'});next(e)}
  finally{client.release()}
 });
