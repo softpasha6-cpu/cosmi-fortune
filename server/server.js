@@ -143,6 +143,40 @@ app.get('/api/access/check', requireUser, async (req, res) => {
   res.json({...access,checkedAt:Date.now()});
 });
 function ownerOnly(req,res){if(String(req.player?.telegram_id)!==OWNER_TELEGRAM_ID){res.status(403).json({error:'Доступ только владельцу.'});return false}return true}
+app.post('/api/promos/redeem',requireUser,async(req,res,next)=>{
+ const code=String(req.body?.code||'').trim().toUpperCase();
+ if(!/^[A-Z0-9_-]{3,32}$/.test(code))return res.status(400).json({error:'Введи корректный промокод.'});
+ const client=await pool.connect();
+ try{
+  await client.query('BEGIN');
+  const p=await client.query('SELECT id,code,reward_credits,max_uses,used_count,author_telegram_id,commission_percent,active,expires_at FROM promo_codes WHERE code=$1 FOR UPDATE',[code]);
+  if(!p.rowCount){await client.query('ROLLBACK');return res.status(404).json({error:'Такого промокода не существует.'});}
+  const promo=p.rows[0],uid=String(req.player.telegram_id);
+  if(!promo.active||(promo.expires_at&&new Date(promo.expires_at)<=new Date())){await client.query('ROLLBACK');return res.status(400).json({error:'Срок действия промокода истёк или он отключён.'});}
+  if(Number(promo.max_uses)>0&&Number(promo.used_count)>=Number(promo.max_uses)){await client.query('ROLLBACK');return res.status(400).json({error:'Лимит активаций этого промокода исчерпан.'});}
+  if(String(promo.author_telegram_id||'')===uid){await client.query('ROLLBACK');return res.status(400).json({error:'Нельзя активировать собственный авторский промокод.'});}
+  const prior=await client.query('SELECT 1 FROM promo_redemptions WHERE promo_id=$1 AND telegram_id=$2',[promo.id,uid]);
+  if(prior.rowCount){await client.query('ROLLBACK');return res.status(409).json({error:'Ты уже активировал этот промокод.'});}
+  const reward=Number(promo.reward_credits),commission=promo.author_telegram_id?Math.floor(reward*Number(promo.commission_percent)/100):0;
+  const player=await client.query('UPDATE players SET balance=balance+$2,updated_at=NOW() WHERE telegram_id=$1 RETURNING balance',[uid,reward]);
+  if(!player.rowCount)throw new Error('Player balance record not found');
+  let authorBalance=null;
+  if(commission>0){
+   const author=await client.query('UPDATE players SET balance=balance+$2,updated_at=NOW() WHERE telegram_id=$1 RETURNING balance',[promo.author_telegram_id,commission]);
+   if(!author.rowCount)throw new Error('Promo author must have an app profile');
+   authorBalance=Number(author.rows[0].balance);
+  }
+  await client.query('INSERT INTO promo_redemptions(promo_id,telegram_id,reward_credits,commission_credits) VALUES($1,$2,$3,$4)',[promo.id,uid,reward,commission]);
+  await client.query('UPDATE promo_codes SET used_count=used_count+1 WHERE id=$1',[promo.id]);
+  await client.query("INSERT INTO game_transactions(telegram_id,game,bet,payout,balance_after,outcome,idempotency_key) VALUES($1,'bonus_wheel',0,$2,$3,$4::jsonb,$5)",[uid,reward,Number(player.rows[0].balance),JSON.stringify({type:'promo_redemption',code}), 'promo:user:'+promo.id+':'+uid]);
+  if(commission>0)await client.query("INSERT INTO game_transactions(telegram_id,game,bet,payout,balance_after,outcome,idempotency_key) VALUES($1,'bonus_wheel',0,$2,$3,$4::jsonb,$5)",[promo.author_telegram_id,commission,authorBalance,JSON.stringify({type:'promo_author_commission',code,redeemer:uid}), 'promo:author:'+promo.id+':'+uid]);
+  await client.query('COMMIT');
+  void notifyUser(uid,'🎟 Промокод '+code+' активирован!\n✦ Начислено: '+reward.toLocaleString('ru-RU')+' кредитов.\n💰 Баланс: '+Number(player.rows[0].balance).toLocaleString('ru-RU')+' кредитов.');
+  if(commission>0)void notifyUser(String(promo.author_telegram_id),'🌟 Твой авторский промокод '+code+' активирован!\nТвоя комиссия: '+commission.toLocaleString('ru-RU')+' кредитов ('+promo.commission_percent+'%).');
+  res.json({ok:true,code,reward,balance:Number(player.rows[0].balance),commissionForAuthor:commission});
+ }catch(e){await client.query('ROLLBACK').catch(()=>{});if(e.code==='23505')return res.status(409).json({error:'Ты уже активировал этот промокод.'});next(e)}
+ finally{client.release()}
+});
 app.post('/api/stars/invoice',requireUser,async(req,res,next)=>{try{const stars=Number(req.body?.stars),credits=CREDIT_PACKAGES[stars];if(!credits)return res.status(400).json({error:'Неизвестный пакет Stars.'});const payload='cfstars:'+crypto.randomUUID();await pool.query('INSERT INTO star_purchases(telegram_id,package_stars,credits,payload) VALUES($1,$2,$3,$4)',[req.player.telegram_id,stars,credits,payload]);const url=await tg('createInvoiceLink',{title:'Cosmic Fortune',description:credits.toLocaleString('en-US')+' virtual credits',payload,provider_token:'',currency:'XTR',prices:[{label:credits.toLocaleString('en-US')+' credits',amount:stars}]});res.json({url,stars,credits})}catch(e){next(e)}});
 app.get('/api/stars/purchases',requireUser,async(req,res,next)=>{try{const r=await pool.query('SELECT id,package_stars AS stars,credits,status,created_at,paid_at FROM star_purchases WHERE telegram_id=$1 ORDER BY created_at DESC LIMIT 50',[req.player.telegram_id]);res.json({purchases:r.rows})}catch(e){next(e)}});
 app.post('/api/stars/withdrawals',requireUser,async(req,res,next)=>{const credits=Number(req.body?.credits),stars=REWARD_PACKAGES[credits];if(!stars)return res.status(400).json({error:'Выбери доступный вариант.'});const c=await pool.connect();try{await c.query('BEGIN');const p=await c.query('SELECT balance FROM players WHERE telegram_id=$1 FOR UPDATE',[req.player.telegram_id]);if(!p.rowCount||Number(p.rows[0].balance)<credits){await c.query('ROLLBACK');return res.status(400).json({error:'Недостаточно кредитов.'})}await c.query('UPDATE players SET balance=balance-$2,updated_at=NOW() WHERE telegram_id=$1',[req.player.telegram_id,credits]);const q=await c.query('INSERT INTO withdrawal_requests(telegram_id,credits,reward_stars) VALUES($1,$2,$3) RETURNING id,status,created_at',[req.player.telegram_id,credits,stars]);await c.query('COMMIT');await notifyUser(req.player.telegram_id,'🎁 Cosmic Fortune — заявка принята.\n\n✦ Зарезервировано: '+credits.toLocaleString('ru-RU')+' кредитов\n⭐ Вознаграждение: '+stars+' Stars\n📌 Статус: ожидает проверки владельцем.');void notifyOwner('🎁 НОВАЯ ЗАЯВКА НА ВЫВОД\n\nИгрок: '+(req.player.username?'@'+req.player.username:req.player.telegram_id)+'\nTelegram ID: '+req.player.telegram_id+'\nКредитов: '+credits.toLocaleString('ru-RU')+'\nВознаграждение: '+stars+' Stars\nID заявки: '+q.rows[0].id+'\n\nОткрой бота и нажми /admin → Выплаты.');res.status(201).json({request:q.rows[0],balance:Number(p.rows[0].balance)-credits,message:'Заявка создана. Кредиты зарезервированы; владелец проверит её и вручную отправит подарок при одобрении.'})}catch(e){await c.query('ROLLBACK').catch(()=>{});next(e)}finally{c.release()}});
@@ -152,7 +186,7 @@ app.post('/api/owner/payment-webhook/setup',requireUser,async(req,res,next)=>{if
 app.post('/api/telegram/webhook',async(req,res)=>{try{const secret=(await pool.query("SELECT setting_value FROM app_settings WHERE setting_key='telegram_webhook_secret'")).rows[0]?.setting_value;if(!secret||req.get('X-Telegram-Bot-Api-Secret-Token')!==secret)return res.sendStatus(401);const u=req.body||{};const message=u.message;
 if(u.callback_query?.data&&String(u.callback_query.data).startsWith('admin:')){try{await handleAdminUpdate(u,{pool,tg,ownerId:OWNER_TELEGRAM_ID,notifyUser})}catch(adminError){console.error('Admin callback error:',adminError.message);await tg('sendMessage',{chat_id:u.callback_query.message?.chat?.id||u.callback_query.from.id,text:'⚠️ Не удалось выполнить действие админки. Проверь логи сервера.'}).catch(()=>{})}return res.json({ok:true})}
 if(message?.from?.id){await pool.query("INSERT INTO bot_users(telegram_id,username,first_name) VALUES($1,$2,$3) ON CONFLICT(telegram_id) DO UPDATE SET username=EXCLUDED.username,first_name=EXCLUDED.first_name,updated_at=NOW()",[String(message.from.id),message.from.username||null,message.from.first_name||'']);}
-if(message?.text&&(/^\/admin(?:@CosmicFortune_bot)?(?:\s|$)/i.test(message.text)||/^\/user(?:@CosmicFortune_bot)?\s+(.+)/i.test(message.text))){
+if(message?.text){
   try{await handleAdminUpdate(u,{pool,tg,ownerId:OWNER_TELEGRAM_ID,notifyUser})}
   catch(adminError){console.error('Admin command error:',adminError.message);await tg('sendMessage',{chat_id:message.chat.id,text:'⚠️ Не удалось выполнить действие админки. Проверь логи сервера.'}).catch(()=>{})}
   return res.json({ok:true})

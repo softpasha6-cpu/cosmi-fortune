@@ -109,6 +109,16 @@ async function lookup(chatId,term,{pool,tg}) {
  ]);
  return send(tg,chatId,'👤 КАРТОЧКА ИГРОКА\n\nИмя: '+(u.first_name||'—')+'\nUsername: '+(u.username?'@'+u.username:'—')+'\nTelegram ID: '+u.telegram_id+'\nБаланс: '+fmt(u.balance)+' кредитов\nРегистрация: '+stamp(u.created_at)+'\nАктивность: '+stamp(u.updated_at)+'\n\nРаундов: '+fmt(g.rows[0].n)+'\nСумма ставок: '+fmt(g.rows[0].bets)+'\nСумма выплат: '+fmt(g.rows[0].payouts)+'\nПокупки Stars: '+fmt(s.rows[0].n)+' ('+fmt(s.rows[0].stars)+' Stars)\nЗаявки на вывод: '+fmt(w.rows[0].total)+' (ожидают '+fmt(w.rows[0].pending)+')');
 }
+
+async function promoList(chatId,{pool,tg}) {
+ const r=await pool.query("SELECT id,code,reward_credits,max_uses,used_count,author_telegram_id::text author_id,commission_percent,active FROM promo_codes ORDER BY created_at DESC LIMIT 20");
+ if(!r.rowCount)return send(tg,chatId,'🎟 ПРОМОКОДЫ\n\nПромокодов пока нет.',back([[{text:'➕ Создать промокод',callback_data:'admin:promo:create'}]]));
+ const lines=r.rows.map(x=>'• '+x.code+' — '+fmt(x.reward_credits)+' кредитов\n  Активаций: '+fmt(x.used_count)+' / '+(Number(x.max_uses)>0?fmt(x.max_uses):'∞')+' · '+(x.author_id?'автор '+x.author_id+' ('+x.commission_percent+'%)':'без автора')+' · '+(x.active?'активен':'выключен'));
+ const rows=r.rows.filter(x=>x.active).map(x=>[{text:'⛔ Выключить '+x.code,callback_data:'admin:promo:off:'+x.id}]);
+ rows.unshift([{text:'➕ Создать промокод',callback_data:'admin:promo:create'}]);
+ return send(tg,chatId,'🎟 ПРОМОКОДЫ COSMIC FORTUNE\n\n'+lines.join('\n\n'),{inline_keyboard:[...rows,[{text:'↩️ Админ-меню',callback_data:'admin:home'}]]});
+}
+
 async function callback(q,deps) {
  const {pool,tg,ownerId,notifyUser}=deps;
  if(String(q.from?.id)!==String(ownerId)){await tg('answerCallbackQuery',{callback_query_id:q.id,text:'Доступ только владельцу.',show_alert:true});return true}
@@ -150,6 +160,7 @@ async function callback(q,deps) {
  }
  return true;
 }
+const promoWizard=new Set();
 export async function handleAdminUpdate(update,deps){
  const msg=update.message;
  if(update.callback_query?.data&&String(update.callback_query.data).startsWith('admin:'))return callback(update.callback_query,deps);

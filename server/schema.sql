@@ -173,3 +173,29 @@ CREATE TABLE IF NOT EXISTS vip_task_claims (
   PRIMARY KEY (telegram_id, task_date, task_key)
 );
 CREATE INDEX IF NOT EXISTS vip_task_claims_player_date_idx ON vip_task_claims(telegram_id, task_date);
+
+
+-- Promo codes: one redemption per player per code; author commissions are paid atomically.
+CREATE TABLE IF NOT EXISTS promo_codes (
+  id BIGSERIAL PRIMARY KEY,
+  code VARCHAR(32) NOT NULL UNIQUE,
+  reward_credits BIGINT NOT NULL CHECK (reward_credits > 0),
+  max_uses INTEGER NOT NULL DEFAULT 0 CHECK (max_uses >= 0),
+  used_count INTEGER NOT NULL DEFAULT 0 CHECK (used_count >= 0),
+  created_by BIGINT NOT NULL,
+  author_telegram_id BIGINT REFERENCES players(telegram_id),
+  commission_percent NUMERIC(5,2) NOT NULL DEFAULT 0 CHECK (commission_percent >= 0 AND commission_percent <= 50),
+  active BOOLEAN NOT NULL DEFAULT TRUE,
+  expires_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS promo_redemptions (
+  id BIGSERIAL PRIMARY KEY,
+  promo_id BIGINT NOT NULL REFERENCES promo_codes(id),
+  telegram_id BIGINT NOT NULL REFERENCES players(telegram_id),
+  reward_credits BIGINT NOT NULL CHECK (reward_credits > 0),
+  commission_credits BIGINT NOT NULL DEFAULT 0 CHECK (commission_credits >= 0),
+  redeemed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(promo_id,telegram_id)
+);
+CREATE INDEX IF NOT EXISTS promo_redemptions_player_idx ON promo_redemptions(telegram_id,redeemed_at DESC);
