@@ -50,7 +50,8 @@
     if(coin){e.preventDefault();e.stopImmediatePropagation();document.querySelectorAll('#cf-app .cf-coinflip-side').forEach(b=>{const chosen=b===coin;b.classList.toggle('active',chosen);b.classList.toggle('is-selected',chosen);b.setAttribute('aria-pressed',String(chosen))});return}
     const start=target.closest('#cf-app [data-action="play-game"][data-game="tower"]');
     if(start){
-      e.preventDefault();e.stopImmediatePropagation();if(busy||round)return;
+      e.preventDefault();e.stopImmediatePropagation();if(busy||(round&&round.status==='active'))return;
+      round=null;
       const bet=Number($('#cf-app #cf-bet')?.value),floors=Number($('#cf-tower-floors')?.value||10),traps=Number($('#cf-tower-traps')?.value||1);
       if(!Number.isSafeInteger(bet)||bet<1||bet>100000){toast('Ставка должна быть от 1 до 100 000.');return}
       busy=true;start.disabled=true;start.textContent='ЗАПУСКАЕМ…';
