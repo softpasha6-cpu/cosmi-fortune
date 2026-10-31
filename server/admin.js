@@ -165,6 +165,26 @@ export async function handleAdminUpdate(update,deps){
  const msg=update.message;
  if(update.callback_query?.data&&String(update.callback_query.data).startsWith('admin:'))return callback(update.callback_query,deps);
  if(!msg?.text)return false;
+
+ if(String(msg.from?.id)===String(deps.ownerId)&&promoWizard.has(String(msg.from.id))){
+  const raw=msg.text.trim();
+  if(/^\/cancel(?:@CosmicFortune_bot)?$/i.test(raw)){promoWizard.delete(String(msg.from.id));await deps.tg('sendMessage',{chat_id:msg.chat.id,text:'Создание промокода отменено.'});return true}
+  if(/^\/admin(?:@CosmicFortune_bot)?$/i.test(raw)){promoWizard.delete(String(msg.from.id));await home(msg.chat.id,deps.tg);return true}
+  const parts=raw.split('|').map(x=>x.trim());
+  if(parts.length!==5){await deps.tg('sendMessage',{chat_id:msg.chat.id,text:'Нужно 5 полей через |. Пример: COSMIC500 | 500 | 100 | - | 0'});return true}
+  const [codeRaw,rewardRaw,limitRaw,authorRaw,percentRaw]=parts;
+  const code=codeRaw.toUpperCase(),reward=Number(rewardRaw),limit=Number(limitRaw),author=authorRaw==='-'||!authorRaw?null:authorRaw,percent=Number(percentRaw);
+  if(!/^[A-Z0-9_-]{3,32}$/.test(code)||!Number.isSafeInteger(reward)||reward<1||reward>1000000000||!Number.isSafeInteger(limit)||limit<0||limit>1000000||(author!==null&&!/^\d{5,20}$/.test(author))||!Number.isFinite(percent)||percent<0||percent>50||(author===null&&percent!==0)||(author!==null&&percent<1)){
+   await deps.tg('sendMessage',{chat_id:msg.chat.id,text:'Проверь данные: код 3–32 символа, приз 1–1 000 000 000, лимит 0–1 000 000; автору нужен Telegram ID и процент 1–50. Без автора процент должен быть 0.'});return true;
+  }
+  try{
+   if(author){const exists=await deps.pool.query('SELECT 1 FROM players WHERE telegram_id=$1',[author]);if(!exists.rowCount){await deps.tg('sendMessage',{chat_id:msg.chat.id,text:'У автора должен быть профиль Cosmic Fortune. Попроси его один раз открыть приложение и повтори создание.'});return true}}
+   const q=await deps.pool.query('INSERT INTO promo_codes(code,reward_credits,max_uses,created_by,author_telegram_id,commission_percent) VALUES($1,$2,$3,$4,$5,$6) RETURNING id,code,reward_credits,max_uses,author_telegram_id,commission_percent',[code,reward,limit,deps.ownerId,author,percent]);
+   promoWizard.delete(String(msg.from.id));
+   await deps.tg('sendMessage',{chat_id:msg.chat.id,text:'✅ ПРОМОКОД СОЗДАН\n\nКод: '+q.rows[0].code+'\nПриз: '+fmt(reward)+' кредитов\nЛимит: '+(limit||'без ограничений')+'\n'+(author?'Автор: '+author+'\nКомиссия: '+percent+'% за каждую активацию':'Обычный промокод без автора')+'\n\nОдин аккаунт сможет активировать код только один раз.',reply_markup:back([[{text:'🎟 К списку промокодов',callback_data:'admin:promos'}]])});
+  }catch(e){await deps.tg('sendMessage',{chat_id:msg.chat.id,text:e.code==='23505'?'❌ Такой промокод уже существует. Придумай другой.':'❌ Не удалось создать промокод: '+String(e.message||e).slice(0,250)});}
+  return true;
+ }
  if(/^\/admin(?:@CosmicFortune_bot)?(?:\s|$)/i.test(msg.text)){
   if(String(msg.from?.id)!==String(deps.ownerId)){await deps.tg('sendMessage',{chat_id:msg.chat.id,text:'⛔ Панель управления доступна только владельцу.'});return true}
   await home(msg.chat.id,deps.tg);return true;
