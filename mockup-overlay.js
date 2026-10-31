@@ -446,6 +446,10 @@
     #cf-app .cf-tournament-me strong{grid-column:2;grid-row:1/3;color:#ffe09a;font-size:19px}
     #cf-app .cf-tournament-me b{color:#fff;font-size:15px}
     #cf-app .cf-tournament-note{font-size:10px;color:#bba9d0;margin:12px 2px}
+    #cf-app .cf-t-avatar{width:30px;height:30px;flex:0 0 30px;border-radius:50%;object-fit:cover;display:block;border:1.5px solid #d7b66b;background:#241638;box-shadow:0 0 9px #9a6cbb55}
+    #cf-app .cf-t-avatar-empty{display:grid;place-items:center;color:#e8c978;font-size:15px}
+    #cf-app .cf-t-player-identity{display:flex;align-items:center;gap:8px;min-width:0}
+    #cf-app .cf-t-player-identity b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     #cf-app .cf-tournament-row{display:grid;grid-template-columns:30px 1fr auto;gap:8px;align-items:center;padding:11px 4px;border-bottom:1px solid #39284b}
     #cf-app .cf-tournament-place{font-size:17px;text-align:center;color:#f4d47e}
     #cf-app .cf-tournament-player b,#cf-app .cf-tournament-player small{display:block;font-size:11px}
@@ -1148,6 +1152,10 @@
     return [h,m,sec].map(x=>String(x).padStart(2,'0')).join(':');
   }
   function tournamentClockUpdate(){const el=app.querySelector('#cf-tournament-countdown');if(el)el.textContent=tournamentTimeLeft();}
+  function tournamentAvatar(url){
+    const safe=typeof url==='string'&&url.startsWith('data:image/jpeg;base64,')&&/^[A-Za-z0-9+/]+={0,2}$/.test(url.slice(23))?url:'';
+    return safe?'<img class="cf-t-avatar" src="'+safe+'" alt="" loading="lazy">':'<span class="cf-t-avatar cf-t-avatar-empty">✦</span>';
+  }
   async function loadTournamentBoard(){
     const box=app.querySelector('#cf-tournament-board');if(!box)return;
     box.innerHTML='<p class="cf-vip-muted">Загружаем турнирную таблицу…</p>';
@@ -1155,13 +1163,13 @@
       const requestedPeriod=tournamentPeriod;const d=await api('/api/tournaments?period='+requestedPeriod+'&game=all');if(requestedPeriod!==tournamentPeriod)return;
       const prizes=tournamentPrizes[tournamentPeriod],leaders=d.leaders||[],top=leaders.slice(0,3);
       const safeName=v=>String(v||'Игрок').replace(/[<>]/g,'');
-      const podium=top.map((r,i)=>'<div class="cf-t-podium-item p'+(i+1)+'"><div class="cf-t-podium-cup">'+['🥇','🥈','🥉'][i]+'</div><b>'+safeName(r.name)+'</b><strong>'+formatBalance(r.points)+' ✦</strong><small>'+formatBalance(prizes[i])+' ₽</small><span>'+(i+1)+' МЕСТО</span></div>').join('');
+      const podium=top.map((r,i)=>'<div class="cf-t-podium-item p'+(i+1)+'"><div class="cf-t-podium-cup">'+['🥇','🥈','🥉'][i]+'</div><div class="cf-t-player-identity">'+tournamentAvatar(r.avatar)+'<b>'+safeName(r.name)+'</b></div><strong>'+formatBalance(r.points)+' ✦</strong><small>'+formatBalance(prizes[i])+' ₽</small><span>'+(i+1)+' МЕСТО</span></div>').join('');
       let progress='Сыграй раунды, чтобы попасть в рейтинг.';
       if(d.me.place&&d.me.place>1){const above=leaders[d.me.place-2];if(above)progress='До следующего места: '+formatBalance(Math.max(0,above.points-d.me.points+1))+' очков';}
       else if(d.me.place===1)progress='Ты сейчас на первом месте! Удерживай лидерство.';
       else if(leaders.length)progress='До попадания в топ-50: '+formatBalance(Math.max(0,leaders[leaders.length-1].points-d.me.points+1))+' очков';
-      const rows=leaders.slice(3).map(r=>'<div class="cf-tournament-row"><span class="cf-tournament-place">'+r.place+'</span><span class="cf-tournament-player"><b>'+safeName(r.name)+'</b><small>'+r.rounds+' раундов</small></span><strong>'+formatBalance(r.points)+' ✦</strong><em>Приз: '+formatBalance(prizes[3]||0)+' ₽</em></div>').join('');
-      const history=(d.previous||[]).length?(d.previous||[]).map((r,i)=>'<div class="cf-t-history-row"><span>'+['🥇','🥈','🥉'][i]+'</span><b>'+safeName(r.name)+'</b><small>'+formatBalance(r.points)+' очков</small></div>').join(''):'<p class="cf-vip-muted">Данные за предыдущий период пока отсутствуют.</p>';
+      const rows=leaders.slice(3).map(r=>'<div class="cf-tournament-row"><span class="cf-tournament-place">'+r.place+'</span><span class="cf-tournament-player"><span class="cf-t-player-identity">'+tournamentAvatar(r.avatar)+'<b>'+safeName(r.name)+'</b></span><small>'+r.rounds+' раундов</small></span><strong>'+formatBalance(r.points)+' ✦</strong><em>Приз: '+formatBalance(prizes[3]||0)+' ₽</em></div>').join('');
+      const history=(d.previous||[]).length?(d.previous||[]).map((r,i)=>'<div class="cf-t-history-row"><span>'+['🥇','🥈','🥉'][i]+'</span><span class="cf-t-player-identity">'+tournamentAvatar(r.avatar)+'<b>'+safeName(r.name)+'</b></span><small>'+formatBalance(r.points)+' очков</small></div>').join(''):'<p class="cf-vip-muted">Данные за предыдущий период пока отсутствуют.</p>';
       box.innerHTML='<div class="cf-timer-card"><span>⏳ ДО ЗАВЕРШЕНИЯ ТУРНИРА</span><strong id="cf-tournament-countdown">'+tournamentTimeLeft()+'</strong><small>Зачёт: слоты · Plinko · блэкджек · кости</small></div><div class="cf-t-podium">'+podium+'</div><div class="cf-t-prize-strip"><b>🏆 Призы турнира</b><span>1 место · '+formatBalance(prizes[0])+' ₽</span><span>2 место · '+formatBalance(prizes[1])+' ₽</span><span>3 место · '+formatBalance(prizes[2])+' ₽</span><span>4–10 места · '+formatBalance(prizes[3])+' ₽</span></div><div class="cf-tournament-me"><span>ТВОЙ РЕЗУЛЬТАТ</span><strong>'+(d.me.place?'№'+d.me.place:'Вне топ-50')+'</strong><b>'+formatBalance(d.me.points)+' очков</b><small>'+formatBalance(d.me.rounds)+' раундов</small></div><div class="cf-t-progress">'+progress+'</div><div class="cf-tournament-note">15 очков за выигрышный раунд в слотах, Plinko, блэкджеке и костях. Выплата должна быть больше ставки.</div><div class="cf-t-section-title">ОСТАЛЬНЫЕ УЧАСТНИКИ</div><div class="cf-tournament-list">'+(rows||'<p class="cf-vip-muted">Пока нет других участников.</p>')+'</div><div class="cf-t-section-title">ПРОШЛЫЙ ТУРНИР</div><div class="cf-t-history">'+history+'</div>';
       tournamentClockUpdate();
     }catch(e){box.innerHTML='<p class="cf-vip-muted">Не удалось загрузить турнир: '+String(e.message||e)+'</p>';}
