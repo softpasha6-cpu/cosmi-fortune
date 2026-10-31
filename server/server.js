@@ -4,6 +4,7 @@ import express from 'express';
 import cors from 'cors';
 import pg from 'pg';
 import { handleAdminUpdate } from './admin.js';
+import { registerTowerRoutes } from './tower.js';
 
 const { Pool } = pg;
 const app = express();
@@ -91,6 +92,8 @@ async function requireUser(req, res, next) {
     next(error);
   }
 }
+
+registerTowerRoutes({ app, pool, requireUser });
 
 app.get('/health', async (_req, res) => {
   try { await pool.query('SELECT 1'); res.json({ ok: true, database: 'connected' }); }
