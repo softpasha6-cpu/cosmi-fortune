@@ -200,16 +200,19 @@ app.post('/api/promos/redeem',requireUser,async(req,res,next)=>{
   if(!promo.active||(promo.expires_at&&new Date(promo.expires_at)<=new Date())){await client.query('ROLLBACK');return res.status(400).json({error:'Срок действия промокода истёк или он отключён.'});}
   if(Number(promo.max_uses)>0&&Number(promo.used_count)>=Number(promo.max_uses)){await client.query('ROLLBACK');return res.status(400).json({error:'Лимит активаций этого промокода исчерпан.'});}
   if(String(promo.author_telegram_id||'')===uid){await client.query('ROLLBACK');return res.status(400).json({error:'Нельзя активировать собственный авторский промокод.'});}
-  const prior=await client.query('SELECT 1 FROM promo_redemptions WHERE promo_id=$1 AND telegram_id=$2',[promo.id,uid]);
+  const prior=promo.promo_type==='stars'
+   ? await client.query('SELECT 1 FROM star_promo_claims WHERE promo_id=$1 AND telegram_id=$2',[promo.id,uid])
+   : await client.query('SELECT 1 FROM promo_redemptions WHERE promo_id=$1 AND telegram_id=$2',[promo.id,uid]);
   if(prior.rowCount){await client.query('ROLLBACK');return res.status(409).json({error:'Ты уже активировал этот промокод.'});}
   if(promo.promo_type==='stars'){
    const stars=Number(promo.reward_stars||0);if(!Number.isInteger(stars)||stars<1){await client.query('ROLLBACK');return res.status(400).json({error:'У промокода не настроена награда Stars.'})}
    await client.query('INSERT INTO star_promo_claims(promo_id,telegram_id,stars) VALUES($1,$2,$3)',[promo.id,uid,stars]);
+   await client.query('INSERT INTO promo_redemptions(promo_id,telegram_id,reward_credits,commission_credits) VALUES($1,$2,1,0)',[promo.id,uid]);
    await client.query('UPDATE promo_codes SET used_count=used_count+1 WHERE id=$1',[promo.id]);
    await client.query('COMMIT');
    void notifyUser(uid,'⭐ Промокод '+code+' принят. Заявка на '+stars+' Stars отправлена владельцу. После проверки Stars будут отправлены вручную.');
    void notifyOwner('⭐ ЗАЯВКА ПО ПРОМОКОДУ НА STARS\nИгрок: '+uid+'\nКод: '+code+'\nStars: '+stars+'\nОткрой админ-действия в приложении.');
-   return res.json({ok:true,starsPending:true,stars,message:'Заявка на '+stars+' Stars отправлена владельцу.'});
+   return res.json({ok:true,starsPending:true,stars,code,balance:Number(req.player.balance),reward:0,message:'Заявка на '+stars+' Stars отправлена владельцу.'});
   }
   const reward=Number(promo.reward_credits),commission=promo.author_telegram_id?Math.floor(reward*Number(promo.commission_percent)/100):0;
   const player=await client.query('UPDATE players SET balance=balance+$2,updated_at=NOW() WHERE telegram_id=$1 RETURNING balance',[uid,reward]);
