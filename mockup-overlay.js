@@ -760,6 +760,20 @@
   }
   const formatBalance=n=>Number(n).toLocaleString('ru-RU');
   const say=t=>{toast.textContent=t;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),3200)};
+  function setAvatarNode(node,url){
+    if(!node)return;
+    node.textContent='';
+    node.style.backgroundImage='none';
+    node.style.backgroundColor='#17102b';
+    node.dataset.customAvatar=url?'1':'0';
+    if(url){
+      const img=document.createElement('img');
+      img.src=url;img.alt='Аватар профиля';img.draggable=false;
+      img.style.cssText='display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;object-position:center!important;border:0!important;border-radius:50%!important;margin:0!important;padding:0!important;';
+      img.onerror=()=>{img.remove();node.dataset.customAvatar='0';node.textContent='✦'};
+      node.appendChild(img);
+    }else node.textContent='✦';
+  }
   function renderTelegramProfileImmediately(){
     const user=telegram?.initDataUnsafe?.user;
     if(!user)return;
@@ -771,57 +785,11 @@
     if(tag)tag.textContent=user.username?'@'+user.username:'Не задан';
     const telegramId=app.querySelector('#cf-profile-id');
     if(telegramId)telegramId.textContent=user.id?String(user.id):'—';
+    const photo=user.photo_url||null;
     const avatar=app.querySelector('#cf-profile-avatar');
-    if(avatar&&!avatar.dataset.customAvatar){
-      if(user.photo_url){
-        avatar.textContent='';
-        avatar.style.backgroundImage='url("'+String(user.photo_url).replace(/["\\\\]/g,'')+'")';
-        avatar.style.backgroundSize='cover';
-        avatar.style.backgroundPosition='center';
-        const settingsAvatar=app.querySelector('#cf-settings-avatar');if(settingsAvatar){settingsAvatar.textContent='';settingsAvatar.style.backgroundImage=avatar.style.backgroundImage;settingsAvatar.style.backgroundSize='cover';settingsAvatar.style.backgroundPosition='center';}
-      }else { avatar.textContent=''; avatar.style.backgroundImage='none'; }
-    }  }
-  let cfCropState=null;
-  function openAvatarCrop(file){
-    return new Promise((resolve,reject)=>{
-      if(!file||!/^image\\//i.test(file.type)){reject(new Error('Выбери изображение из галереи.'));return}
-      if(file.size>10*1024*1024){reject(new Error('Фото должно быть не больше 10 МБ.'));return}
-      const url=URL.createObjectURL(file),img=new Image();
-      img.onload=()=>{
-        const modal=document.createElement('div');modal.id='cf-avatar-crop-modal';modal.innerHTML='<div class="cf-avatar-crop-card"><div class="cf-avatar-crop-head"><b>Настрой аватар</b><button type="button" data-crop-cancel aria-label="Закрыть">✕</button></div><p>Перемещай фото пальцем и приближай, чтобы выбрать нужную область</p><div class="cf-avatar-crop-stage"><canvas id="cf-avatar-crop-canvas" width="320" height="320"></canvas><div class="cf-avatar-crop-mask"></div></div><div class="cf-avatar-zoom-label"><span>−</span><b>Масштаб</b><span>＋</span></div><input id="cf-avatar-zoom" type="range" min="1" max="3" step="0.01" value="1"><div class="cf-avatar-crop-actions"><button type="button" data-crop-cancel>Отмена</button><button type="button" data-crop-save>Сохранить аватар</button></div></div>';
-        document.body.appendChild(modal);
-        const canvas=modal.querySelector('canvas'),ctx=canvas.getContext('2d'),zoom=modal.querySelector('#cf-avatar-zoom');
-        const state={img,zoom:1,dx:0,dy:0,drag:null,canvas,ctx,modal,url};
-        cfCropState=state;
-        const draw=()=>{
-          const base=Math.max(320/img.naturalWidth,320/img.naturalHeight),scale=base*state.zoom;
-          const w=img.naturalWidth*scale,h=img.naturalHeight*scale;
-          const maxX=Math.max(0,(w-320)/2),maxY=Math.max(0,(h-320)/2);
-          state.dx=Math.max(-maxX,Math.min(maxX,state.dx));state.dy=Math.max(-maxY,Math.min(maxY,state.dy));
-          ctx.clearRect(0,0,320,320);ctx.fillStyle='#080610';ctx.fillRect(0,0,320,320);
-          ctx.drawImage(img,(320-w)/2+state.dx,(320-h)/2+state.dy,w,h);
-        };
-        state.draw=draw;draw();
-        zoom.addEventListener('input',()=>{state.zoom=Number(zoom.value);draw()});
-        const point=e=>{const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*320/r.width,y:(e.clientY-r.top)*320/r.height}};
-        canvas.addEventListener('pointerdown',e=>{state.drag=point(e);canvas.setPointerCapture(e.pointerId)});
-        canvas.addEventListener('pointermove',e=>{if(!state.drag)return;const p=point(e);state.dx+=p.x-state.drag.x;state.dy+=p.y-state.drag.y;state.drag=p;draw()});
-        const stop=()=>{state.drag=null};canvas.addEventListener('pointerup',stop);canvas.addEventListener('pointercancel',stop);
-        const cleanup=()=>{modal.remove();URL.revokeObjectURL(url);cfCropState=null};
-        modal.querySelectorAll('[data-crop-cancel]').forEach(btn=>btn.addEventListener('click',()=>{cleanup();resolve(null)}));
-        modal.querySelector('[data-crop-save]').addEventListener('click',()=>{
-          try{
-            const out=document.createElement('canvas');out.width=384;out.height=384;const o=out.getContext('2d');
-            const base=Math.max(320/img.naturalWidth,320/img.naturalHeight),scale=base*state.zoom;
-            const w=img.naturalWidth*scale,h=img.naturalHeight*scale;
-            o.drawImage(img,((320-w)/2+state.dx)/320*512,((320-h)/2+state.dy)/320*512,w/320*512,h/320*512);
-            const data=out.toDataURL('image/jpeg',0.72);cleanup();resolve(data);
-          }catch(err){cleanup();reject(err)}
-        });
-      };
-      img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Не удалось открыть это изображение.'))};
-      img.src=url;
-    });
+    if(avatar&&!avatar.dataset.customAvatar)setAvatarNode(avatar,photo);
+    const settingsAvatar=app.querySelector('#cf-settings-avatar');
+    if(settingsAvatar&&!settingsAvatar.dataset.customAvatar)setAvatarNode(settingsAvatar,photo);
   }
   async function refreshAccount(){
     renderTelegramProfileImmediately();
@@ -837,8 +805,7 @@
       const uname=app.querySelector('#cf-profile-username');if(uname)uname.textContent=data.player.username?'@'+data.player.username:'Имя пользователя Telegram не задано';
       const tag=app.querySelector('#cf-profile-tag');if(tag)tag.textContent=data.player.username?'@'+data.player.username:'Не задан';
       const telegramId=app.querySelector('#cf-profile-id');if(telegramId)telegramId.textContent=data.player.telegramId||'—';
-      const custom=!!data.player.avatarDataUrl;const photoUrl=data.player.avatarDataUrl||telegram?.initDataUnsafe?.user?.photo_url;const avatar=app.querySelector('#cf-profile-avatar');if(avatar){avatar.textContent='';if(custom)avatar.dataset.customAvatar='1';else delete avatar.dataset.customAvatar;avatar.style.backgroundImage=photoUrl?'url("'+String(photoUrl).replace(/["\\\\]/g,'')+'")':'none';avatar.style.backgroundSize='cover';avatar.style.backgroundPosition='center';}const settingsAvatar=app.querySelector('#cf-settings-avatar');if(settingsAvatar){settingsAvatar.textContent='';settingsAvatar.style.backgroundImage=photoUrl?'url("'+String(photoUrl).replace(/["\\\\]/g,'')+'")':'none';settingsAvatar.style.backgroundSize='cover';settingsAvatar.style.backgroundPosition='center';settingsAvatar.style.backgroundRepeat='no-repeat';settingsAvatar.style.borderRadius='50%';}
-      if(current==='profile'){renderVipCard(data.history||[],data.vip||{});loadVipTasks();}if(current==='settings'){const sn=app.querySelector('#cf-settings-name'),su=app.querySelector('#cf-settings-username');if(sn)sn.textContent=data.player.firstName||'Аккаунт Cosmic Fortune';if(su)su.textContent=data.player.username?'@'+data.player.username:'Профиль Telegram';loadPaymentHistory();}
+      const photoUrl=data.player.avatarDataUrl||telegram?.initDataUnsafe?.user?.photo_url||null;setAvatarNode(app.querySelector('#cf-profile-avatar'),photoUrl);setAvatarNode(app.querySelector('#cf-settings-avatar'),photoUrl);if(current==='profile'){renderVipCard(data.history||[],data.vip||{});loadVipTasks();}if(current==='settings'){const sn=app.querySelector('#cf-settings-name'),su=app.querySelector('#cf-settings-username');if(sn)sn.textContent=data.player.firstName||'Аккаунт Cosmic Fortune';if(su)su.textContent=data.player.username?'@'+data.player.username:'Профиль Telegram';loadPaymentHistory();}
     }catch(error){
       const balance=app.querySelector('#cf-balance');
       if(balance) balance.textContent='—';
@@ -1189,7 +1156,7 @@
     const edit=app.querySelector('[data-action="choose-avatar"]');if(edit){edit.disabled=true;edit.textContent='…'}
     try{
       const avatarDataUrl=await openAvatarCrop(file);if(!avatarDataUrl)return;
-      const avatar=app.querySelector('#cf-profile-avatar');if(avatar){avatar.style.backgroundImage='url("'+avatarDataUrl+'")';avatar.dataset.customAvatar='1';}const settingsAvatar=app.querySelector('#cf-settings-avatar');if(settingsAvatar){settingsAvatar.textContent='';settingsAvatar.style.backgroundImage='url("'+avatarDataUrl+'")';settingsAvatar.style.backgroundSize='cover';settingsAvatar.style.backgroundPosition='center';}
+      setAvatarNode(app.querySelector('#cf-profile-avatar'),avatarDataUrl);setAvatarNode(app.querySelector('#cf-settings-avatar'),avatarDataUrl);
       const saved=await api('/api/me/avatar',{method:'POST',body:JSON.stringify({avatarDataUrl})});
       if(!saved?.ok)throw new Error('Сервер не подтвердил сохранение фотографии.');
       say('Фото профиля сохранено! ✨');
