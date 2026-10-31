@@ -143,6 +143,48 @@ app.get('/api/access/check', requireUser, async (req, res) => {
   res.json({...access,checkedAt:Date.now()});
 });
 function ownerOnly(req,res){if(String(req.player?.telegram_id)!==OWNER_TELEGRAM_ID){res.status(403).json({error:'Доступ только владельцу.'});return false}return true}
+
+app.post('/api/promos/author-requests',requireUser,async(req,res,next)=>{
+ const code=String(req.body?.code||'').trim().toUpperCase(),reward=Number(req.body?.rewardCredits),percent=Number(req.body?.commissionPercent),maxUses=Number(req.body?.maxUses),comment=String(req.body?.comment||'').trim().slice(0,200);
+ if(!/^[A-Z0-9]{3,32}$/.test(code))return res.status(400).json({error:'Код должен содержать 3–32 латинские буквы или цифры.'});
+ if(!Number.isSafeInteger(reward)||reward<1000)return res.status(400).json({error:'Минимальная награда — 1 000 кредитов.'});
+ if(!Number.isFinite(percent)||percent<5||percent>30)return res.status(400).json({error:'Процент должен быть от 5% до 30%.'});
+ if(!Number.isSafeInteger(maxUses)||maxUses<0||maxUses>100000)return res.status(400).json({error:'Некорректный лимит активаций.'});
+ try{
+  const dup=await pool.query("SELECT 1 FROM promo_codes WHERE code=$1 UNION ALL SELECT 1 FROM promo_author_requests WHERE code=$1 AND status='pending' LIMIT 1",[code]);
+  if(dup.rowCount)return res.status(409).json({error:'Такой код уже существует или ожидает проверки.'});
+  const q=await pool.query("INSERT INTO promo_author_requests(telegram_id,code,reward_credits,commission_percent,max_uses,comment) VALUES($1,$2,$3,$4,$5,$6) RETURNING id,code,status,created_at",[req.player.telegram_id,code,reward,percent,maxUses,comment]);
+  void notifyOwner('🎟 НОВАЯ ЗАЯВКА НА АВТОРСКИЙ ПРОМОКОД\nКод: '+code+'\nИгрок: '+(req.player.username?'@'+req.player.username:req.player.telegram_id)+'\nНаграда: '+reward.toLocaleString('ru-RU')+'\nПроцент: '+percent+'%\nID заявки: '+q.rows[0].id);
+  res.status(201).json({ok:true,request:q.rows[0]});
+ }catch(e){next(e)}
+});
+app.get('/api/promos/author-requests',requireUser,async(req,res,next)=>{
+ try{const q=await pool.query('SELECT id,code,reward_credits,commission_percent,max_uses,comment,status,admin_note,created_at,reviewed_at FROM promo_author_requests WHERE telegram_id=$1 ORDER BY created_at DESC LIMIT 100',[req.player.telegram_id]);res.json({requests:q.rows})}catch(e){next(e)}
+});
+app.get('/api/owner/promo-requests',requireUser,async(req,res,next)=>{
+ if(!ownerOnly(req,res))return;
+ try{const q=await pool.query("SELECT r.*,p.username,p.first_name FROM promo_author_requests r LEFT JOIN players p ON p.telegram_id=r.telegram_id ORDER BY CASE WHEN r.status='pending' THEN 0 ELSE 1 END,r.created_at DESC LIMIT 200");res.json({requests:q.rows})}catch(e){next(e)}
+});
+app.post('/api/owner/promo-requests/:id/review',requireUser,async(req,res,next)=>{
+ if(!ownerOnly(req,res))return;
+ const action=String(req.body?.action||''),note=String(req.body?.note||'').slice(0,300);
+ if(!['approved','rejected'].includes(action))return res.status(400).json({error:'Неизвестное решение.'});
+ const c=await pool.connect();
+ try{
+  await c.query('BEGIN');const q=await c.query('SELECT * FROM promo_author_requests WHERE id=$1 FOR UPDATE',[req.params.id]);
+  if(!q.rowCount){await c.query('ROLLBACK');return res.status(404).json({error:'Заявка не найдена.'})}
+  const r=q.rows[0];if(r.status!=='pending'){await c.query('ROLLBACK');return res.status(409).json({error:'Заявка уже обработана.'})}
+  let promoId=null;
+  if(action==='approved'){
+   const dup=await c.query('SELECT 1 FROM promo_codes WHERE code=$1',[r.code]);
+   if(dup.rowCount){await c.query('ROLLBACK');return res.status(409).json({error:'Этот код уже занят.'})}
+   const p=await c.query("INSERT INTO promo_codes(code,reward_credits,max_uses,created_by,author_telegram_id,commission_percent,active) VALUES($1,$2,$3,$4,$4,$5,TRUE) RETURNING id",[r.code,r.reward_credits,r.max_uses,r.telegram_id,r.commission_percent]);promoId=p.rows[0].id;
+  }
+  await c.query('UPDATE promo_author_requests SET status=$2,admin_note=$3,promo_id=$4,reviewed_at=NOW() WHERE id=$1',[r.id,action,note,promoId]);await c.query('COMMIT');
+  void notifyUser(String(r.telegram_id),action==='approved'?'🎉 Твой авторский промокод '+r.code+' одобрен и активирован!':'❌ Заявка на промокод '+r.code+' отклонена. '+note);
+  res.json({ok:true,status:action,promoId});
+ }catch(e){await c.query('ROLLBACK').catch(()=>{});next(e)}finally{c.release()}
+});
 app.post('/api/promos/redeem',requireUser,async(req,res,next)=>{
  const code=String(req.body?.code||'').trim().toUpperCase();
  if(!/^[A-Z0-9_-]{3,32}$/.test(code))return res.status(400).json({error:'Введи корректный промокод.'});
