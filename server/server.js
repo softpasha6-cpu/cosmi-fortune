@@ -281,7 +281,7 @@ async function settleDueTournaments() {
         const next=await client.query('SELECT $1::timestamptz + $2::interval AS period_end',[periodStart,unit==='day'?'1 day':'1 week']);
         const periodEnd=next.rows[0].period_end;
         const winners=await client.query(`
-          SELECT gt.telegram_id,p.first_name,COUNT(*)::int AS rounds,
+          SELECT gt.telegram_id,p.first_name,p.avatar_data_url,COUNT(*)::int AS rounds,
             (COUNT(*)*15)::int AS points,MIN(gt.created_at) AS first_win
           FROM game_transactions gt
           JOIN players p ON p.telegram_id=gt.telegram_id
@@ -338,7 +338,7 @@ app.get('/api/tournaments', requireUser, async (req,res,next) => {
       WHERE gt.game=ANY($1::text[]) AND gt.bet>0 AND gt.payout>gt.bet
         AND gt.created_at >= ${interval}
         AND gt.created_at < ${interval} + INTERVAL '1 ${unit}'
-      GROUP BY gt.telegram_id,p.first_name
+      GROUP BY gt.telegram_id,p.first_name,p.avatar_data_url
       ORDER BY points DESC,rounds DESC,MIN(gt.created_at) ASC LIMIT 50`;
     const result=await pool.query(query,[TOURNAMENT_GAMES]);
     const me=result.rows.findIndex(r=>String(r.telegram_id)===String(req.player.telegram_id));
@@ -350,22 +350,23 @@ app.get('/api/tournaments', requireUser, async (req,res,next) => {
         AND created_at < ${interval} + INTERVAL '1 ${unit}'`,
       [req.player.telegram_id,TOURNAMENT_GAMES]);
     const previous=await pool.query(`
-      SELECT p.first_name,COUNT(*)::int AS rounds,(COUNT(*)*15)::int AS points
+      SELECT p.first_name,p.avatar_data_url,COUNT(*)::int AS rounds,(COUNT(*)*15)::int AS points
       FROM game_transactions gt JOIN players p ON p.telegram_id=gt.telegram_id
       WHERE gt.game=ANY($1::text[]) AND gt.bet>0 AND gt.payout>gt.bet
         AND gt.created_at >= ${interval} - INTERVAL '1 ${unit}'
         AND gt.created_at < ${interval}
-      GROUP BY gt.telegram_id,p.first_name
+      GROUP BY gt.telegram_id,p.first_name,p.avatar_data_url
       ORDER BY points DESC,rounds DESC LIMIT 3`,
       [TOURNAMENT_GAMES]);
     const displayName=r=>String(r.first_name||'').trim()||'Игрок';
+    const displayAvatar=r=>typeof r.avatar_data_url==='string'&&r.avatar_data_url.startsWith('data:image/jpeg;base64,')?r.avatar_data_url:null;
     res.set('Cache-Control','no-store, max-age=0');
     res.json({
       period,game:'selected',
       eligibleGames:TOURNAMENT_GAMES,
       scoring:'15 очков за выигрышный раунд в слотах, Plinko, блэкджеке и костях',
-      previous:previous.rows.map((r,i)=>({place:i+1,name:displayName(r),points:Number(r.points)})),
-      leaders:result.rows.map((r,i)=>({place:i+1,name:displayName(r),rounds:Number(r.rounds),points:Number(r.points)})),
+      previous:previous.rows.map((r,i)=>({place:i+1,name:displayName(r),avatar:displayAvatar(r),points:Number(r.points)})),
+      leaders:result.rows.map((r,i)=>({place:i+1,name:displayName(r),avatar:displayAvatar(r),rounds:Number(r.rounds),points:Number(r.points)})),
       me:{place:me<0?null:me+1,rounds:Number(mine.rows[0].rounds),points:Number(mine.rows[0].points)}
     });
   } catch(e) { next(e); }
