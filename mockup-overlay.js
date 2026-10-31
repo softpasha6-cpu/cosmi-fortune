@@ -763,40 +763,45 @@
 
   function openAvatarCrop(file){
     return new Promise((resolve,reject)=>{
-      if(!file||!String(file.type||'').startsWith('image/')){reject(new Error('Выбери изображение из галереи.'));return;}
-      const objectUrl=URL.createObjectURL(file),img=new Image();
-      let settled=false,scale=1,minScale=1,offsetX=0,offsetY=0,drag=null;
-      const finish=value=>{if(settled)return;settled=true;window.removeEventListener('keydown',onKey);modal.remove();URL.revokeObjectURL(objectUrl);resolve(value);};
-      const modal=document.createElement('div');modal.id='cf-avatar-crop-modal';
-      modal.innerHTML='<div class="cf-avatar-crop-card"><div class="cf-avatar-crop-head"><b>Настройка аватара</b><button type="button" data-crop-cancel aria-label="Закрыть">✕</button></div><p>Передвигай фотографию пальцем и настрой масштаб. В круг попадёт именно эта область.</p><div class="cf-avatar-crop-stage"><canvas width="512" height="512"></canvas><div class="cf-avatar-crop-mask"></div></div><div class="cf-avatar-zoom-label"><span>Масштаб</span><b data-zoom-value>100%</b></div><input data-crop-zoom type="range" min="1" max="3" step="0.01" value="1"><div class="cf-avatar-crop-actions"><button type="button" data-crop-cancel>Отмена</button><button type="button" data-crop-save>Сохранить</button></div></div>';
-      document.body.appendChild(modal);
-      const canvas=modal.querySelector('canvas'),ctx=canvas.getContext('2d'),stage=modal.querySelector('.cf-avatar-crop-stage'),zoom=modal.querySelector('[data-crop-zoom]'),zoomValue=modal.querySelector('[data-zoom-value]');
-      const size=512;
-      const draw=()=>{
-        if(!img.naturalWidth)return;
-        ctx.clearRect(0,0,size,size);
-        const base=Math.max(size/img.naturalWidth,size/img.naturalHeight);
-        const w=img.naturalWidth*base*scale,h=img.naturalHeight*base*scale;
-        const maxX=Math.max(0,(w-size)/2),maxY=Math.max(0,(h-size)/2);
-        offsetX=Math.max(-maxX,Math.min(maxX,offsetX));offsetY=Math.max(-maxY,Math.min(maxY,offsetY));
-        ctx.save();ctx.beginPath();ctx.arc(size/2,size/2,size/2,0,Math.PI*2);ctx.clip();
-        ctx.drawImage(img,(size-w)/2+offsetX,(size-h)/2+offsetY,w,h);ctx.restore();
-        zoom.value=String(scale);zoomValue.textContent=Math.round(scale*100)+'%';
+      if(!file||!file.type||!file.type.startsWith('image/')){reject(new Error('Файл не является изображением.'));return;}
+      const reader=new FileReader();
+      reader.onerror=()=>reject(new Error('Не удалось прочитать фотографию из галереи.'));
+      reader.onload=()=>{
+        const img=new Image();
+        img.onerror=()=>reject(new Error('Не удалось открыть эту фотографию.'));
+        img.onload=()=>{
+          try{
+            const modal=document.createElement('div');
+            modal.id='cf-avatar-crop-modal';
+            modal.style.cssText='position:fixed!important;z-index:2147483647!important;inset:0!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:16px!important;background:rgba(4,2,12,.96)!important;box-sizing:border-box!important;';
+            modal.innerHTML='<div style="width:min(100%,360px);padding:18px;border:1px solid #a477ce;border-radius:22px;background:linear-gradient(155deg,#24133b,#090711);color:white;box-sizing:border-box;text-align:center"><div style="display:flex;justify-content:space-between;align-items:center;font-size:18px;font-weight:700"><span>Настройка аватара</span><button type="button" data-crop-cancel style="width:36px;height:36px;border-radius:50%;background:#30203e;color:white;border:1px solid #76579a">✕</button></div><p style="font-size:12px;color:#cdbbdc;line-height:1.5">Передвигай фото пальцем. Настрой масштаб — всё внутри золотого круга станет аватаркой.</p><div data-crop-stage style="position:relative;width:min(76vw,280px);height:min(76vw,280px);margin:14px auto 18px;border-radius:50%;overflow:hidden;border:3px solid #edc66f;box-shadow:0 0 0 100vmax rgba(0,0,0,.35),0 0 25px #a56be9;touch-action:none;background:#130b20"><canvas width="512" height="512" style="display:block;width:100%;height:100%;touch-action:none"></canvas></div><div style="display:flex;justify-content:space-between;color:#d7c5e8;font-size:12px"><span>Масштаб</span><b data-zoom-value>100%</b></div><input data-crop-zoom type="range" min="1" max="4" step=".01" value="1" style="width:100%;accent-color:#e5c16d;margin:12px 0 18px"><div style="display:flex;gap:10px"><button type="button" data-crop-cancel style="flex:1;min-height:46px;border-radius:12px;background:#21172e;color:white;border:1px solid #76579a">Отмена</button><button type="button" data-crop-save style="flex:1;min-height:46px;border-radius:12px;background:linear-gradient(110deg,#f3d58d,#b98536);color:#20152b;border:0;font-weight:800">Сохранить</button></div></div>';
+            document.body.appendChild(modal);
+            const canvas=modal.querySelector('canvas'),ctx=canvas.getContext('2d'),stage=modal.querySelector('[data-crop-stage]'),zoom=modal.querySelector('[data-crop-zoom]'),zoomText=modal.querySelector('[data-zoom-value]');
+            const W=512;let scale=1,ox=0,oy=0,drag=null,closed=false;
+            const draw=()=>{
+              const base=Math.max(W/img.naturalWidth,W/img.naturalHeight),w=img.naturalWidth*base*scale,h=img.naturalHeight*base*scale;
+              const limX=Math.max(0,(w-W)/2),limY=Math.max(0,(h-W)/2);
+              ox=Math.max(-limX,Math.min(limX,ox));oy=Math.max(-limY,Math.min(limY,oy));
+              ctx.clearRect(0,0,W,W);ctx.save();ctx.beginPath();ctx.arc(W/2,W/2,W/2,0,Math.PI*2);ctx.clip();ctx.drawImage(img,(W-w)/2+ox,(W-h)/2+oy,w,h);ctx.restore();
+              zoomText.textContent=Math.round(scale*100)+'%';
+            };
+            const close=value=>{if(closed)return;closed=true;window.removeEventListener('keydown',key);modal.remove();resolve(value)};
+            const key=e=>{if(e.key==='Escape')close(null)};
+            modal.querySelectorAll('[data-crop-cancel]').forEach(x=>x.addEventListener('click',()=>close(null)));
+            zoom.addEventListener('input',()=>{const next=Number(zoom.value);ox*=next/scale;oy*=next/scale;scale=next;draw()});
+            stage.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,ox,oy};try{stage.setPointerCapture(e.pointerId)}catch(_){}});
+            stage.addEventListener('pointermove',e=>{if(!drag)return;const r=stage.getBoundingClientRect();ox=drag.ox+(e.clientX-drag.x)*W/r.width;oy=drag.oy+(e.clientY-drag.y)*W/r.height;draw()});
+            ['pointerup','pointercancel','lostpointercapture'].forEach(n=>stage.addEventListener(n,()=>{drag=null}));
+            modal.querySelector('[data-crop-save]').addEventListener('click',()=>{
+              try{draw();const out=document.createElement('canvas');out.width=512;out.height=512;const c=out.getContext('2d');c.drawImage(canvas,0,0);close(out.toDataURL('image/jpeg',.82))}
+              catch(err){close(null);reject(err)}
+            });
+            window.addEventListener('keydown',key);draw();
+          }catch(err){reject(err)}
+        };
+        img.src=String(reader.result);
       };
-      const onKey=e=>{if(e.key==='Escape')finish(null)};
-      modal.querySelectorAll('[data-crop-cancel]').forEach(b=>b.addEventListener('click',()=>finish(null)));
-      modal.querySelector('[data-crop-save]').addEventListener('click',()=>{
-        try{draw();const out=document.createElement('canvas');out.width=512;out.height=512;const o=out.getContext('2d');o.save();o.beginPath();o.arc(256,256,256,0,Math.PI*2);o.clip();o.drawImage(canvas,0,0);o.restore();finish(out.toDataURL('image/jpeg',0.86));}
-        catch(e){finish(null);reject(e)}
-      });
-      zoom.addEventListener('input',()=>{const old=scale;scale=Number(zoom.value);if(old!==scale){offsetX*=scale/old;offsetY*=scale/old;}draw();});
-      stage.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,ox:offsetX,oy:offsetY};stage.setPointerCapture?.(e.pointerId);});
-      stage.addEventListener('pointermove',e=>{if(!drag)return;const r=stage.getBoundingClientRect();offsetX=drag.ox+(e.clientX-drag.x)*size/r.width;offsetY=drag.oy+(e.clientY-drag.y)*size/r.height;draw();});
-      const stop=()=>{drag=null};stage.addEventListener('pointerup',stop);stage.addEventListener('pointercancel',stop);
-      window.addEventListener('keydown',onKey);
-      img.onload=()=>{minScale=1;scale=1;offsetX=0;offsetY=0;draw();};
-      img.onerror=()=>{finish(null);reject(new Error('Не удалось открыть это изображение. Попробуй другое фото.'))};
-      img.src=objectUrl;
+      reader.readAsDataURL(file);
     });
   }
 
@@ -1190,19 +1195,27 @@
     const openWheel=target.closest('#cf-app [data-action="open-bonus-wheel"]');
     if(openWheel){e.preventDefault();e.stopPropagation();openBonusWheel();}
   }, true);
-  app.addEventListener('change',async e=>{
-    if(e.target?.id!=='cf-avatar-file')return;
-    const input=e.target,file=input.files?.[0];if(!file)return;
-    const edit=app.querySelector('[data-action="choose-avatar"]');if(edit){edit.disabled=true;edit.textContent='…'}
+  document.addEventListener('change',async e=>{
+    const input=e.target;
+    if(!(input instanceof HTMLInputElement)||input.id!=='cf-avatar-file')return;
+    const file=input.files&&input.files[0];if(!file)return;
+    const edit=app.querySelector('[data-action="choose-avatar"]');
+    if(edit){edit.disabled=true;edit.textContent='…'}
     try{
-      const avatarDataUrl=await openAvatarCrop(file);if(!avatarDataUrl)return;
-      setAvatarNode(app.querySelector('#cf-profile-avatar'),avatarDataUrl);setAvatarNode(app.querySelector('#cf-settings-avatar'),avatarDataUrl);
-      const saved=await api('/api/me/avatar',{method:'POST',body:JSON.stringify({avatarDataUrl})});
-      if(!saved?.ok)throw new Error('Сервер не подтвердил сохранение фотографии.');
-      say('Фото профиля сохранено! ✨');
-    }catch(error){say(error.message||'Не удалось сохранить фото.');await refreshAccount()}
+      const avatarDataUrl=await openAvatarCrop(file);
+      if(!avatarDataUrl)return;
+      setAvatarNode(app.querySelector('#cf-profile-avatar'),avatarDataUrl);
+      setAvatarNode(app.querySelector('#cf-settings-avatar'),avatarDataUrl);
+      try{
+        const saved=await api('/api/me/avatar',{method:'POST',body:JSON.stringify({avatarDataUrl})});
+        if(!saved||saved.ok!==true)throw new Error('Сервер не подтвердил сохранение фотографии.');
+        say('Фото профиля сохранено! ✨');
+      }catch(saveError){
+        say('Фото показано, но сервер не сохранил его: '+(saveError.message||'ошибка'));
+      }
+    }catch(error){say(error.message||'Не удалось открыть фотографию.')}
     finally{input.value='';if(edit){edit.disabled=false;edit.textContent='📷'}}
-  });
+  },true);
   app.addEventListener('change',e=>{if(e.target?.id==='cf-miner-size'){const size=Number(e.target.value),mineSelect=app.querySelector('#cf-miner-mines');if(mineSelect){const max=size*size-1;Array.from(mineSelect.options).forEach(o=>{o.disabled=Number(o.value)>max});if(Number(mineSelect.value)>max)mineSelect.value='3';}const grid=app.querySelector('#cf-miner-grid');if(grid&&!minerRound){grid.style.gridTemplateColumns='repeat('+size+',minmax(0,1fr))';grid.innerHTML=Array.from({length:size*size},(_,i)=>'<button data-miner-tile="'+i+'" style="aspect-ratio:1;border:1px solid #7044a8;border-radius:10px;background:#180b30;color:#d9aaff;font-size:24px">✦</button>').join('')}}});
   let cfGesture=null,cfBlockClickUntil=0;
   document.addEventListener('touchstart',e=>{const p=e.touches&&e.touches[0];if(p)cfGesture={x:p.clientX,y:p.clientY,moved:false};},{passive:true,capture:true});
