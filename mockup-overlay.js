@@ -760,6 +760,46 @@
   }
   const formatBalance=n=>Number(n).toLocaleString('ru-RU');
   const say=t=>{toast.textContent=t;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),3200)};
+
+  function openAvatarCrop(file){
+    return new Promise((resolve,reject)=>{
+      if(!file||!String(file.type||'').startsWith('image/')){reject(new Error('Выбери изображение из галереи.'));return;}
+      const objectUrl=URL.createObjectURL(file),img=new Image();
+      let settled=false,scale=1,minScale=1,offsetX=0,offsetY=0,drag=null;
+      const finish=value=>{if(settled)return;settled=true;window.removeEventListener('keydown',onKey);modal.remove();URL.revokeObjectURL(objectUrl);resolve(value);};
+      const modal=document.createElement('div');modal.id='cf-avatar-crop-modal';
+      modal.innerHTML='<div class="cf-avatar-crop-card"><div class="cf-avatar-crop-head"><b>Настройка аватара</b><button type="button" data-crop-cancel aria-label="Закрыть">✕</button></div><p>Передвигай фотографию пальцем и настрой масштаб. В круг попадёт именно эта область.</p><div class="cf-avatar-crop-stage"><canvas width="512" height="512"></canvas><div class="cf-avatar-crop-mask"></div></div><div class="cf-avatar-zoom-label"><span>Масштаб</span><b data-zoom-value>100%</b></div><input data-crop-zoom type="range" min="1" max="3" step="0.01" value="1"><div class="cf-avatar-crop-actions"><button type="button" data-crop-cancel>Отмена</button><button type="button" data-crop-save>Сохранить</button></div></div>';
+      document.body.appendChild(modal);
+      const canvas=modal.querySelector('canvas'),ctx=canvas.getContext('2d'),stage=modal.querySelector('.cf-avatar-crop-stage'),zoom=modal.querySelector('[data-crop-zoom]'),zoomValue=modal.querySelector('[data-zoom-value]');
+      const size=512;
+      const draw=()=>{
+        if(!img.naturalWidth)return;
+        ctx.clearRect(0,0,size,size);
+        const base=Math.max(size/img.naturalWidth,size/img.naturalHeight);
+        const w=img.naturalWidth*base*scale,h=img.naturalHeight*base*scale;
+        const maxX=Math.max(0,(w-size)/2),maxY=Math.max(0,(h-size)/2);
+        offsetX=Math.max(-maxX,Math.min(maxX,offsetX));offsetY=Math.max(-maxY,Math.min(maxY,offsetY));
+        ctx.save();ctx.beginPath();ctx.arc(size/2,size/2,size/2,0,Math.PI*2);ctx.clip();
+        ctx.drawImage(img,(size-w)/2+offsetX,(size-h)/2+offsetY,w,h);ctx.restore();
+        zoom.value=String(scale);zoomValue.textContent=Math.round(scale*100)+'%';
+      };
+      const onKey=e=>{if(e.key==='Escape')finish(null)};
+      modal.querySelectorAll('[data-crop-cancel]').forEach(b=>b.addEventListener('click',()=>finish(null)));
+      modal.querySelector('[data-crop-save]').addEventListener('click',()=>{
+        try{draw();const out=document.createElement('canvas');out.width=512;out.height=512;const o=out.getContext('2d');o.save();o.beginPath();o.arc(256,256,256,0,Math.PI*2);o.clip();o.drawImage(canvas,0,0);o.restore();finish(out.toDataURL('image/jpeg',0.86));}
+        catch(e){finish(null);reject(e)}
+      });
+      zoom.addEventListener('input',()=>{const old=scale;scale=Number(zoom.value);if(old!==scale){offsetX*=scale/old;offsetY*=scale/old;}draw();});
+      stage.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,ox:offsetX,oy:offsetY};stage.setPointerCapture?.(e.pointerId);});
+      stage.addEventListener('pointermove',e=>{if(!drag)return;const r=stage.getBoundingClientRect();offsetX=drag.ox+(e.clientX-drag.x)*size/r.width;offsetY=drag.oy+(e.clientY-drag.y)*size/r.height;draw();});
+      const stop=()=>{drag=null};stage.addEventListener('pointerup',stop);stage.addEventListener('pointercancel',stop);
+      window.addEventListener('keydown',onKey);
+      img.onload=()=>{minScale=1;scale=1;offsetX=0;offsetY=0;draw();};
+      img.onerror=()=>{finish(null);reject(new Error('Не удалось открыть это изображение. Попробуй другое фото.'))};
+      img.src=objectUrl;
+    });
+  }
+
   function setAvatarNode(node,url){
     if(!node)return;
     node.textContent='';
