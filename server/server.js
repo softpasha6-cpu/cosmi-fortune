@@ -8,7 +8,7 @@ import { handleAdminUpdate } from './admin.js';
 const { Pool } = pg;
 const app = express();
 app.disable('x-powered-by');
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '4mb' }));
 
 const botToken = process.env.BOT_TOKEN;
 const databaseUrl = process.env.DATABASE_URL;
@@ -236,10 +236,11 @@ app.get('/api/owner/stars-status',requireUser,async(req,res,next)=>{if(!ownerOnl
 app.post('/api/me/avatar', requireUser, async (req, res, next) => {
   try {
     const avatarDataUrl=req.body?.avatarDataUrl;
-    if(typeof avatarDataUrl!=='string'||avatarDataUrl.length>750000||!/^data:image\\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(avatarDataUrl)){
+    if(typeof avatarDataUrl!=='string'||avatarDataUrl.length>2500000||!/^data:image\\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(avatarDataUrl)){
       return res.status(400).json({error:'Не удалось сохранить фото. Выбери другое изображение.'});
     }
-    await pool.query('UPDATE players SET avatar_data_url=$2,updated_at=NOW() WHERE telegram_id=$1',[req.player.telegram_id,avatarDataUrl]);
+    const saved=await pool.query('UPDATE players SET avatar_data_url=$2,updated_at=NOW() WHERE telegram_id=$1 RETURNING telegram_id',[req.player.telegram_id,avatarDataUrl]);
+    if(!saved.rowCount)return res.status(404).json({error:'Профиль не найден. Перезапусти приложение.'});
     res.json({ok:true});
   } catch(error){next(error)}
 });
