@@ -1216,7 +1216,7 @@
 
   function coinflip(){return panel('🪙 COINFLIP','<section class="cf-coinflip-shell"><div class="cf-coinflip-brand">✦ COSMIC FORTUNE</div><div class="cf-coinflip-orbit"><div id="cf-coinflip-coin" class="cf-coinflip-coin"><span>✦</span></div></div><div class="cf-coinflip-caption">ВЫБЕРИ СТОРОНУ МОНЕТЫ</div><div class="cf-coinflip-sides"><button type="button" class="cf-coinflip-side active" data-action="coinflip-choice" data-choice="heads"><span>🦅</span><b>ОРЁЛ</b></button><button type="button" class="cf-coinflip-side" data-action="coinflip-choice" data-choice="tails"><span>🌙</span><b>РЕШКА</b></button></div><label class="cf-coinflip-bet">СТАВКА · ✦<input id="cf-bet" type="number" min="1" max="100000" value="100" inputmode="numeric"></label><div class="cf-coinflip-rule">Угадай сторону — получи выплату <b>2×</b></div><div id="cf-game-result" class="cf-coinflip-result">Выбери орла или решку и подбрось монету</div><button type="button" class="primary cf-coinflip-play" data-action="play-game" data-game="coinflip">ПОДБРОСИТЬ МОНЕТУ</button></section>')}
   function tower(){
-    const rows=Array.from({length:8},(_,i)=>'<div class="cf-tower-floor" data-tower-floor="'+i+'"><span class="cf-tower-floor-label">ЭТАЖ '+(i+1)+'</span><div class="cf-tower-doors">'+[0,1,2].map(lane=>'<button type="button" class="cf-tower-door" data-action="tower-pick" data-floor="'+i+'" data-lane="'+lane+'">✦</button>').join('')+'</div></div>').join('');
+    const rows=Array.from({length:8},(_,i)=>'<div class="cf-tower-floor" data-tower-floor="'+i+'" style="'+(i>=5?'display:none':'')+'"><span class="cf-tower-floor-label">ЭТАЖ '+(i+1)+'</span><div class="cf-tower-doors">'+[0,1,2].map(lane=>'<button type="button" class="cf-tower-door" data-action="tower-pick" data-floor="'+i+'" data-lane="'+lane+'">✦</button>').join('')+'</div></div>').join('');
     return panel('🏰 COSMIC TOWER','<section class="cf-tower-shell"><div class="cf-tower-brand">✦ COSMIC FORTUNE</div><div class="cf-tower-subtitle">ПОДНИМИСЬ К ВЕРШИНЕ</div><div class="cf-tower-peak">👑</div><div class="cf-tower-building" id="cf-tower-building">'+rows+'</div><div class="cf-tower-settings"><label>ЭТАЖИ<select id="cf-tower-floors"><option value="3">3 этажа</option><option value="5" selected>5 этажей</option><option value="8">8 этажей</option></select></label><label>ЛОВУШКИ НА ЭТАЖ<select id="cf-tower-traps"><option value="1">1 ловушка · легче</option><option value="2">2 ловушки · риск</option></select></label></div><div class="cf-tower-hint">Выбери по одной двери на каждом активном этаже.</div><label class="cf-tower-bet">СТАВКА · ✦<input id="cf-bet" type="number" min="1" max="100000" value="100" inputmode="numeric"></label><div id="cf-game-result" class="cf-tower-result">Выбери двери и начни подъём</div><button type="button" class="primary cf-tower-play" data-action="play-game" data-game="tower">НАЧАТЬ ПОДЪЁМ</button></section>');
   }
   const cfNewGamesStyle=document.createElement('style');cfNewGamesStyle.textContent=`
@@ -1307,6 +1307,12 @@
       }
     }catch(error){say(error.message||'Не удалось открыть фотографию.')}
     finally{input.value='';if(edit){edit.disabled=false;edit.textContent='📷'}}
+  },true);
+  app.addEventListener('change',e=>{
+    if(e.target?.id==='cf-tower-floors'){
+      const floors=Number(e.target.value)||5;app.dataset.cfTowerPath='[]';
+      app.querySelectorAll('.cf-tower-floor').forEach((row,i)=>{row.style.display=i<floors?'grid':'none';row.querySelectorAll('.cf-tower-door').forEach(door=>door.classList.remove('selected','safe','trap'))});
+    }
   },true);
   app.addEventListener('change',e=>{if(e.target?.id==='cf-miner-size'){const size=Number(e.target.value),mineSelect=app.querySelector('#cf-miner-mines');if(mineSelect){const max=size*size-1;Array.from(mineSelect.options).forEach(o=>{o.disabled=Number(o.value)>max});if(Number(mineSelect.value)>max)mineSelect.value='3';}const grid=app.querySelector('#cf-miner-grid');if(grid&&!minerRound){grid.style.gridTemplateColumns='repeat('+size+',minmax(0,1fr))';grid.innerHTML=Array.from({length:size*size},(_,i)=>'<button data-miner-tile="'+i+'" style="aspect-ratio:1;border:1px solid #7044a8;border-radius:10px;background:#180b30;color:#d9aaff;font-size:24px">✦</button>').join('')}}});
   let cfGesture=null,cfBlockClickUntil=0;
@@ -1598,11 +1604,12 @@
       if(game==='tower'){
         const floors=Number(app.querySelector('#cf-tower-floors')?.value||5),traps=Number(app.querySelector('#cf-tower-traps')?.value||1);
         let path=[];try{path=JSON.parse(app.dataset.cfTowerPath||'[]')}catch{}
-        if(path.length<floors||path.slice(0,floors).some(v=>!Number.isInteger(v)||v<0||v>2)){say('Выбери одну дверь на каждом активном этаже.');return}
+        if(Array.from({length:floors},(_,i)=>path[i]).some(v=>!Number.isInteger(v)||v<0||v>2)){say('Выбери одну дверь на каждом активном этаже.');return}
         body.choice={floors,traps,path:path.slice(0,floors)};
       }
       const coin=game==='coinflip'?app.querySelector('#cf-coinflip-coin'):null;
       if(coin){coin.classList.remove('won','lost');coin.classList.add('spinning')}
+      if(game==='tower')app.querySelectorAll('.cf-tower-floor').forEach(row=>{row.classList.remove('reached','failed','inactive');row.querySelectorAll('.cf-tower-door').forEach(door=>door.classList.remove('safe','trap'))});
       const slotReels=game==='slots'?[0,1,2,3,4].map(i=>app.querySelector('#cf-slot-reel-'+i)):[];let slotSpinFailsafe=null;if(game==='slots'){clearCfSlotWinningCells();slotReels.forEach(el=>{if(el){el.classList.add('is-spinning');el.querySelectorAll('.cf-slot-symbol').forEach((symbol,j)=>{const keys=['rhino','golden-rhino','eagle','flamingo','crocodile','hyena','A','K','Q','J','sun'];symbol.innerHTML=rhinoSymbol(keys[Math.floor(Math.random()*keys.length)]);});}});slotSpinFailsafe=setTimeout(()=>{slotReels.forEach(el=>el?.classList.remove('is-spinning'));action.classList.remove('cf-spinning')},8000)}const diceOne=game==='dice'?app.querySelector('#cf-die-one'):null;const diceTwo=game==='dice'?app.querySelector('#cf-die-two'):null;const diceTotal=game==='dice'?app.querySelector('#cf-dice-total'):null;if(game==='dice'){[diceOne,diceTwo].forEach(d=>{if(d){d.classList.remove('face-1','face-2','face-3','face-4','face-5','face-6');d.classList.add('face-6','is-rolling');}});if(diceTotal)diceTotal.textContent='КОСТИ БРОШЕНЫ…';}const stage=app.querySelector('#cf-game-stage');
       if(stage){stage.classList.add('is-playing');}
       const art=app.querySelector('.bigart');
