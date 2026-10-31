@@ -594,6 +594,22 @@ function playRound(game, bet, choice, activeSlotFeature=null) {
     const multiplier = numberBet ? 36 : choice === 'green' ? 36 : 2;
     return { payout: won ? bet * multiplier : 0, outcome: { number, color, choice, betType: numberBet ? 'number' : 'color', multiplier, won, message: won ? (numberBet ? 'Точное попадание в номер! Выплата 36×.' : 'Поздравляем! Цвет совпал.') : 'В этот раз не повезло.' } };
   }
+  if (game === 'coinflip') {
+    if (!['heads','tails'].includes(choice)) throw Object.assign(new Error('Выбери орла или решку.'), { status: 400 });
+    const side=randInt(2)===0?'heads':'tails',won=side===choice;
+    return {payout:won?bet*2:0,outcome:{side,choice,won,multiplier:won?2:0,message:won?'Монета на твоей стороне! Выплата 2×.':'Не угадал сторону монеты.'}};
+  }
+  if (game === 'tower') {
+    const floors=Number(choice?.floors),traps=Number(choice?.traps),path=choice?.path;
+    if (![3,5,8].includes(floors)||![1,2].includes(traps)||!Array.isArray(path)||path.length!==floors||path.some(v=>!Number.isInteger(v)||v<0||v>2))
+      throw Object.assign(new Error('Выбери 3, 5 или 8 этажей и по одной двери на каждом.'),{status:400});
+    const safeCount=3-traps;
+    const safeLanes=Array.from({length:floors},()=>{const lanes=[];while(lanes.length<safeCount){const lane=randInt(3);if(!lanes.includes(lane))lanes.push(lane)}return lanes});
+    let reached=0;for(let floor=0;floor<floors;floor++){if(!safeLanes[floor].includes(path[floor]))break;reached++}
+    const won=reached===floors,probability=Math.pow(safeCount/3,floors),multiplier=Number((0.97/probability).toFixed(2));
+    const payout=won?Math.floor(bet*multiplier):0;
+    return {payout,outcome:{floors,traps,path,safeLanes,reached,won,multiplier:won?multiplier:0,message:won?'Вершина покорена! Выплата '+multiplier+'×.':'Ловушка на этаже '+(reached+1)+'. Подъём завершён.'}};
+  }
   if (game === 'blackjack') {
     const player = blackjackHand();
     const dealer = blackjackHand();
@@ -1083,7 +1099,7 @@ app.post('/api/game', requireUser, async (req, res, next) => {
     );
     await client.query('COMMIT');
     if(!round.replayed && Number(round.payout)>=BIG_WIN_THRESHOLD){
-      const gameNames={slots:'космические слоты',dice:'кости',roulette:'рулетку',blackjack:'блэкджек'};
+      const gameNames={slots:'космические слоты',dice:'кости',roulette:'рулетку',blackjack:'блэкджек',coinflip:'Coinflip',tower:'Tower'};
       await notifyUser(req.player.telegram_id,'🎉 КРУПНЫЙ ВЫИГРЫШ в Cosmic Fortune!\n\n🎮 Игра: '+(gameNames[game]||game)+'\n✦ Выплата: '+Number(round.payout).toLocaleString('ru-RU')+' кредитов\n💰 Текущий баланс: '+balanceAfter.toLocaleString('ru-RU')+' кредитов');void notifyOwner('🏆 КРУПНЫЙ ВЫИГРЫШ\n\nИгрок: '+(req.player.username?'@'+req.player.username:req.player.telegram_id)+'\nTelegram ID: '+req.player.telegram_id+'\nИгра: '+(gameNames[game]||game)+'\nСтавка: '+Number(bet).toLocaleString('ru-RU')+' кредитов\nВыплата: '+Number(round.payout).toLocaleString('ru-RU')+' кредитов\nБаланс: '+balanceAfter.toLocaleString('ru-RU')+' кредитов');
     }
     res.json({
