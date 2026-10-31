@@ -530,10 +530,15 @@
   #cf-app .cf-settings-version small{display:block;margin-top:4px;color:#9384a8;font-size:10px;font-weight:500;letter-spacing:0}
   #cf-app .cf-settings-back{border:1px solid #76519b!important;background:#1b1129!important}
   #cf-app.cf-no-animations *,#cf-app.cf-no-animations *:before,#cf-app.cf-no-animations *:after{animation:none!important;transition:none!important}
-  #cf-app.cf-no-glow .cf-vip-card,#cf-app.cf-no-glow .cf-profile-avatar{box-shadow:none!important}
+  #cf-app.cf-no-glow .cf-vip-card,#cf-app.cf-no-glow .cf-profile-avatar,#cf-app.cf-no-glow .hero,#cf-app.cf-no-glow .primary,#cf-app.cf-no-glow .balance,#cf-app.cf-no-glow .widecard,#cf-app.cf-no-glow .cf-settings-panel,#cf-app.cf-no-glow .cf-settings-identity{box-shadow:none!important;text-shadow:none!important}
   #cf-app.cf-compact-ui .cf-settings-panel{margin:7px 0}
   #cf-app.cf-compact-ui .cf-pref-row{min-height:52px}
-  #cf-app.cf-hide-balance .balance #cf-balance{filter:blur(7px);user-select:none}
+  #cf-app.cf-compact-ui .hero{min-height:220px!important;padding:16px 14px!important}
+  #cf-app.cf-compact-ui .section-title{margin:13px 2px 8px!important;font-size:16px!important}
+  #cf-app.cf-compact-ui .widecard{padding:10px!important;margin:6px 0!important}
+  #cf-app.cf-compact-ui .cf-settings-identity{padding:12px!important}
+  #cf-app.cf-compact-ui .cf-settings-panel{border-radius:13px!important}
+  #cf-app.cf-hide-balance .balance #cf-balance{filter:blur(7px);user-select:none;pointer-events:none}
   `;document.head.appendChild(cfSettingsPolish);
 
 
