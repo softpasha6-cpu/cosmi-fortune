@@ -769,15 +769,14 @@
     const telegramId=app.querySelector('#cf-profile-id');
     if(telegramId)telegramId.textContent=user.id?String(user.id):'—';
     const avatar=app.querySelector('#cf-profile-avatar');
-    if(avatar){
+    if(avatar&&!avatar.dataset.customAvatar){
       if(user.photo_url){
         avatar.textContent='';
         avatar.style.backgroundImage='url("'+String(user.photo_url).replace(/["\\\\]/g,'')+'")';
         avatar.style.backgroundSize='cover';
         avatar.style.backgroundPosition='center';
       }else { avatar.textContent=''; avatar.style.backgroundImage='none'; }
-    }
-  }
+    }  }
   let cfCropState=null;
   function openAvatarCrop(file){
     return new Promise((resolve,reject)=>{
@@ -808,11 +807,11 @@
         modal.querySelectorAll('[data-crop-cancel]').forEach(btn=>btn.addEventListener('click',()=>{cleanup();resolve(null)}));
         modal.querySelector('[data-crop-save]').addEventListener('click',()=>{
           try{
-            const out=document.createElement('canvas');out.width=512;out.height=512;const o=out.getContext('2d');
+            const out=document.createElement('canvas');out.width=384;out.height=384;const o=out.getContext('2d');
             const base=Math.max(320/img.naturalWidth,320/img.naturalHeight),scale=base*state.zoom;
             const w=img.naturalWidth*scale,h=img.naturalHeight*scale;
             o.drawImage(img,((320-w)/2+state.dx)/320*512,((320-h)/2+state.dy)/320*512,w/320*512,h/320*512);
-            const data=out.toDataURL('image/jpeg',0.84);cleanup();resolve(data);
+            const data=out.toDataURL('image/jpeg',0.72);cleanup();resolve(data);
           }catch(err){cleanup();reject(err)}
         });
       };
@@ -834,7 +833,7 @@
       const uname=app.querySelector('#cf-profile-username');if(uname)uname.textContent=data.player.username?'@'+data.player.username:'Имя пользователя Telegram не задано';
       const tag=app.querySelector('#cf-profile-tag');if(tag)tag.textContent=data.player.username?'@'+data.player.username:'Не задан';
       const telegramId=app.querySelector('#cf-profile-id');if(telegramId)telegramId.textContent=data.player.telegramId||'—';
-      const avatar=app.querySelector('#cf-profile-avatar');if(avatar){avatar.textContent='';const photoUrl=data.player.avatarDataUrl||telegram?.initDataUnsafe?.user?.photo_url;if(photoUrl){avatar.style.backgroundImage='url("'+String(photoUrl).replace(/["\\\\]/g,'')+'")';avatar.style.backgroundSize='cover';avatar.style.backgroundPosition='center';}else avatar.style.backgroundImage='none';}
+      const avatar=app.querySelector('#cf-profile-avatar');if(avatar){avatar.textContent='';const custom=!!data.player.avatarDataUrl;const photoUrl=data.player.avatarDataUrl||telegram?.initDataUnsafe?.user?.photo_url;if(custom)avatar.dataset.customAvatar='1';else delete avatar.dataset.customAvatar;if(photoUrl){avatar.style.backgroundImage='url("'+String(photoUrl).replace(/["\\\\]/g,'')+'")';avatar.style.backgroundSize='cover';avatar.style.backgroundPosition='center';}else avatar.style.backgroundImage='none';}
       if(current==='profile'){renderVipCard(data.history||[],data.vip||{});loadVipTasks();}if(current==='settings'){const sn=app.querySelector('#cf-settings-name'),su=app.querySelector('#cf-settings-username');if(sn)sn.textContent=data.player.firstName||'Аккаунт Cosmic Fortune';if(su)su.textContent=data.player.username?'@'+data.player.username:'Профиль Telegram';loadPaymentHistory();}
     }catch(error){
       const balance=app.querySelector('#cf-balance');
@@ -1186,8 +1185,9 @@
     const edit=app.querySelector('[data-action="choose-avatar"]');if(edit){edit.disabled=true;edit.textContent='…'}
     try{
       const avatarDataUrl=await openAvatarCrop(file);if(!avatarDataUrl)return;
-      const avatar=app.querySelector('#cf-profile-avatar');if(avatar)avatar.style.backgroundImage='url("'+avatarDataUrl+'")';
-      await api('/api/me/avatar',{method:'POST',body:JSON.stringify({avatarDataUrl})});
+      const avatar=app.querySelector('#cf-profile-avatar');if(avatar){avatar.style.backgroundImage='url("'+avatarDataUrl+'")';avatar.dataset.customAvatar='1';}
+      const saved=await api('/api/me/avatar',{method:'POST',body:JSON.stringify({avatarDataUrl})});
+      if(!saved?.ok)throw new Error('Сервер не подтвердил сохранение фотографии.');
       say('Фото профиля сохранено! ✨');
     }catch(error){say(error.message||'Не удалось сохранить фото.');await refreshAccount()}
     finally{input.value='';if(edit){edit.disabled=false;edit.textContent='📷'}}
