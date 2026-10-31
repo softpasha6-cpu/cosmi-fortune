@@ -446,6 +446,13 @@
     #cf-app .cf-tournament-me strong{grid-column:2;grid-row:1/3;color:#ffe09a;font-size:19px}
     #cf-app .cf-tournament-me b{color:#fff;font-size:15px}
     #cf-app .cf-tournament-note{font-size:10px;color:#bba9d0;margin:12px 2px}
+    #cf-app .cf-t-podium-item .cf-t-player-identity{width:100%;max-width:100%;min-width:0;justify-content:center;overflow:hidden;gap:5px}
+    #cf-app .cf-t-podium-item .cf-t-player-identity b{display:block;flex:1 1 auto;min-width:0;max-width:calc(100% - 35px);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+    #cf-app .cf-t-podium-item .cf-t-avatar{width:28px;height:28px;flex:0 0 28px;border-radius:50%;object-fit:cover}
+    #cf-app .cf-tournament-player{display:block;min-width:0;max-width:100%;overflow:hidden}
+    #cf-app .cf-tournament-player .cf-t-player-identity{width:100%;max-width:100%;overflow:hidden}
+    #cf-app .cf-tournament-player .cf-t-player-identity b{flex:1 1 auto;max-width:calc(100% - 38px)}
+    #cf-app .cf-t-history-row .cf-t-player-identity{min-width:0;overflow:hidden}
     #cf-app .cf-t-avatar{width:30px;height:30px;flex:0 0 30px;border-radius:50%;object-fit:cover;display:block;border:1.5px solid #d7b66b;background:#241638;box-shadow:0 0 9px #9a6cbb55}
     #cf-app .cf-t-avatar-empty{display:grid;place-items:center;color:#e8c978;font-size:15px}
     #cf-app .cf-t-player-identity{display:flex;align-items:center;gap:8px;min-width:0}
