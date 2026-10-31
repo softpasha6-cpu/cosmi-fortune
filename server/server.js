@@ -332,7 +332,7 @@ app.get('/api/tournaments', requireUser, async (req,res,next) => {
     const unit=period==='weekly'?'week':'day';
     const interval=period==='weekly' ? "date_trunc('week', NOW())" : "date_trunc('day', NOW())";
     const query=`
-      SELECT gt.telegram_id,p.first_name,COUNT(*)::int AS rounds,
+      SELECT gt.telegram_id,p.first_name,p.avatar_data_url,COUNT(*)::int AS rounds,
         (COUNT(*)*15)::int AS points
       FROM game_transactions gt JOIN players p ON p.telegram_id=gt.telegram_id
       WHERE gt.game=ANY($1::text[]) AND gt.bet>0 AND gt.payout>gt.bet
@@ -359,7 +359,7 @@ app.get('/api/tournaments', requireUser, async (req,res,next) => {
       ORDER BY points DESC,rounds DESC LIMIT 3`,
       [TOURNAMENT_GAMES]);
     const displayName=r=>String(r.first_name||'').trim()||'Игрок';
-    const displayAvatar=r=>typeof r.avatar_data_url==='string'&&r.avatar_data_url.startsWith('data:image/jpeg;base64,')?r.avatar_data_url:null;
+    const displayAvatar=r=>typeof r.avatar_data_url==='string'&&/^data:image\/(?:jpeg|png|webp);base64,/.test(r.avatar_data_url)&&r.avatar_data_url.length<2500000?r.avatar_data_url:null;
     res.set('Cache-Control','no-store, max-age=0');
     res.json({
       period,game:'selected',
