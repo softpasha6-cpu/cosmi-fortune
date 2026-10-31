@@ -57,14 +57,14 @@
       busy=true;start.disabled=true;start.textContent='ЗАПУСКАЕМ…';
       try{
         const d=await call('/api/tower/start',{bet,floors,traps,requestId:crypto.randomUUID()});
-        round={id:d.roundId,floors:d.floors,next:0,status:'active'};balance(d.balance);
+        round={id:d.roundId,floors:d.floors,next:Number(d.nextFloor||0),status:'active'};balance(d.balance);
         const building=$('#cf-tower-building');
         building?.querySelectorAll('.cf-tower-floor').forEach(row=>{
           const i=Number(row.dataset.towerFloor);row.style.display=i<floors?'grid':'none';
           row.classList.remove('reached','failed','inactive');
-          row.querySelectorAll('.cf-tower-door').forEach(b=>{b.disabled=i!==0;b.classList.remove('safe','trap','selected','cf-door-pending');b.setAttribute('aria-pressed','false')});
+          row.querySelectorAll('.cf-tower-door').forEach((b,lane)=>{b.disabled=i!==round.next;b.classList.remove('safe','trap','selected','cf-door-pending');b.setAttribute('aria-pressed','false');if(i<round.next){b.disabled=true;if((d.picked||[])[i]===lane){b.classList.add('safe','selected');b.setAttribute('aria-pressed','true')}}});
         });
-        const p=$('#cf-tower-progress');if(p)p.textContent='ЭТАЖ 1 / '+floors+' · ВЫБЕРИ ДВЕРЬ';
+        const p=$('#cf-tower-progress');if(p)p.textContent='ЭТАЖ '+(round.next+1)+' / '+floors+' · ВЫБЕРИ ДВЕРЬ';
         const result=$('#cf-game-result');if(result)result.textContent='Ставка принята. Выбери одну из трёх дверей на нижнем этаже.';
         start.textContent='ИДЁТ ПОДЪЁМ';
         building?.querySelector('[data-tower-floor="0"]')?.scrollIntoView({behavior:'smooth',block:'center'});
