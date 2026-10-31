@@ -31,7 +31,9 @@ export function registerTowerRoutes({ app, pool, requireUser }) {
       await client.query('BEGIN');
       await ensureTable();
       const existing=await client.query('SELECT * FROM tower_rounds WHERE telegram_id=$1 AND request_id=$2',[req.player.telegram_id,requestId]);
-      if(existing.rowCount){const r=existing.rows[0];await client.query('COMMIT');return res.json({roundId:r.id,floors:r.floors,traps:r.traps,nextFloor:(r.picked||[]).length,status:r.status,balance:Number((await pool.query('SELECT balance FROM players WHERE telegram_id=$1',[req.player.telegram_id])).rows[0].balance),replayed:true});}
+      if(existing.rowCount){const r=existing.rows[0];await client.query('COMMIT');return res.json({roundId:r.id,floors:r.floors,traps:r.traps,nextFloor:(r.picked||[]).length,picked:r.picked||[],status:r.status,balance:Number((await pool.query('SELECT balance FROM players WHERE telegram_id=$1',[req.player.telegram_id])).rows[0].balance),replayed:true});}
+      const active=await client.query("SELECT * FROM tower_rounds WHERE telegram_id=$1 AND status='active' ORDER BY created_at DESC LIMIT 1 FOR UPDATE",[req.player.telegram_id]);
+      if(active.rowCount){const r=active.rows[0];const bal=await client.query('SELECT balance FROM players WHERE telegram_id=$1',[req.player.telegram_id]);await client.query('COMMIT');return res.json({roundId:r.id,floors:r.floors,traps:r.traps,nextFloor:(r.picked||[]).length,picked:r.picked||[],status:'active',balance:Number(bal.rows[0].balance),resumed:true});}
       const player=await client.query('SELECT balance FROM players WHERE telegram_id=$1 FOR UPDATE',[req.player.telegram_id]);
       const balance=Number(player.rows[0]?.balance||0);
       if(balance<bet){await client.query('ROLLBACK');return res.status(400).json({error:'Недостаточно виртуальных кредитов.'});}
