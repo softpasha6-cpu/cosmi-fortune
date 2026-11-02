@@ -1799,7 +1799,7 @@
   function preloadGameArtwork(){
     const found=new Set();
     const css=style.textContent||'';
-    const re=/url\\((?:["']?)([^"')]+\\.(?:webp|png|jpe?g|avif)(?:\\?[^"')]+)?)/gi;
+    const re=/url\((?:["']?)([^"')]+\.(?:webp|png|jpe?g|avif)(?:\?[^"')]+)?)/gi;
     let match;
     while((match=re.exec(css)))found.add(match[1]);
     const urls=[...found].filter(src=>!src.startsWith('data:'));
