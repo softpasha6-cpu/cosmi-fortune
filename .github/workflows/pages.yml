@@ -40,9 +40,9 @@ jobs:
                   if im.mode not in ("RGB", "RGBA"):
                       im = im.convert("RGBA" if "transparency" in im.info else "RGB")
                   im.save(out, "WEBP", quality=82, method=6)
-              source = source.replace(name, out.name)
-              source = source.replace("./" + name, "./" + out.name)
               source = source.replace("https://raw.githubusercontent.com/softpasha6-cpu/cosmi-fortune/main/" + name, "./" + out.name)
+              source = source.replace("./" + name, "./" + out.name)
+              source = source.replace(name, out.name)
               path.unlink()
               print(f"{name} -> {out.name} ({out.stat().st_size} bytes)")
           js.write_text(source)
