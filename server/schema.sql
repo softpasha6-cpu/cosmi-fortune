@@ -222,6 +222,23 @@ CREATE INDEX IF NOT EXISTS promo_author_requests_player_idx ON promo_author_requ
 CREATE INDEX IF NOT EXISTS promo_author_requests_status_idx ON promo_author_requests(status,created_at DESC);
 
 
+-- Tournament payouts are idempotent per player and period.
+CREATE TABLE IF NOT EXISTS tournament_awards (
+  id BIGSERIAL PRIMARY KEY,
+  period_type TEXT NOT NULL CHECK (period_type IN ('daily','weekly')),
+  period_start TIMESTAMPTZ NOT NULL,
+  period_end TIMESTAMPTZ NOT NULL,
+  telegram_id BIGINT NOT NULL REFERENCES players(telegram_id) ON DELETE CASCADE,
+  place INTEGER NOT NULL CHECK (place > 0),
+  points INTEGER NOT NULL DEFAULT 0,
+  rounds INTEGER NOT NULL DEFAULT 0,
+  prize BIGINT NOT NULL CHECK (prize >= 0),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(period_type, period_start, telegram_id)
+);
+CREATE INDEX IF NOT EXISTS tournament_awards_player_idx
+  ON tournament_awards (telegram_id, created_at DESC);
+
 -- Tracks the next daily/weekly tournament settlement period.
 CREATE TABLE IF NOT EXISTS tournament_settlement_cursors (
   period_type TEXT PRIMARY KEY CHECK (period_type IN ('daily','weekly')),
