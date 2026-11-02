@@ -18,7 +18,9 @@ export function registerTowerRoutes({ app, pool, requireUser }) {
       finished_at TIMESTAMPTZ,
       UNIQUE(telegram_id, request_id)
     );
-    ALTER TABLE tower_rounds DROP CONSTRAINT IF EXISTS tower_rounds_floors_check;\n    ALTER TABLE tower_rounds ADD CONSTRAINT tower_rounds_floors_check CHECK (floors = 15);\n    CREATE INDEX IF NOT EXISTS tower_rounds_player_active_idx ON tower_rounds(telegram_id,status);
+    ALTER TABLE tower_rounds DROP CONSTRAINT IF EXISTS tower_rounds_floors_check;
+    ALTER TABLE tower_rounds ADD CONSTRAINT tower_rounds_floors_check CHECK (floors = 15);
+    CREATE INDEX IF NOT EXISTS tower_rounds_player_active_idx ON tower_rounds(telegram_id,status);
   `);
 
   app.post('/api/tower/start', requireUser, async (req,res,next) => {
@@ -107,7 +109,8 @@ export function registerTowerRoutes({ app, pool, requireUser }) {
         const bal=await client.query('SELECT balance FROM players WHERE telegram_id=$1',[req.player.telegram_id]);balance=Number(bal.rows[0].balance);
       }
       await client.query('COMMIT');
-      const safeCount=3-Number(r.traps),cashout=finished?payout:Math.floor(Number(r.bet)*(0.97/Math.pow(safeCount/3,picked.length)));\n      res.json({safe:true,status:finished?'won':'active',floor,reached:picked.length,balance,payout,cashout,message:finished?'👑 ВЕРШИНА ПОКОРЕНА!':'✨ Дверь безопасна! Поднимайся выше.'});
+      const safeCount=3-Number(r.traps),cashout=finished?payout:Math.floor(Number(r.bet)*Number((0.97/Math.pow(safeCount/3,picked.length)).toFixed(2)));
+      res.json({safe:true,status:finished?'won':'active',floor,reached:picked.length,balance,payout,cashout,message:finished?'👑 ВЕРШИНА ПОКОРЕНА!':'✨ Дверь безопасна! Поднимайся выше.'});
     } catch(e){await client.query('ROLLBACK').catch(()=>{});next(e);} finally{client.release();}
   });
 }
