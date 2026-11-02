@@ -8,7 +8,7 @@ export function registerTowerRoutes({ app, pool, requireUser }) {
       telegram_id BIGINT NOT NULL REFERENCES players(telegram_id) ON DELETE CASCADE,
       request_id UUID NOT NULL,
       bet BIGINT NOT NULL CHECK (bet > 0),
-      floors INTEGER NOT NULL CHECK (floors IN (5,10,15,20)),
+      floors INTEGER NOT NULL CHECK (floors = 15),
       traps INTEGER NOT NULL CHECK (traps IN (1,2)),
       safe_lanes JSONB NOT NULL,
       picked JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -18,13 +18,13 @@ export function registerTowerRoutes({ app, pool, requireUser }) {
       finished_at TIMESTAMPTZ,
       UNIQUE(telegram_id, request_id)
     );
-    CREATE INDEX IF NOT EXISTS tower_rounds_player_active_idx ON tower_rounds(telegram_id,status);
+    ALTER TABLE tower_rounds DROP CONSTRAINT IF EXISTS tower_rounds_floors_check;\n    ALTER TABLE tower_rounds ADD CONSTRAINT tower_rounds_floors_check CHECK (floors = 15);\n    CREATE INDEX IF NOT EXISTS tower_rounds_player_active_idx ON tower_rounds(telegram_id,status);
   `);
 
   app.post('/api/tower/start', requireUser, async (req,res,next) => {
     const bet=Number(req.body?.bet), floors=Number(req.body?.floors), traps=Number(req.body?.traps), requestId=req.body?.requestId;
     if(!Number.isSafeInteger(bet)||bet<1||bet>100000) return res.status(400).json({error:'Ставка должна быть от 1 до 100 000.'});
-    if(![5,10,15,20].includes(floors)||![1,2].includes(traps)) return res.status(400).json({error:'Выбери 5, 10, 15 или 20 этажей и 1 или 2 ловушки.'});
+    if(floors!==15||![1,2].includes(traps)) return res.status(400).json({error:'В игре всегда 15 этажей. Выбери 1 или 2 ловушки.'});
     if(typeof requestId!=='string'||!/^[a-f0-9-]{36}$/i.test(requestId)) return res.status(400).json({error:'Некорректный идентификатор раунда.'});
     const client=await pool.connect();
     try {
@@ -45,6 +45,29 @@ export function registerTowerRoutes({ app, pool, requireUser }) {
       await client.query('INSERT INTO tower_rounds(id,telegram_id,request_id,bet,floors,traps,safe_lanes) VALUES($1,$2,$3,$4,$5,$6,$7::jsonb)',[id,req.player.telegram_id,requestId,bet,floors,traps,JSON.stringify(safeLanes)]);
       await client.query('COMMIT');
       res.json({roundId:id,floors,traps,nextFloor:0,status:'active',balance:after});
+    } catch(e){await client.query('ROLLBACK').catch(()=>{});next(e);} finally{client.release();}
+  });
+
+  app.post('/api/tower/cashout', requireUser, async (req,res,next) => {
+    const roundId=String(req.body?.roundId||'');
+    if(!/^[a-f0-9-]{36}$/i.test(roundId)) return res.status(400).json({error:'Некорректный раунд.'});
+    const client=await pool.connect();
+    try {
+      await client.query('BEGIN');
+      await ensureTable();
+      const q=await client.query('SELECT * FROM tower_rounds WHERE id=$1 AND telegram_id=$2 FOR UPDATE',[roundId,req.player.telegram_id]);
+      if(!q.rowCount){await client.query('ROLLBACK');return res.status(404).json({error:'Раунд не найден.'});}
+      const r=q.rows[0],picked=Array.isArray(r.picked)?r.picked:[],safeCount=3-Number(r.traps);
+      if(r.status!=='active'){await client.query('ROLLBACK');return res.status(409).json({error:'Раунд уже завершён или приз забран.'});}
+      if(!picked.length){await client.query('ROLLBACK');return res.status(400).json({error:'Сначала открой хотя бы одну безопасную дверь.'});}
+      const multiplier=Number((0.97/Math.pow(safeCount/3,picked.length)).toFixed(2));
+      const payout=Math.floor(Number(r.bet)*multiplier);
+      const updated=await client.query('UPDATE players SET balance=balance+$2,updated_at=NOW() WHERE telegram_id=$1 RETURNING balance',[req.player.telegram_id,payout]);
+      const balance=Number(updated.rows[0].balance);
+      await client.query("UPDATE tower_rounds SET status='won',payout=$2,finished_at=NOW() WHERE id=$1",[roundId,payout]);
+      await client.query("INSERT INTO game_transactions(telegram_id,game,bet,payout,balance_after,outcome,idempotency_key) VALUES($1,'tower',$2,$3,$4,$5::jsonb,$6)",[req.player.telegram_id,r.bet,payout,balance,JSON.stringify({floors:r.floors,traps:r.traps,picked,reached:picked.length,won:true,cashout:true,multiplier,message:'Приз забран досрочно.'}),r.request_id]);
+      await client.query('COMMIT');
+      res.json({status:'won',payout,multiplier,balance,reached:picked.length,message:'Приз успешно забран.'});
     } catch(e){await client.query('ROLLBACK').catch(()=>{});next(e);} finally{client.release();}
   });
 
@@ -84,7 +107,7 @@ export function registerTowerRoutes({ app, pool, requireUser }) {
         const bal=await client.query('SELECT balance FROM players WHERE telegram_id=$1',[req.player.telegram_id]);balance=Number(bal.rows[0].balance);
       }
       await client.query('COMMIT');
-      res.json({safe:true,status:finished?'won':'active',floor,reached:picked.length,balance,payout,message:finished?'👑 ВЕРШИНА ПОКОРЕНА!':'✨ Дверь безопасна! Поднимайся выше.'});
+      const safeCount=3-Number(r.traps),cashout=finished?payout:Math.floor(Number(r.bet)*(0.97/Math.pow(safeCount/3,picked.length)));\n      res.json({safe:true,status:finished?'won':'active',floor,reached:picked.length,balance,payout,cashout,message:finished?'👑 ВЕРШИНА ПОКОРЕНА!':'✨ Дверь безопасна! Поднимайся выше.'});
     } catch(e){await client.query('ROLLBACK').catch(()=>{});next(e);} finally{client.release();}
   });
 }
