@@ -1287,7 +1287,7 @@
     #cf-app .cf-tower-door.safe:after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#baffd8;font-size:24px;font-weight:1000;text-shadow:0 0 12px #00ff9d;pointer-events:none;animation:cfDoorLight .6s ease-out}
     #cf-app .cf-tower-door.trap{border-color:#ff5a77;box-shadow:0 0 22px #ff174c99,inset 0 0 20px #ff173e66;background:linear-gradient(90deg,#70172d,#ffb05c 10%,#40101e 22%,#180711 50%,#70172d 85%,#ffb05c)}
     #cf-app .cf-tower-door.trap .cf-door-frame{transform:perspective(400px) rotateY(-105deg);filter:brightness(1.5) sepia(.3)}
-    #cf-app .cf-tower-door.trap:after{content:"✹";position:absolute;inset:0;display:grid;place-items:center;color:#ff7890;font-size:27px;text-shadow:0 0 14px red;animation:cfDoorLight .6s ease-out}
+     #cf-app .cf-tower-door.safe:disabled,#cf-app .cf-tower-door.trap:disabled{opacity:1!important;filter:none!important}#cf-app .cf-tower-door.trap:after{content:"✹";position:absolute;inset:0;display:grid;place-items:center;color:#ff7890;font-size:27px;text-shadow:0 0 14px red;animation:cfDoorLight .6s ease-out}
     #cf-app .cf-tower-floor.reached{border-color:#4acb91;box-shadow:0 0 14px #2be59b55}
     #cf-app .cf-tower-floor.failed{border-color:#ff647c;animation:cfTowerFail .5s ease}
     #cf-app .cf-tower-floor.inactive{opacity:.55}
