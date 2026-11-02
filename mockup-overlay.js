@@ -959,7 +959,10 @@
     const src=window.__cfSlotImages[key];
     el.innerHTML=src?'<img class="cf-slot-symbol-image" alt="" draggable="false" src="'+src+'">':rhinoSymbol(key);
   }
-  async function loadCfSlotImages(){
+  let cfSlotImagesPromise=null;
+  function loadCfSlotImages(){
+    if(cfSlotImagesPromise)return cfSlotImagesPromise;
+    cfSlotImagesPromise=(async()=>{
     try{
       if(!window.JSZip){
         await new Promise((resolve,reject)=>{
@@ -968,7 +971,7 @@
           script.onload=resolve;script.onerror=reject;document.head.appendChild(script);
         });
       }
-      const response=await fetch('./cosmic_slot_symbols_cropped.zip?v=20261021-2',{cache:'no-store'});
+      const response=await fetch('./cosmic_slot_symbols_cropped.zip?v=20261021-2',{cache:'force-cache'});
       if(!response.ok)throw new Error('slot image archive unavailable');
       const zip=await JSZip.loadAsync(await response.arrayBuffer());
       const files=Object.keys(zip.files).filter(path=>!zip.files[path].dir && /\.(png|webp|jpe?g)$/i.test(path)).sort();
@@ -993,7 +996,9 @@
         }
       }
       document.querySelectorAll('.cf-slot-symbol[data-symbol]').forEach(el=>setCfSlotSymbol(el,el.dataset.symbol));
-    }catch(error){console.warn('Cosmic Fortune slot images not loaded; using vector fallback.',error);}
+    }catch(error){console.warn('Cosmic Fortune slot images not loaded; using vector fallback.',error);cfSlotImagesPromise=null;}
+    })();
+    return cfSlotImagesPromise;
   }
   function rhinoSymbol(k){
     if(window.__cfSlotImages && window.__cfSlotImages[k])return '<img class="cf-slot-symbol-image" alt="" draggable="false" src="'+window.__cfSlotImages[k]+'">';
@@ -1280,7 +1285,7 @@
   }
   const renderers={home,games:gameList,slots,dice,roulette,blackjack,miner,luckyjet,plinko,coinflip,tower,bonuses,profile,settings,deposit,withdraw,tournaments,vipTasks,promo,promoCreate,promoRules,promoSent,promoRequests,promoSuccess,promoError};
   let current='home',selected='Больше 7',opened=0;
-  function render(name){current=renderers[name]?name:'home';content.innerHTML=renderers[current]();restoreCosmicSettings();if(current==='profile'){const ownerBox=app.querySelector('#cf-owner-tools');if(ownerBox&&String(telegram?.initDataUnsafe?.user?.id||'')==='8522347927'){ownerBox.style.display='block';loadOwnerTools()}else if(ownerBox){ownerBox.style.display='none';ownerBox.innerHTML=''}}content.scrollTop=0;app.scrollTop=0;document.documentElement.scrollTop=0;app.querySelector('.top').style.display=['profile','promo','promoSuccess','promoError','promoCreate','promoRules','promoSent','promoRequests','deposit','withdraw'].includes(current)?'none':'';app.querySelector('.bottom').style.display=['promo','promoSuccess','promoError','promoCreate','promoRules','promoSent','promoRequests','deposit','withdraw'].includes(current)?'none':'grid';if(tournamentClock){clearInterval(tournamentClock);tournamentClock=null;}if(tournamentRefreshTimer){clearInterval(tournamentRefreshTimer);tournamentRefreshTimer=null;}if(current==='tournaments'){loadTournamentBoard();tournamentClock=setInterval(tournamentClockUpdate,1000);tournamentRefreshTimer=setInterval(()=>{if(current==='tournaments')loadTournamentBoard();},30000);}if(current==='luckyjet')startLuckyJetLiveUpdates();else if(jetLiveTimer){clearInterval(jetLiveTimer);jetLiveTimer=null;}if(current==='slots'){api('/api/me').then(d=>{const c=app.querySelector('#cf-rhino-credit');if(c)c.textContent=formatBalance(d.player?.balance??d.balance??d.account?.balance??d.user?.balance??d.credits??0)}).catch(()=>{const c=app.querySelector('#cf-rhino-credit');if(c)c.textContent='—'})}if(current==='luckyjet')jetStartLivePolling();if(current==='bonuses')refreshDailyRewardStatus();if(current==='profile'||current==='settings'||current==='deposit'||current==='withdraw'){renderTelegramProfileImmediately();refreshAccount();}if(current==='vipTasks')loadVipTasks();if(current==='promoRequests')loadPromoRequests();if(current==='profile')loadOwnerPromoRequests();app.querySelectorAll('.bottom button').forEach(b=>b.classList.toggle('active',b.dataset.go===current || (current==='mines'||current==='dice'||current==='wheel'||current==='crash')&&b.dataset.go==='games'));app.scrollTo({top:0,behavior:'instant'});}
+  function render(name){current=renderers[name]?name:'home';content.innerHTML=renderers[current]();restoreCosmicSettings();if(current==='profile'){const ownerBox=app.querySelector('#cf-owner-tools');if(ownerBox&&String(telegram?.initDataUnsafe?.user?.id||'')==='8522347927'){ownerBox.style.display='block';loadOwnerTools()}else if(ownerBox){ownerBox.style.display='none';ownerBox.innerHTML=''}}content.scrollTop=0;app.scrollTop=0;document.documentElement.scrollTop=0;app.querySelector('.top').style.display=['profile','promo','promoSuccess','promoError','promoCreate','promoRules','promoSent','promoRequests','deposit','withdraw'].includes(current)?'none':'';app.querySelector('.bottom').style.display=['promo','promoSuccess','promoError','promoCreate','promoRules','promoSent','promoRequests','deposit','withdraw'].includes(current)?'none':'grid';if(tournamentClock){clearInterval(tournamentClock);tournamentClock=null;}if(tournamentRefreshTimer){clearInterval(tournamentRefreshTimer);tournamentRefreshTimer=null;}if(current==='tournaments'){loadTournamentBoard();tournamentClock=setInterval(tournamentClockUpdate,1000);tournamentRefreshTimer=setInterval(()=>{if(current==='tournaments')loadTournamentBoard();},30000);}if(current==='luckyjet')startLuckyJetLiveUpdates();else if(jetLiveTimer){clearInterval(jetLiveTimer);jetLiveTimer=null;}if(current==='slots'){loadCfSlotImages();const c=app.querySelector('#cf-rhino-credit');if(c)c.textContent=app.querySelector('#cf-balance')?.textContent||'—'}if(current==='luckyjet')jetStartLivePolling();if(current==='bonuses')refreshDailyRewardStatus();if(current==='profile'||current==='settings'||current==='deposit'||current==='withdraw'){renderTelegramProfileImmediately();refreshAccount();}if(current==='vipTasks')loadVipTasks();if(current==='promoRequests')loadPromoRequests();if(current==='profile')loadOwnerPromoRequests();app.querySelectorAll('.bottom button').forEach(b=>b.classList.toggle('active',b.dataset.go===current || (current==='mines'||current==='dice'||current==='wheel'||current==='crash')&&b.dataset.go==='games'));app.scrollTo({top:0,behavior:'instant'});}
   window.cfNavigate=function(name){try{render(name)}catch(error){console.error('Navigation failed',error);say('Не удалось открыть раздел. Перезапусти приложение.')}};
   // Capture taps before Telegram WebView or underlying page handlers can swallow them.
   document.addEventListener('click', function cosmicNavigationCapture(e){
@@ -1678,8 +1683,7 @@
           result.classList.add('cf-show-result');
         }else result.textContent=message+' Ставка: '+formatBalance(data.bet)+' · выплата: '+formatBalance(data.payout)+' ✦';}
         await refreshAccount();
-        const me=await api('/api/me');
-        if(current==='profile')renderHistoryInProfile(me.history||[]);
+        if(current==='profile'){const me=await api('/api/me');renderHistoryInProfile(me.history||[]);}
       }catch(error){if(result)result.textContent=error.message;say(error.message)}
       finally{if(slotSpinFailsafe)clearTimeout(slotSpinFailsafe);if(game==='coinflip')coin?.classList.remove('spinning');app.querySelector('#cf-game-stage')?.classList.remove('is-playing');if(game==='dice'){[diceOne,diceTwo].forEach(d=>d?.classList.remove('is-rolling'));}if(game==='slots'){slotReels.forEach(el=>el?.classList.remove('is-spinning'));action.classList.remove('cf-spinning')}action.disabled=false;action.removeAttribute('aria-busy')}
       return
@@ -1743,5 +1747,4 @@
   // Entry is open; keep Telegram initData authentication and server-backed game logic.
   render('home');
   refreshAccount();
-  loadCfSlotImages();
 })();
