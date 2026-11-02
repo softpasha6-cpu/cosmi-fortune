@@ -33,7 +33,7 @@
     const shell=$('#cf-app .cf-coinflip-shell');if(shell)resetCoinflip();
     const building=$('#cf-tower-building');if(building&&!building.dataset.liveReady){
       building.dataset.liveReady='1';round=null;
-      const floors=Number($('#cf-tower-floors')?.value||10);
+      const floors=15;
       building.querySelectorAll('.cf-tower-floor').forEach(row=>{
         const i=Number(row.dataset.towerFloor);row.style.display=i<floors?'grid':'none';
         row.querySelectorAll('.cf-tower-door').forEach(b=>{b.disabled=i!==0;b.classList.remove('safe','trap','selected','cf-door-pending');b.setAttribute('aria-pressed','false')});
@@ -44,8 +44,8 @@
   });
   observer.observe(document.body,{childList:true,subtree:true});
   document.addEventListener('change',e=>{
-    if(e.target?.id!=='cf-tower-floors')return;
-    round=null;const floors=Number(e.target.value),building=$('#cf-tower-building');
+    if(e.target?.id!=='cf-tower-traps')return;
+    if(round&&round.status==='active')return;round=null;const floors=15,building=$('#cf-tower-building');
     building?.querySelectorAll('.cf-tower-floor').forEach(row=>{
       const i=Number(row.dataset.towerFloor);row.style.display=i<floors?'grid':'none';
       row.classList.remove('reached','failed','inactive');
@@ -63,7 +63,7 @@
     if(start){
       e.preventDefault();e.stopImmediatePropagation();if(busy||(round&&round.status==='active'))return;
       round=null;$('#cf-app .cf-door-outcome')?.remove();
-      const bet=Number($('#cf-app #cf-bet')?.value),floors=Number($('#cf-tower-floors')?.value||10),traps=Number($('#cf-tower-traps')?.value||1);
+      const bet=Number($('#cf-app #cf-bet')?.value),floors=15,traps=Number($('#cf-tower-traps')?.value||1);
       if(!Number.isSafeInteger(bet)||bet<1||bet>100000){toast('Ставка должна быть от 1 до 100 000.');return}
       busy=true;start.disabled=true;start.textContent='ЗАПУСКАЕМ…';
       try{
@@ -75,11 +75,27 @@
           row.classList.remove('reached','failed','inactive');
           row.querySelectorAll('.cf-tower-door').forEach((b,lane)=>{b.disabled=i!==round.next;b.classList.remove('safe','trap','selected','cf-door-pending');b.setAttribute('aria-pressed','false');if(i<round.next){b.disabled=true;if((d.picked||[])[i]===lane){b.classList.add('safe','selected');b.setAttribute('aria-pressed','true')}}});
         });
-        const p=$('#cf-tower-progress');if(p)p.textContent='ЭТАЖ '+(round.next+1)+' / '+floors+' · ВЫБЕРИ ДВЕРЬ';
+        const p=$('#cf-tower-progress');if(p)p.textContent='ЭТАЖ '+(round.next+1)+' / 15 · ВЫБЕРИ ДВЕРЬ';
         const result=$('#cf-game-result');if(result)result.textContent='Ставка принята. Выбери одну из трёх дверей на нижнем этаже.';
         start.textContent='ИДЁТ ПОДЪЁМ';
         building?.querySelector('[data-tower-floor="0"]')?.scrollIntoView({behavior:'smooth',block:'center'});
       }catch(err){toast(err.message);start.disabled=false;start.textContent='НАЧАТЬ ПОДЪЁМ'}
+      finally{busy=false}return;
+    }
+    const cashout=target.closest('#cf-app [data-action="tower-cashout"]');
+    if(cashout){
+      e.preventDefault();e.stopImmediatePropagation();
+      if(!round||round.status!=='active'||busy||round.next<1)return;
+      busy=true;cashout.disabled=true;cashout.textContent='ВЫПЛАЧИВАЕМ…';
+      try{
+        const d=await call('/api/tower/cashout',{roundId:round.id});
+        round.status='cashed';balance(d.balance);
+        const result=$('#cf-game-result');if(result)result.textContent='Приз забран: '+Number(d.payout).toLocaleString('ru-RU')+' ✦';
+        const progress=$('#cf-tower-progress');if(progress)progress.textContent='ПРИЗ ЗАБРАН · '+round.next+' / 15 ЭТАЖЕЙ';
+        const play=$('.cf-tower-play');if(play){play.disabled=false;play.textContent='НОВЫЙ РАУНД';}
+        cashout.textContent='ПРИЗ ПОЛУЧЕН';
+        showOutcome('safe','ПРИЗ ЗАБРАН!','Выплата: '+Number(d.payout).toLocaleString('ru-RU')+' ✦','💰');
+      }catch(err){toast(err.message);cashout.disabled=false;cashout.textContent='ЗАБРАТЬ ПРИЗ';}
       finally{busy=false}return;
     }
     const door=target.closest('#cf-app [data-action="tower-pick"]');
@@ -101,17 +117,17 @@
           if(progress)progress.textContent='💥 ЛОВУШКА · ЭТАЖ '+(floor+1);
           if(result)result.textContent=d.message+' Ставка потеряна.';
           if(hint)hint.textContent='Ловушка остановила подъём. Попробуй новый раунд.';
-          const play=$('.cf-tower-play');if(play){play.disabled=false;play.textContent='НОВЫЙ РАУНД';}
+          const play=$('.cf-tower-play');if(play){play.disabled=false;play.textContent='НОВЫЙ РАУНД';}\n          const cash=$('#cf-app .cf-tower-cashout');if(cash){cash.disabled=true;cash.textContent='ЗАБРАТЬ ПРИЗ · ✦ 0';}
           showOutcome('trap','ЛОВУШКА!','Раунд завершён. Попробуй ещё раз и поднимись выше.','💥');
           return;
         }
         round.next++;
-        if(progress)progress.textContent=round.next===round.floors?'👑 ВЕРШИНА!':('ЭТАЖ '+round.next+' / '+round.floors+' · ДВЕРЬ ОТКРЫТА');
+        if(progress)progress.textContent=round.next===round.floors?'👑 ВЕРШИНА!':('ЭТАЖ '+round.next+' / 15 · ДВЕРЬ ОТКРЫТА');
         if(d.status==='won'){
           round.status='won';
           if(result)result.textContent=d.message+' Выплата: '+Number(d.payout).toLocaleString('ru-RU')+' ✦';
           if(hint)hint.textContent='Ты прошёл все этажи и покорил башню!';
-          const play=$('.cf-tower-play');if(play){play.disabled=false;play.textContent='СЫГРАТЬ ЕЩЁ РАЗ';}
+          const play=$('.cf-tower-play');if(play){play.disabled=false;play.textContent='СЫГРАТЬ ЕЩЁ РАЗ';}\n          const cash=$('#cf-app .cf-tower-cashout');if(cash){cash.disabled=true;cash.textContent='ПРИЗ ВЫПЛАЧЕН';}
           showOutcome('safe','ПОБЕДА!','Выигрыш: '+Number(d.payout).toLocaleString('ru-RU')+' ✦','👑');
         }else{
           if(result)result.textContent=d.message;
@@ -126,15 +142,15 @@
     const again=target.closest('#cf-app .cf-tower-play');
     if(again&&round&&round.status!=='active'){
       e.preventDefault();e.stopImmediatePropagation();round=null;
-      const floors=Number($('#cf-tower-floors')?.value||10);
+      const floors=15;
       $('#cf-tower-building')?.querySelectorAll('.cf-tower-floor').forEach(row=>{
         const i=Number(row.dataset.towerFloor);row.style.display=i<floors?'grid':'none';
         row.classList.remove('reached','failed','inactive');
         row.querySelectorAll('.cf-tower-door').forEach(b=>{b.disabled=i!==0;b.classList.remove('safe','trap','selected','cf-door-pending');b.setAttribute('aria-pressed','false')});
       });
-      const p=$('#cf-tower-progress');if(p)p.textContent='ВЫБРАНО: 0 / '+floors+' ЭТАЖЕЙ';
+      const p=$('#cf-tower-progress');if(p)p.textContent='ЭТАЖ 1 / 15 · ВЫБЕРИ ДВЕРЬ';\n      const cash=$('#cf-app .cf-tower-cashout');if(cash){cash.disabled=true;cash.textContent='ЗАБРАТЬ ПРИЗ · ✦ 0';}
       const result=$('#cf-game-result');if(result)result.textContent='Готов к новому подъёму.';
-      again.textContent='НАЧАТЬ ПОДЪЁМ';return;
+      again.textContent='НАЧАТЬ ПОДЪЁМ';const cash=$('#cf-app .cf-tower-cashout');if(cash){cash.disabled=true;cash.textContent='ЗАБРАТЬ ПРИЗ · ✦ 0';}return;
     }
   },true);
 })();
