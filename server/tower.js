@@ -8,7 +8,7 @@ export function registerTowerRoutes({ app, pool, requireUser }) {
       telegram_id BIGINT NOT NULL REFERENCES players(telegram_id) ON DELETE CASCADE,
       request_id UUID NOT NULL,
       bet BIGINT NOT NULL CHECK (bet > 0),
-      floors INTEGER NOT NULL CHECK (floors = 15),
+      floors INTEGER NOT NULL CHECK (floors IN (5,10,15,20)),
       traps INTEGER NOT NULL CHECK (traps IN (1,2)),
       safe_lanes JSONB NOT NULL,
       picked JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -18,8 +18,6 @@ export function registerTowerRoutes({ app, pool, requireUser }) {
       finished_at TIMESTAMPTZ,
       UNIQUE(telegram_id, request_id)
     );
-    ALTER TABLE tower_rounds DROP CONSTRAINT IF EXISTS tower_rounds_floors_check;
-    ALTER TABLE tower_rounds ADD CONSTRAINT tower_rounds_floors_check CHECK (floors = 15);
     CREATE INDEX IF NOT EXISTS tower_rounds_player_active_idx ON tower_rounds(telegram_id,status);
   `);
 
