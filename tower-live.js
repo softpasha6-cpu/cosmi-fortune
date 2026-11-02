@@ -139,7 +139,6 @@
           if(hint)hint.textContent='Ты прошёл все этажи и покорил башню!';
           const play=$('.cf-tower-play');if(play){play.disabled=false;play.textContent='СЫГРАТЬ ЕЩЁ РАЗ';}
           const cash=$('#cf-app .cf-tower-cashout');if(cash){cash.disabled=true;cash.textContent='ПРИЗ ВЫПЛАЧЕН';}
-          const cash=$('#cf-app .cf-tower-cashout');if(cash){cash.disabled=true;cash.textContent='ПРИЗ ВЫПЛАЧЕН';}
           showOutcome('safe','ПОБЕДА!','Выигрыш: '+Number(d.payout).toLocaleString('ru-RU')+' ✦','👑');
         }else{
           if(result)result.textContent=d.message+' Можно забрать '+Number(d.cashout||0).toLocaleString('ru-RU')+' ✦ прямо сейчас.';
