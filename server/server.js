@@ -283,9 +283,22 @@ app.post('/api/me/avatar', requireUser, async (req, res, next) => {
     res.json({ok:true});
   } catch(error){next(error)}
 });
+app.get('/api/me/summary', requireUser, (req, res) => {
+  res.set('Cache-Control','no-store, max-age=0');
+  res.json({
+    player: {
+      telegramId: String(req.player.telegram_id),
+      username: req.player.username,
+      firstName: req.player.first_name,
+      balance: Number(req.player.balance),
+      avatarDataUrl: req.player.avatar_data_url || null
+    }
+  });
+});
+
 app.get('/api/me', requireUser, async (req, res) => {
   const [history, vip] = await Promise.all([
-    pool.query('SELECT id, game, bet, payout, balance_after, outcome, created_at FROM game_transactions WHERE telegram_id=$1 ORDER BY created_at DESC',[req.player.telegram_id]),
+    pool.query('SELECT id, game, bet, payout, balance_after, outcome, created_at FROM game_transactions WHERE telegram_id=$1 ORDER BY created_at DESC LIMIT 50',[req.player.telegram_id]),
     pool.query('SELECT COALESCE(SUM(bet), 0)::numeric AS lifetime_turnover FROM game_transactions WHERE telegram_id=$1',[req.player.telegram_id])
   ]);
   res.json({
