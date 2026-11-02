@@ -1221,8 +1221,11 @@
 
   function coinflip(){return panel('🪙 COINFLIP','<section class="cf-coinflip-shell"><div class="cf-coinflip-brand">✦ COSMIC FORTUNE</div><div class="cf-coinflip-orbit"><div id="cf-coinflip-coin" class="cf-coinflip-coin"><span>✦</span></div></div><div class="cf-coinflip-caption">ВЫБЕРИ СТОРОНУ МОНЕТЫ</div><div class="cf-coinflip-sides"><button type="button" class="cf-coinflip-side active" data-action="coinflip-choice" data-choice="heads"><span>🦅</span><b>ОРЁЛ</b></button><button type="button" class="cf-coinflip-side" data-action="coinflip-choice" data-choice="tails"><span>🌙</span><b>РЕШКА</b></button></div><label class="cf-coinflip-bet">СТАВКА · ✦<input id="cf-bet" type="number" min="1" max="100000" value="100" inputmode="numeric"></label><div class="cf-coinflip-rule">Угадай сторону — получи выплату <b>2×</b></div><div id="cf-game-result" class="cf-coinflip-result">Выбери орла или решку и подбрось монету</div><button type="button" class="primary cf-coinflip-play" data-action="play-game" data-game="coinflip">ПОДБРОСИТЬ МОНЕТУ</button></section>')}
   function tower(){
-    const rows=Array.from({length:20},(_,i)=>'<div class="cf-tower-floor" data-tower-floor="'+i+'" style="'+(i>=10?'display:none':'')+'"><span class="cf-tower-floor-label">ЭТАЖ '+(i+1)+'</span><div class="cf-tower-doors">'+[0,1,2].map(lane=>'<button type="button" class="cf-tower-door" aria-label="Этаж '+(i+1)+', дверь '+(lane+1)+'" aria-pressed="false" data-action="tower-pick" data-floor="'+i+'" data-lane="'+lane+'">✦</button>').join('')+'</div></div>').join('');
-    return panel('🏰 COSMIC TOWER','<section class="cf-tower-shell"><div class="cf-tower-brand">✦ COSMIC FORTUNE</div><div class="cf-tower-subtitle">ПОДНИМИСЬ К ВЕРШИНЕ</div><div class="cf-tower-peak">👑</div><div class="cf-tower-progress" id="cf-tower-progress">ВЫБРАНО: 0 / 10 ЭТАЖЕЙ</div><div class="cf-tower-building" id="cf-tower-building">'+rows+'</div><div class="cf-tower-settings"><label>ЭТАЖИ<select id="cf-tower-floors"><option value="5">5 этажей</option><option value="10" selected>10 этажей</option><option value="15">15 этажей</option><option value="20">20 этажей</option></select></label><label>ЛОВУШКИ НА ЭТАЖ<select id="cf-tower-traps"><option value="1">1 ловушка · легче</option><option value="2">2 ловушки · риск</option></select></label></div><div class="cf-tower-hint">Выбери по одной двери на каждом этаже. Выбранные двери будут подсвечены.</div><label class="cf-tower-bet">СТАВКА · ✦<input id="cf-bet" type="number" min="1" max="100000" value="100" inputmode="numeric"></label><div id="cf-game-result" class="cf-tower-result">Выбери двери и начни подъём</div><button type="button" class="primary cf-tower-play" data-action="play-game" data-game="tower">НАЧАТЬ ПОДЪЁМ</button></section>');
+    const rows=Array.from({length:20},(_,i)=>{
+      const mult=(1.2*Math.pow(1.25,i)).toFixed(2);
+      return '<div class="cf-tower-floor" data-tower-floor="'+i+'" style="'+(i>=5?'display:none':'')+'"><span class="cf-tower-floor-label"><b>ЭТАЖ '+(i+1)+'</b><small>x'+mult+'</small></span><div class="cf-tower-doors">'+[0,1,2].map(lane=>'<button type="button" class="cf-tower-door" aria-label="Этаж '+(i+1)+', дверь '+(lane+1)+'" aria-pressed="false" data-action="tower-pick" data-floor="'+i+'" data-lane="'+lane+'"><span class="cf-door-frame"><span class="cf-door-star">✦</span><span class="cf-door-knob"></span></span></button>').join('')+'</div></div>';
+    }).join('');
+    return panel('✦ ДВЕРИ','<section class="cf-tower-shell cf-doors-casino"><div class="cf-tower-hero"><div class="cf-tower-crown">♛</div><div class="cf-tower-brand">COSMIC FORTUNE</div><div class="cf-tower-subtitle">ИСПЫТАНИЕ ЗОЛОТЫХ ДВЕРЕЙ</div></div><div class="cf-tower-progress" id="cf-tower-progress">ЭТАЖ 1 · ВЫБЕРИ ДВЕРЬ</div><div class="cf-tower-building" id="cf-tower-building">'+rows+'</div><div class="cf-tower-settings"><label>ЭТАЖИ<select id="cf-tower-floors"><option value="5" selected>5 этажей</option><option value="10">10 этажей</option><option value="15">15 этажей</option><option value="20">20 этажей</option></select></label><label>ЛОВУШКИ НА ЭТАЖ<select id="cf-tower-traps"><option value="1">1 ловушка · легче</option><option value="2">2 ловушки · риск</option></select></label></div><div class="cf-tower-hint">Начни с нижнего этажа. Выбери одну из трёх дверей и узнай, что скрывается за ней.</div><div class="cf-tower-controls"><label class="cf-tower-bet">СТАВКА · ✦<input id="cf-bet" type="number" min="1" max="100000" value="100" inputmode="numeric"></label><div class="cf-tower-result" id="cf-game-result">Возможный выигрыш зависит от пройденных этажей</div></div><button type="button" class="primary cf-tower-play" data-action="play-game" data-game="tower">НАЧАТЬ ИГРУ</button><div class="cf-tower-footnote">Каждая дверь проверяется сервером · Удачи!</div></section>');
   }
   const cfNewGamesStyle=document.createElement('style');cfNewGamesStyle.textContent=`
     #cf-app .cf-game-tile.coinflip .cf-game-art{background:radial-gradient(circle at 50% 35%,#bd8c34,#462078 52%,#10091f 100%)}
@@ -1257,25 +1260,63 @@
     #cf-app .cf-coinflip-rule{margin:10px 0;color:#cdbde3;font-size:12px}#cf-app .cf-coinflip-rule b{color:#ffdc83}
     #cf-app .cf-coinflip-result,#cf-app .cf-tower-result{min-height:42px;display:grid;place-items:center;color:#ffe3a0;font-weight:800;font-size:13px;margin:10px 0}
     #cf-app .cf-coinflip-play,#cf-app .cf-tower-play{letter-spacing:1px}
-    #cf-app .cf-tower-subtitle{font-size:11px;letter-spacing:2px;color:#d6c4ed;margin-top:5px}
-    #cf-app .cf-tower-peak{font-size:38px;margin:7px 0;text-shadow:0 0 20px #ffd66a}
-    #cf-app .cf-tower-building{display:grid;gap:6px;max-width:390px;margin:0 auto;padding:10px;border:1px solid #75509d;border-radius:16px;background:linear-gradient(180deg,#1c1234,#090814)}
-    #cf-app .cf-tower-floor{display:grid;grid-template-columns:66px 1fr;gap:8px;align-items:center;padding:5px 7px;border:1px solid #4b3568;border-radius:10px;background:linear-gradient(90deg,#201337,#100c20)}
-    #cf-app .cf-tower-floor-label{font-size:9px;color:#d6bdff;font-weight:900;text-align:left}
-    #cf-app .cf-tower-doors{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
-    #cf-app .cf-tower-door{height:39px;border:1px solid #a97c3b;border-radius:8px;background:linear-gradient(145deg,#51317a,#1b1230);color:#ffe39a;font-size:18px;box-shadow:inset 0 0 10px #fff1;transition:transform .2s,background .2s}
-    #cf-app .cf-tower-door.selected{border:2px solid #ffe18a;background:linear-gradient(145deg,#9b6823,#533116);box-shadow:0 0 13px #ffd15c88}
-    #cf-app .cf-tower-door.safe{background:linear-gradient(145deg,#146f52,#0b332a);border-color:#64e3a9;color:#b8ffe0}
-    #cf-app .cf-tower-door.trap{background:linear-gradient(145deg,#9e263d,#40101e);border-color:#ff647c;color:#fff}
-    #cf-app .cf-tower-floor.reached{border-color:#4acb91;box-shadow:0 0 10px #2be59b33}
-    #cf-app .cf-tower-floor.failed{border-color:#ff647c;animation:cfTowerFail .4s ease}
-    #cf-app .cf-tower-floor.inactive{opacity:.38}
-    #cf-app .cf-tower-settings{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px;text-align:left}
-    #cf-app .cf-tower-settings label{font-size:10px;color:#d9c5f5;font-weight:900}
-    #cf-app .cf-tower-settings select{display:block;width:100%;margin-top:6px;padding:10px 6px;border:1px solid #73509c;border-radius:9px;background:#0b0818;color:#fff;font-size:12px}
-    #cf-app .cf-tower-hint{font-size:11px;line-height:1.5;color:#c8b8df;margin:10px 0}
-    @keyframes cfTowerFail{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
-    @media(max-width:360px){#cf-app .cf-tower-floor{grid-template-columns:55px 1fr;gap:4px;padding:4px}#cf-app .cf-tower-door{height:34px}}
+    #cf-app .cf-doors-casino{position:relative;overflow:hidden;padding:12px 10px 16px;border:1px solid #a979dc;border-radius:25px;background:radial-gradient(ellipse at 50% 15%,#54258a 0,#211037 43%,#080610 100%);box-shadow:0 0 30px #8a35d844,inset 0 0 35px #0009}
+    #cf-app .cf-doors-casino:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.38;background:repeating-linear-gradient(90deg,transparent 0 17%,#c38aff12 17.3% 17.7%,transparent 18% 34%)}
+    #cf-app .cf-tower-hero{position:relative;margin:-2px -2px 10px;padding:7px 0 12px;border-bottom:1px solid #d9a94d66;background:radial-gradient(ellipse at 50% 0,#f8c95b24,transparent 70%)}
+    #cf-app .cf-tower-crown{font-size:34px;line-height:1;color:#ffd36e;text-shadow:0 0 18px #ffc44c}
+    #cf-app .cf-tower-brand{font-size:15px;letter-spacing:3px;color:#ffe2a0;text-shadow:0 2px 10px #ffb43d88}
+    #cf-app .cf-tower-subtitle{font-size:9px;letter-spacing:2.5px;color:#d8b8ff;margin-top:4px}
+    #cf-app .cf-tower-progress{position:relative;margin:8px auto 10px;padding:8px 12px;width:max-content;max-width:90%;border:1px solid #d6a64d;border-radius:20px;background:#160d25;color:#ffe3a1;font-size:10px;font-weight:900;letter-spacing:1px;box-shadow:0 0 14px #ffca5733}
+    #cf-app .cf-tower-building{position:relative;display:flex!important;flex-direction:column-reverse!important;gap:5px;max-width:440px;max-height:54vh;overflow-y:auto;scroll-behavior:smooth;margin:0 auto;padding:10px 8px;border:1px solid #a77a4c;border-radius:16px;background:linear-gradient(180deg,#1c1230 0%,#100b1c 50%,#28143b 100%);box-shadow:inset 0 0 30px #000b}
+    #cf-app .cf-tower-floor{position:relative;display:grid;grid-template-columns:57px 1fr;gap:7px;align-items:center;flex:none;min-height:69px;padding:5px;border:1px solid #745039;border-radius:10px;background:linear-gradient(90deg,#25152e,#130d1b 55%,#291632);box-shadow:inset 0 1px #fff1,0 4px 8px #0008}
+    #cf-app .cf-tower-floor:after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:4px;border-radius:2px;background:linear-gradient(90deg,#563b3c,#d09a49,#65454b);box-shadow:0 3px 5px #000}
+    #cf-app .cf-tower-floor-label{display:flex;flex-direction:column;gap:3px;text-align:center;color:#f8dca0;font-size:8px;font-weight:1000;letter-spacing:.3px}
+    #cf-app .cf-tower-floor-label small{font-size:12px;color:#ffc85b;text-shadow:0 0 8px #ffbd4a}
+    #cf-app .cf-tower-doors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;align-items:end}
+    #cf-app .cf-tower-door{position:relative;height:61px;min-width:0;padding:3px;border:2px solid #d69c42;border-radius:28px 28px 5px 5px;background:linear-gradient(90deg,#512a19,#e4a84c 10%,#2c1725 20%,#090711 50%,#3a1e28 80%,#e0a34b 92%,#402018);color:#ffdf8a;box-shadow:0 0 0 2px #2a1724,inset 0 0 10px #000,0 0 10px #d58a2a44;perspective:500px;transition:filter .25s,box-shadow .25s;overflow:visible}
+    #cf-app .cf-door-frame{position:absolute;inset:4px 4px 2px;border:1px solid #e3b45e;border-radius:23px 23px 2px 2px;background:linear-gradient(100deg,#321b26,#100b15 25%,#27152a 75%,#100a12);box-shadow:inset 0 0 0 2px #000,inset 0 0 12px #d58e3b44;transform-origin:left center;transform-style:preserve-3d;transition:transform .85s cubic-bezier(.2,.75,.2,1),filter .4s;backface-visibility:visible}
+    #cf-app .cf-door-frame:before{content:"";position:absolute;inset:4px;border:1px solid #a8793c;border-radius:19px 19px 1px 1px;box-shadow:inset 0 0 9px #d5a04b44}
+    #cf-app .cf-door-star{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-size:19px;color:#ffcf69;text-shadow:0 0 8px #ffb52c,0 0 18px #f90}
+    #cf-app .cf-door-knob{position:absolute;right:13%;top:55%;width:5px;height:5px;border-radius:50%;background:#ffdc83;box-shadow:0 0 5px #ffc44d}
+    #cf-app .cf-tower-door:before{content:"";position:absolute;inset:-5px;border-radius:34px 34px 8px 8px;border:1px solid #ffc65b;opacity:0;box-shadow:0 0 18px #ffbf4b;transition:opacity .25s}
+    #cf-app .cf-tower-door:not(:disabled):active{filter:brightness(1.35);transform:translateY(-2px)}
+    #cf-app .cf-tower-door.cf-door-pending{outline:2px solid #fff0a5;box-shadow:0 0 22px #ffd15c;animation:cfDoorPulse .7s ease-in-out infinite alternate}
+    #cf-app .cf-tower-door.safe{border-color:#8dffc7;box-shadow:0 0 22px #3cffad99,inset 0 0 16px #21c77b55;background:linear-gradient(90deg,#176748,#f3d77d 10%,#123a2d 22%,#071b17 50%,#176748 85%,#f3d77d)}
+    #cf-app .cf-tower-door.safe .cf-door-frame{transform:perspective(400px) rotateY(-108deg);filter:brightness(1.25)}
+    #cf-app .cf-tower-door.safe .cf-door-star{color:#baffdc}
+    #cf-app .cf-tower-door.safe:after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#baffd8;font-size:24px;font-weight:1000;text-shadow:0 0 12px #00ff9d;pointer-events:none;animation:cfDoorLight .6s ease-out}
+    #cf-app .cf-tower-door.trap{border-color:#ff5a77;box-shadow:0 0 22px #ff174c99,inset 0 0 20px #ff173e66;background:linear-gradient(90deg,#70172d,#ffb05c 10%,#40101e 22%,#180711 50%,#70172d 85%,#ffb05c)}
+    #cf-app .cf-tower-door.trap .cf-door-frame{transform:perspective(400px) rotateY(-105deg);filter:brightness(1.5) sepia(.3)}
+    #cf-app .cf-tower-door.trap:after{content:"✹";position:absolute;inset:0;display:grid;place-items:center;color:#ff7890;font-size:27px;text-shadow:0 0 14px red;animation:cfDoorLight .6s ease-out}
+    #cf-app .cf-tower-floor.reached{border-color:#4acb91;box-shadow:0 0 14px #2be59b55}
+    #cf-app .cf-tower-floor.failed{border-color:#ff647c;animation:cfTowerFail .5s ease}
+    #cf-app .cf-tower-floor.inactive{opacity:.55}
+    #cf-app .cf-tower-settings{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;text-align:left}
+    #cf-app .cf-tower-settings label{font-size:9px;color:#e0c9ff;font-weight:900}
+    #cf-app .cf-tower-settings select{display:block;width:100%;margin-top:5px;padding:10px 5px;border:1px solid #9566bd;border-radius:9px;background:#0b0818;color:#fff;font-size:11px}
+    #cf-app .cf-tower-hint{font-size:10px;line-height:1.45;color:#d3c1e9;margin:8px 2px}
+    #cf-app .cf-tower-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center;margin:10px 0}
+    #cf-app .cf-tower-bet{display:block;color:#ffe3a1;font-size:10px;font-weight:900}
+    #cf-app .cf-tower-bet input{width:100%;box-sizing:border-box;margin-top:5px;padding:11px 8px;border:1px solid #a87943;border-radius:10px;background:#0c0915;color:#fff;text-align:center;font-size:17px}
+    #cf-app .cf-tower-result{min-height:42px;margin:0;color:#ffe2a0;font-size:10px;line-height:1.4}
+    #cf-app .cf-tower-play{width:100%;min-height:52px;border:2px solid #ffcf69!important;border-radius:28px!important;background:linear-gradient(180deg,#b32be9,#6512a0 55%,#350b63)!important;box-shadow:0 0 18px #bc36ff77,inset 0 1px #fff8!important;color:#fff!important;font-weight:1000!important;letter-spacing:1px}
+    #cf-app .cf-tower-play:disabled{opacity:.6}
+    #cf-app .cf-tower-footnote{margin-top:9px;color:#a993bf;font-size:8px;letter-spacing:.4px}
+    #cf-app .cf-door-outcome{position:absolute;z-index:5;inset:18% 7% auto;padding:19px 12px;border:1px solid #e7b85d;border-radius:18px;background:radial-gradient(ellipse at top,#48205d,#100817 78%);box-shadow:0 0 35px #000d,0 0 25px #c38aff55;text-align:center;animation:cfOutcomeIn .55s cubic-bezier(.2,.8,.2,1)}
+    #cf-app .cf-door-outcome.safe{border-color:#64efae;box-shadow:0 0 28px #1dff9b77}
+    #cf-app .cf-door-outcome.trap{border-color:#ff5777;box-shadow:0 0 28px #ff174c88}
+    #cf-app .cf-door-outcome b{display:block;font-size:21px;letter-spacing:1px;color:#ffe19a}
+    #cf-app .cf-door-outcome.safe b{color:#9bffcf}
+    #cf-app .cf-door-outcome.trap b{color:#ff8196}
+    #cf-app .cf-door-outcome span{display:block;margin-top:6px;color:#e9dafa;font-size:12px}
+    #cf-app .cf-door-outcome i{display:block;font-style:normal;font-size:37px;margin-bottom:6px;filter:drop-shadow(0 0 10px #ffcb61)}
+    #cf-app .cf-door-outcome button{margin-top:13px;padding:10px 20px;border:1px solid #d8a94d;border-radius:22px;background:#6d20a3;color:#fff;font-weight:900}
+    @keyframes cfDoorPulse{to{box-shadow:0 0 28px #ffe07b,inset 0 0 16px #ffcf4d88}}
+    @keyframes cfDoorLight{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
+    @keyframes cfOutcomeIn{from{opacity:0;transform:translateY(15px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
+    @keyframes cfTowerFail{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+    @media(max-width:360px){#cf-app .cf-tower-floor{grid-template-columns:49px 1fr;gap:4px;padding:4px}#cf-app .cf-tower-door{height:54px}}
+    @media(prefers-reduced-motion:reduce){#cf-app .cf-door-frame,#cf-app .cf-tower-door{transition:none!important;animation:none!important}}
   `;document.head.appendChild(cfNewGamesStyle);
 
   function plinko(){
