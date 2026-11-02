@@ -1795,7 +1795,26 @@
     const dateFmt=new Intl.DateTimeFormat('ru-RU',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
     box.innerHTML=rows.length?rows.map(r=>{const payout=Number(r.payout)||0,bet=Number(r.bet)||0;let outcome='Раунд завершён';if(r.outcome&&typeof r.outcome.message==='string')outcome=r.outcome.message;else if(r.outcome&&typeof r.outcome.label==='string')outcome=r.outcome.label;return '<div class="cf-history-row"><span class="cf-history-icon">'+(names[r.game]||'🎮') .split(' ')[0]+'</span><div class="cf-history-main"><strong>'+(names[r.game]||r.game)+'</strong><small>Ставка: '+formatBalance(bet)+' · '+dateFmt.format(new Date(r.createdAt))+'</small><small>'+outcome.replace(/[<>]/g,'')+'</small></div><span class="cf-history-payout">+'+formatBalance(payout)+' ✦</span></div>'}).join(''):'<p class="cf-profile-muted">Игровых раундов пока нет.</p>';
   }
+  // Warm the local, optimized casino artwork after the first screen is painted.
+  function preloadGameArtwork(){
+    const found=new Set();
+    const css=style.textContent||'';
+    const re=/url\\((?:["']?)([^"')]+\\.(?:webp|png|jpe?g|avif)(?:\\?[^"')]+)?)/gi;
+    let match;
+    while((match=re.exec(css)))found.add(match[1]);
+    const urls=[...found].filter(src=>!src.startsWith('data:'));
+    let index=0;
+    const loadNext=()=>{
+      if(index>=urls.length)return;
+      const img=new Image();img.decoding='async';img.fetchPriority='low';img.src=urls[index++];
+      if(img.decode)img.decode().catch(()=>{}).finally(()=>setTimeout(loadNext,90));
+      else{img.onload=img.onerror=()=>setTimeout(loadNext,90)}
+    };
+    loadNext();
+  }
   // Entry is open; keep Telegram initData authentication and server-backed game logic.
   render('home');
+  const warm=()=>preloadGameArtwork();
+  if('requestIdleCallback' in window)requestIdleCallback(warm,{timeout:2500});else setTimeout(warm,1200);
   refreshAccount();
 })();
