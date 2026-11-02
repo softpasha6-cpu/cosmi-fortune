@@ -861,7 +861,7 @@
   async function refreshAccount(){
     renderTelegramProfileImmediately();
     try{
-      const data=await api('/api/me');
+      const data=await api('/api/me/summary');
       const balance=app.querySelector('#cf-balance');
       if(balance) balance.textContent=formatBalance(data.player.balance);
       const profileBalance=app.querySelector('#cf-profile-balance');
@@ -872,7 +872,7 @@
       const uname=app.querySelector('#cf-profile-username');if(uname)uname.textContent=data.player.username?'@'+data.player.username:'Имя пользователя Telegram не задано';
       const tag=app.querySelector('#cf-profile-tag');if(tag)tag.textContent=data.player.username?'@'+data.player.username:'Не задан';
       const telegramId=app.querySelector('#cf-profile-id');if(telegramId)telegramId.textContent=data.player.telegramId||'—';
-      const photoUrl=data.player.avatarDataUrl||telegram?.initDataUnsafe?.user?.photo_url||null;setAvatarNode(app.querySelector('#cf-profile-avatar'),photoUrl);setAvatarNode(app.querySelector('#cf-settings-avatar'),photoUrl);if(current==='profile'){renderVipCard(data.history||[],data.vip||{});loadVipTasks();}if(current==='settings'){const sn=app.querySelector('#cf-settings-name'),su=app.querySelector('#cf-settings-username');if(sn)sn.textContent=data.player.firstName||'Аккаунт Cosmic Fortune';if(su)su.textContent=data.player.username?'@'+data.player.username:'Профиль Telegram';loadPaymentHistory();}
+      const photoUrl=data.player.avatarDataUrl||telegram?.initDataUnsafe?.user?.photo_url||null;setAvatarNode(app.querySelector('#cf-profile-avatar'),photoUrl);setAvatarNode(app.querySelector('#cf-settings-avatar'),photoUrl);if(current==='profile'){const details=await api('/api/me');renderVipCard(details.history||[],details.vip||{});loadVipTasks();}if(current==='settings'){const sn=app.querySelector('#cf-settings-name'),su=app.querySelector('#cf-settings-username');if(sn)sn.textContent=data.player.firstName||'Аккаунт Cosmic Fortune';if(su)su.textContent=data.player.username?'@'+data.player.username:'Профиль Telegram';loadPaymentHistory();}
     }catch(error){
       const balance=app.querySelector('#cf-balance');
       if(balance) balance.textContent='—';
