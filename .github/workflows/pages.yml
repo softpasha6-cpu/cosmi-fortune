@@ -28,7 +28,7 @@ jobs:
           import re
           js = Path("mockup-overlay.js")
           source = js.read_text()
-          refs = set(re.findall(r'(?:https://raw\\.githubusercontent\\.com/[^"\\s)]+/|\\./)([^/"\\s)]+\\.(?:png|jpe?g|jpeg))', source, re.I))
+          refs = set(re.findall(r'(?:https://raw\.githubusercontent\.com/[^"\s)]+/|\./)([^/"\s)]+\.(?:png|jpe?g|jpeg))', source, re.I))
           for name in sorted(refs):
               path = Path(name)
               if not path.exists():
