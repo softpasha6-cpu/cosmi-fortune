@@ -339,7 +339,7 @@ async function settleDueTournaments() {
           JOIN players p ON p.telegram_id=gt.telegram_id
           WHERE gt.game=ANY($3::text[]) AND gt.bet>0 AND gt.payout>gt.bet
             AND gt.created_at >= $1 AND gt.created_at < $2
-          GROUP BY gt.telegram_id,p.first_name
+          GROUP BY gt.telegram_id,p.first_name,p.avatar_data_url
           ORDER BY points DESC,rounds DESC,first_win ASC
           LIMIT 10`,[periodStart,periodEnd,TOURNAMENT_GAMES]);
         const prizes=TOURNAMENT_PRIZES[period];
