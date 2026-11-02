@@ -24,7 +24,7 @@
   };
   const balance=n=>{const el=$('#cf-balance');if(el)el.textContent=Number(n).toLocaleString('ru-RU')};
   const style=document.createElement('style');
-  style.textContent='@keyframes cfDoorOpening{0%{transform:rotateY(0)}45%{transform:perspective(400px) rotateY(-24deg)}100%{transform:perspective(400px) rotateY(-108deg)}}#cf-app .cf-tower-door.cf-door-opening .cf-door-frame{animation:cfDoorOpening .72s cubic-bezier(.2,.75,.2,1) forwards}#cf-app .cf-tower-door.cf-door-opening{filter:brightness(1.3)}'+ '#cf-app .cf-coinflip-side.active{border:1px solid #6b4b92!important;background:#151027!important;box-shadow:none!important;animation:none!important;transform:none!important}#cf-app .cf-coinflip-side.is-selected{border:2px solid #ffe18a!important;background:linear-gradient(145deg,#80531e,#392052)!important;box-shadow:0 0 0 2px #ffda7833,0 0 20px #f4bf4dcc,inset 0 0 18px #ffd45b55!important;transform:translateY(-2px);animation:cfChoiceGlow 1.35s ease-in-out infinite alternate!important}#cf-app .cf-tower-building{display:flex!important;flex-direction:column-reverse!important;max-height:58vh;overflow-y:auto;scroll-behavior:smooth}#cf-app .cf-tower-floor{flex:none}#cf-app .cf-tower-door:disabled{opacity:.42;filter:grayscale(.7);pointer-events:none}#cf-app .cf-tower-door.cf-door-pending{outline:2px solid #fff0a5;box-shadow:0 0 22px #ffd15c}';
+  style.textContent='@keyframes cfDoorOpening{0%{transform:rotateY(0)}45%{transform:perspective(400px) rotateY(-24deg)}100%{transform:perspective(400px) rotateY(-108deg)}}#cf-app .cf-tower-door.cf-door-opening .cf-door-frame{animation:cfDoorOpening .72s cubic-bezier(.2,.75,.2,1) forwards}#cf-app .cf-tower-door.cf-door-opening{filter:brightness(1.3)}'+ '#cf-app .cf-coinflip-side.active{border:1px solid #6b4b92!important;background:#151027!important;box-shadow:none!important;animation:none!important;transform:none!important}#cf-app .cf-coinflip-side.is-selected{border:2px solid #ffe18a!important;background:linear-gradient(145deg,#80531e,#392052)!important;box-shadow:0 0 0 2px #ffda7833,0 0 20px #f4bf4dcc,inset 0 0 18px #ffd45b55!important;transform:translateY(-2px);animation:cfChoiceGlow 1.35s ease-in-out infinite alternate!important}#cf-app .cf-tower-building{display:flex!important;flex-direction:column-reverse!important;max-height:34vh;overflow-y:auto;scroll-behavior:smooth}#cf-app .cf-tower-floor{flex:none}#cf-app .cf-tower-door:disabled{opacity:.42;filter:grayscale(.7);pointer-events:none}#cf-app .cf-tower-door.cf-door-pending{outline:2px solid #fff0a5;box-shadow:0 0 22px #ffd15c}';
   document.head.appendChild(style);
   function resetCoinflip(){
     document.querySelectorAll('#cf-app .cf-coinflip-side').forEach(b=>{b.classList.remove('active','is-selected');b.setAttribute('aria-pressed','false')});
@@ -38,10 +38,18 @@
         const i=Number(row.dataset.towerFloor);row.style.display=i<floors?'grid':'none';
         row.querySelectorAll('.cf-tower-door').forEach(b=>{b.disabled=i!==0;b.classList.remove('safe','trap','selected','cf-door-pending');b.setAttribute('aria-pressed','false')});
       });
-      const play=$('.cf-tower-play');if(play){play.disabled=false;play.textContent='НАЧАТЬ ПОДЪЁМ'}
+      updateMultipliers();const play=$('.cf-tower-play');if(play){play.disabled=false;play.textContent='НАЧАТЬ ПОДЪЁМ'}
       const hint=$('.cf-tower-hint');if(hint)hint.textContent='Начни снизу. Выбирай по одной двери — результат увидишь сразу.';
     }
   });
+  const updateMultipliers=()=>{
+    const traps=Number($('#cf-tower-traps')?.value||1),safeCount=3-traps;
+    document.querySelectorAll('#cf-tower-building .cf-tower-floor').forEach(row=>{
+      const step=Number(row.dataset.towerFloor)+1;
+      const multiplier=(0.97/Math.pow(safeCount/3,step)).toFixed(2);
+      row.querySelectorAll('.cf-door-mult').forEach(el=>el.textContent='x'+multiplier);
+    });
+  };
   observer.observe(document.body,{childList:true,subtree:true});
   document.addEventListener('change',e=>{
     if(e.target?.id!=='cf-tower-traps')return;
@@ -51,7 +59,7 @@
       row.classList.remove('reached','failed','inactive');
       row.querySelectorAll('.cf-tower-door').forEach(b=>{b.disabled=i!==0;b.classList.remove('safe','trap','selected','cf-door-pending');b.setAttribute('aria-pressed','false')});
     });
-    const p=$('#cf-tower-progress');if(p)p.textContent='ВЫБРАНО: 0 / '+floors+' ЭТАЖЕЙ';
+    updateMultipliers();const p=$('#cf-tower-progress');if(p)p.textContent='ЭТАЖ 1 / 15 · ВЫБЕРИ ДВЕРЬ';
     const result=$('#cf-game-result');if(result)result.textContent='Выбери «Начать подъём», затем открой дверь снизу.';
     const play=$('.cf-tower-play');if(play){play.disabled=false;play.textContent='НАЧАТЬ ПОДЪЁМ'}
   },true);
@@ -93,6 +101,7 @@
         const result=$('#cf-game-result');if(result)result.textContent='Приз забран: '+Number(d.payout).toLocaleString('ru-RU')+' ✦';
         const progress=$('#cf-tower-progress');if(progress)progress.textContent='ПРИЗ ЗАБРАН · '+round.next+' / 15 ЭТАЖЕЙ';
         const play=$('.cf-tower-play');if(play){play.disabled=false;play.textContent='НОВЫЙ РАУНД';}
+          const cash=$('#cf-app .cf-tower-cashout');if(cash){cash.disabled=true;cash.textContent='ЗАБРАТЬ ПРИЗ · ✦ 0';}
         cashout.textContent='ПРИЗ ПОЛУЧЕН';
         showOutcome('safe','ПРИЗ ЗАБРАН!','Выплата: '+Number(d.payout).toLocaleString('ru-RU')+' ✦','💰');
       }catch(err){toast(err.message);cashout.disabled=false;cashout.textContent='ЗАБРАТЬ ПРИЗ';}
@@ -117,7 +126,8 @@
           if(progress)progress.textContent='💥 ЛОВУШКА · ЭТАЖ '+(floor+1);
           if(result)result.textContent=d.message+' Ставка потеряна.';
           if(hint)hint.textContent='Ловушка остановила подъём. Попробуй новый раунд.';
-          const play=$('.cf-tower-play');if(play){play.disabled=false;play.textContent='НОВЫЙ РАУНД';}\n          const cash=$('#cf-app .cf-tower-cashout');if(cash){cash.disabled=true;cash.textContent='ЗАБРАТЬ ПРИЗ · ✦ 0';}
+          const play=$('.cf-tower-play');if(play){play.disabled=false;play.textContent='НОВЫЙ РАУНД';}
+          const cash=$('#cf-app .cf-tower-cashout');if(cash){cash.disabled=true;cash.textContent='ЗАБРАТЬ ПРИЗ · ✦ 0';}
           showOutcome('trap','ЛОВУШКА!','Раунд завершён. Попробуй ещё раз и поднимись выше.','💥');
           return;
         }
@@ -127,11 +137,14 @@
           round.status='won';
           if(result)result.textContent=d.message+' Выплата: '+Number(d.payout).toLocaleString('ru-RU')+' ✦';
           if(hint)hint.textContent='Ты прошёл все этажи и покорил башню!';
-          const play=$('.cf-tower-play');if(play){play.disabled=false;play.textContent='СЫГРАТЬ ЕЩЁ РАЗ';}\n          const cash=$('#cf-app .cf-tower-cashout');if(cash){cash.disabled=true;cash.textContent='ПРИЗ ВЫПЛАЧЕН';}
+          const play=$('.cf-tower-play');if(play){play.disabled=false;play.textContent='СЫГРАТЬ ЕЩЁ РАЗ';}
+          const cash=$('#cf-app .cf-tower-cashout');if(cash){cash.disabled=true;cash.textContent='ПРИЗ ВЫПЛАЧЕН';}
+          const cash=$('#cf-app .cf-tower-cashout');if(cash){cash.disabled=true;cash.textContent='ПРИЗ ВЫПЛАЧЕН';}
           showOutcome('safe','ПОБЕДА!','Выигрыш: '+Number(d.payout).toLocaleString('ru-RU')+' ✦','👑');
         }else{
-          if(result)result.textContent=d.message;
-          if(hint)hint.textContent='Отлично! Следующая дверь уже ждёт выше.';
+          if(result)result.textContent=d.message+' Можно забрать '+Number(d.cashout||0).toLocaleString('ru-RU')+' ✦ прямо сейчас.';
+          const cash=$('#cf-app .cf-tower-cashout');if(cash){cash.disabled=false;cash.textContent='ЗАБРАТЬ · ✦ '+Number(d.cashout||0).toLocaleString('ru-RU');}
+          if(hint)hint.textContent='Дверь безопасна! Продолжай или забери приз сейчас.';
           const next=$('#cf-tower-building [data-tower-floor="'+round.next+'"]');
           next?.querySelectorAll('.cf-tower-door').forEach(b=>{b.disabled=false});
           next?.scrollIntoView({behavior:'smooth',block:'center'});
@@ -148,7 +161,8 @@
         row.classList.remove('reached','failed','inactive');
         row.querySelectorAll('.cf-tower-door').forEach(b=>{b.disabled=i!==0;b.classList.remove('safe','trap','selected','cf-door-pending');b.setAttribute('aria-pressed','false')});
       });
-      const p=$('#cf-tower-progress');if(p)p.textContent='ЭТАЖ 1 / 15 · ВЫБЕРИ ДВЕРЬ';\n      const cash=$('#cf-app .cf-tower-cashout');if(cash){cash.disabled=true;cash.textContent='ЗАБРАТЬ ПРИЗ · ✦ 0';}
+      updateMultipliers();const p=$('#cf-tower-progress');if(p)p.textContent='ЭТАЖ 1 / 15 · ВЫБЕРИ ДВЕРЬ';
+      const cash=$('#cf-app .cf-tower-cashout');if(cash){cash.disabled=true;cash.textContent='ЗАБРАТЬ ПРИЗ · ✦ 0';}
       const result=$('#cf-game-result');if(result)result.textContent='Готов к новому подъёму.';
       again.textContent='НАЧАТЬ ПОДЪЁМ';const cash=$('#cf-app .cf-tower-cashout');if(cash){cash.disabled=true;cash.textContent='ЗАБРАТЬ ПРИЗ · ✦ 0';}return;
     }
