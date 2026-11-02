@@ -11,9 +11,20 @@
     if(!r.ok)throw new Error(d.error||'Ошибка сервера');return d;
   };
   const toast=msg=>{const t=$('#cf-toast')||$('#cf-app .toast');if(t){t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800)}else alert(msg)};
+  const showOutcome=(kind,title,detail,icon)=>{
+    const shell=$('#cf-app .cf-doors-casino');if(!shell)return;
+    shell.querySelector('.cf-door-outcome')?.remove();
+    const box=document.createElement('div');box.className='cf-door-outcome '+kind;
+    const symbol=document.createElement('i');symbol.textContent=icon;
+    const heading=document.createElement('b');heading.textContent=title;
+    const copy=document.createElement('span');copy.textContent=detail;
+    const close=document.createElement('button');close.type='button';close.textContent='ЗАКРЫТЬ';
+    close.addEventListener('click',()=>box.remove());
+    box.append(symbol,heading,copy,close);shell.appendChild(box);
+  };
   const balance=n=>{const el=$('#cf-balance');if(el)el.textContent=Number(n).toLocaleString('ru-RU')};
   const style=document.createElement('style');
-  style.textContent='#cf-app .cf-coinflip-side.active{border:1px solid #6b4b92!important;background:#151027!important;box-shadow:none!important;animation:none!important;transform:none!important}#cf-app .cf-coinflip-side.is-selected{border:2px solid #ffe18a!important;background:linear-gradient(145deg,#80531e,#392052)!important;box-shadow:0 0 0 2px #ffda7833,0 0 20px #f4bf4dcc,inset 0 0 18px #ffd45b55!important;transform:translateY(-2px);animation:cfChoiceGlow 1.35s ease-in-out infinite alternate!important}#cf-app .cf-tower-building{display:flex!important;flex-direction:column-reverse!important;max-height:58vh;overflow-y:auto;scroll-behavior:smooth}#cf-app .cf-tower-floor{flex:none}#cf-app .cf-tower-door:disabled{opacity:.42;filter:grayscale(.7);pointer-events:none}#cf-app .cf-tower-door.cf-door-pending{outline:2px solid #fff0a5;box-shadow:0 0 22px #ffd15c}';
+  style.textContent='@keyframes cfDoorOpening{0%{transform:rotateY(0)}45%{transform:perspective(400px) rotateY(-24deg)}100%{transform:perspective(400px) rotateY(-108deg)}}#cf-app .cf-tower-door.cf-door-opening .cf-door-frame{animation:cfDoorOpening .72s cubic-bezier(.2,.75,.2,1) forwards}#cf-app .cf-tower-door.cf-door-opening{filter:brightness(1.3)}'+ '#cf-app .cf-coinflip-side.active{border:1px solid #6b4b92!important;background:#151027!important;box-shadow:none!important;animation:none!important;transform:none!important}#cf-app .cf-coinflip-side.is-selected{border:2px solid #ffe18a!important;background:linear-gradient(145deg,#80531e,#392052)!important;box-shadow:0 0 0 2px #ffda7833,0 0 20px #f4bf4dcc,inset 0 0 18px #ffd45b55!important;transform:translateY(-2px);animation:cfChoiceGlow 1.35s ease-in-out infinite alternate!important}#cf-app .cf-tower-building{display:flex!important;flex-direction:column-reverse!important;max-height:58vh;overflow-y:auto;scroll-behavior:smooth}#cf-app .cf-tower-floor{flex:none}#cf-app .cf-tower-door:disabled{opacity:.42;filter:grayscale(.7);pointer-events:none}#cf-app .cf-tower-door.cf-door-pending{outline:2px solid #fff0a5;box-shadow:0 0 22px #ffd15c}';
   document.head.appendChild(style);
   function resetCoinflip(){
     document.querySelectorAll('#cf-app .cf-coinflip-side').forEach(b=>{b.classList.remove('active','is-selected');b.setAttribute('aria-pressed','false')});
@@ -80,15 +91,18 @@
       busy=true;door.classList.add('cf-door-pending');
       try{
         const d=await call('/api/tower/pick',{roundId:round.id,floor,lane});
-        door.classList.remove('cf-door-pending');door.classList.add(d.safe?'safe':'trap','selected');door.disabled=true;door.setAttribute('aria-pressed','true');
+        door.classList.remove('cf-door-pending');door.classList.add('cf-door-opening');
+        await new Promise(resolve=>setTimeout(resolve,760));
+        door.classList.remove('cf-door-opening');door.classList.add(d.safe?'safe':'trap','selected');door.disabled=true;door.setAttribute('aria-pressed','true');
         const row=door.closest('.cf-tower-floor');row?.classList.add(d.safe?'reached':'failed');balance(d.balance);
         const result=$('#cf-game-result'),progress=$('#cf-tower-progress'),hint=$('.cf-tower-hint');
         if(!d.safe){
           round.status='lost';
-          if(progress)progress.textContent='💥 ПРОИГРЫШ · ЭТАЖ '+(floor+1);
+          if(progress)progress.textContent='💥 ЛОВУШКА · ЭТАЖ '+(floor+1);
           if(result)result.textContent=d.message+' Ставка потеряна.';
           if(hint)hint.textContent='Ловушка остановила подъём. Попробуй новый раунд.';
           const play=$('.cf-tower-play');if(play){play.disabled=false;play.textContent='НОВЫЙ РАУНД';}
+          showOutcome('trap','ЛОВУШКА!','Раунд завершён. Попробуй ещё раз и поднимись выше.','💥');
           return;
         }
         round.next++;
@@ -98,6 +112,7 @@
           if(result)result.textContent=d.message+' Выплата: '+Number(d.payout).toLocaleString('ru-RU')+' ✦';
           if(hint)hint.textContent='Ты прошёл все этажи и покорил башню!';
           const play=$('.cf-tower-play');if(play){play.disabled=false;play.textContent='СЫГРАТЬ ЕЩЁ РАЗ';}
+          showOutcome('safe','ПОБЕДА!','Выигрыш: '+Number(d.payout).toLocaleString('ru-RU')+' ✦','👑');
         }else{
           if(result)result.textContent=d.message;
           if(hint)hint.textContent='Отлично! Следующая дверь уже ждёт выше.';
