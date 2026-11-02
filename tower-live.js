@@ -161,7 +161,6 @@
         row.querySelectorAll('.cf-tower-door').forEach(b=>{b.disabled=i!==0;b.classList.remove('safe','trap','selected','cf-door-pending');b.setAttribute('aria-pressed','false')});
       });
       updateMultipliers();const p=$('#cf-tower-progress');if(p)p.textContent='ЭТАЖ 1 / 15 · ВЫБЕРИ ДВЕРЬ';
-      const cash=$('#cf-app .cf-tower-cashout');if(cash){cash.disabled=true;cash.textContent='ЗАБРАТЬ ПРИЗ · ✦ 0';}
       const result=$('#cf-game-result');if(result)result.textContent='Готов к новому подъёму.';
       again.textContent='НАЧАТЬ ПОДЪЁМ';const cash=$('#cf-app .cf-tower-cashout');if(cash){cash.disabled=true;cash.textContent='ЗАБРАТЬ ПРИЗ · ✦ 0';}return;
     }
